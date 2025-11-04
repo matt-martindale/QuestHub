@@ -12,6 +12,7 @@ import FirebaseAppCheck
 
 @main
 struct QuestHubApp: App {
+    @StateObject private var auth = QHAuth()
     let persistenceController = PersistenceController.shared
 
     init() {
@@ -32,6 +33,7 @@ struct QuestHubApp: App {
     var body: some Scene {
         WindowGroup {
             HomeView()
+                .environmentObject(auth)
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
         }
     }

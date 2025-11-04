@@ -7,10 +7,12 @@
 
 import SwiftUI
 import CoreData
+import Foundation
 
 struct HomeView: View {
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
     @Environment(\.managedObjectContext) private var viewContext
+    @EnvironmentObject var auth: QHAuth
 
     @State private var showOnboarding: Bool = false
 
@@ -18,15 +20,11 @@ struct HomeView: View {
         NavigationStack {
             // Your main home content placeholder
             VStack(spacing: 8) {
-                Text("Welcome to")
-                    .font(.largeTitle).bold()
-                Text("QuestHub")
+                Text("Welcome to QuestHub")
                     .font(.largeTitle).bold()
 
                 VStack(spacing: 12) {
-                    Button(action: {
-                        // TODO: Handle organizer join flow
-                    }) {
+                    NavigationLink(destination: destinationForOrganizer()) {
                         Text("Join as Organizer")
                             .font(.headline)
                             .frame(maxWidth: .infinity)
@@ -68,9 +66,35 @@ struct HomeView: View {
             }
         }
     }
+
+    @ViewBuilder
+    private func destinationForOrganizer() -> some View {
+        if let _ = auth.currentUser {
+            // TODO: Replace with your real organizer home/destination
+            SignedInOrganizerHomeView()
+        } else {
+            SignInView()
+                .environmentObject(auth)
+        }
+    }
 }
 
 #Preview {
-    HomeView()
+    let auth = QHAuth()
+    // Uncomment to preview the signed-in state
+    // Task { @MainActor in auth.restoreSessionIfAvailable() }
+    return HomeView()
+        .environmentObject(auth)
         .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
+}
+
+struct SignedInOrganizerHomeView: View {
+    var body: some View {
+        VStack(spacing: 8) {
+            Text("Organizer Home").font(.largeTitle).bold()
+            Text("You're signed in as organizer.")
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(.systemBackground))
+    }
 }
