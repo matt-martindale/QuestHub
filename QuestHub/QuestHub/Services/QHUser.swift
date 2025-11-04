@@ -7,15 +7,7 @@
 
 import Foundation
 import Combine
-
-/// A simple user model and sign-in manager.
-///
-/// This file provides:
-/// - `QHUser`: a lightweight user value type
-/// - `QHAuth`: a simple sign-in/sign-out manager using Swift Concurrency
-///
-/// NOTE: This is a placeholder auth flow. Replace the `validateCredentials`
-/// and persistence logic with your real backend (e.g., your API, Firebase, etc.).
+import FirebaseAuth
 
 struct QHUser: Codable, Equatable, Identifiable {
     let id: String
@@ -39,16 +31,20 @@ final class QHAuth: ObservableObject {
 
     enum AuthError: LocalizedError, Equatable {
         case invalidEmail
-        case invalidPassword
+        case shortPassword
         case userNotFound
+        case emailAlreadyInUse
+        case wrongPassword
         case network
         case unknown
 
         var errorDescription: String? {
             switch self {
             case .invalidEmail: return "The email address appears to be invalid."
-            case .invalidPassword: return "The password is incorrect."
+            case .shortPassword: return "Password needs to be at least 6 characters long."
             case .userNotFound: return "No user found with those credentials."
+            case .emailAlreadyInUse: return "An account with this email already exists."
+            case .wrongPassword: return "The password is incorrect."
             case .network: return "A network error occurred. Please try again."
             case .unknown: return "An unknown error occurred."
             }
@@ -67,16 +63,22 @@ final class QHAuth: ObservableObject {
         do {
             try validate(email: email, password: password)
 
-            // Simulate a network call
-            let user = try await fetchUserForCredentials(email: email, password: password)
+            let result = try await Auth.auth().signIn(withEmail: email, password: password)
+            let fbUser = result.user
+            let user = QHUser(
+                id: fbUser.uid,
+                email: fbUser.email ?? email,
+                displayName: fbUser.displayName,
+                createdAt: Date() // Firebase provides metadata, but we keep a local date for simplicity
+            )
 
-            // Persist if desired (Keychain, file, etc.)
+            // No local persistence; rely on Firebase session. Optionally mirror for offline UI.
             persistSession(user: user)
 
             currentUser = user
             return true
         } catch {
-            lastError = error
+            lastError = mapFirebaseError(error)
             return false
         }
     }
@@ -90,28 +92,57 @@ final class QHAuth: ObservableObject {
         do {
             try validate(email: email, password: password)
 
-            // Simulate a network call to create the user
-            let newUser = try await createUser(email: email, password: password, displayName: displayName)
+            let result = try await Auth.auth().createUser(withEmail: email, password: password)
 
-            // Persist if desired
-            persistSession(user: newUser)
+            // Update display name if provided
+            if let displayName, !displayName.isEmpty {
+                let changeReq = result.user.createProfileChangeRequest()
+                changeReq.displayName = displayName
+                try await changeReq.commitChanges()
+            }
 
-            currentUser = newUser
+            let fbUser = result.user
+            let user = QHUser(
+                id: fbUser.uid,
+                email: fbUser.email ?? email,
+                displayName: fbUser.displayName ?? displayName,
+                createdAt: Date()
+            )
+
+            persistSession(user: user)
+            currentUser = user
             return true
         } catch {
-            lastError = error
+            lastError = mapFirebaseError(error)
             return false
         }
     }
 
     /// Signs the current user out and clears any persisted session.
     func signOut() {
+        do {
+            try Auth.auth().signOut()
+        } catch {
+            // Surface sign-out errors but still clear local state
+            lastError = error
+        }
         currentUser = nil
         clearPersistedSession()
     }
 
     /// Attempts to restore a previously persisted session (if any).
     func restoreSessionIfAvailable() {
+        if let fbUser = Auth.auth().currentUser {
+            let user = QHUser(
+                id: fbUser.uid,
+                email: fbUser.email ?? "",
+                displayName: fbUser.displayName,
+                createdAt: Date()
+            )
+            currentUser = user
+            persistSession(user: user) // keep local mirror for UI convenience
+            return
+        }
         if let data = UserDefaults.standard.data(forKey: Self.sessionKey),
            let user = try? JSONDecoder().decode(QHUser.self, from: data) {
             currentUser = user
@@ -120,31 +151,28 @@ final class QHAuth: ObservableObject {
 
     // MARK: - Private helpers
 
+    private func mapFirebaseError(_ error: Error) -> Error {
+        let nsError = error as NSError
+        if nsError.domain == AuthErrorDomain, let code = AuthErrorCode(rawValue: nsError.code) {
+            switch code {
+            case .invalidEmail: return AuthError.invalidEmail
+            case .userNotFound: return AuthError.userNotFound
+            case .emailAlreadyInUse: return AuthError.emailAlreadyInUse
+            case .wrongPassword: return AuthError.wrongPassword
+            case .networkError: return AuthError.network
+            default: return AuthError.unknown
+            }
+        }
+        return error
+    }
+
     private func validate(email: String, password: String) throws {
         guard email.contains("@"), email.contains("."), email.count >= 5 else {
             throw AuthError.invalidEmail
         }
         guard password.count >= 6 else {
-            throw AuthError.invalidPassword
+            throw AuthError.shortPassword
         }
-    }
-
-    private func fetchUserForCredentials(email: String, password: String) async throws -> QHUser {
-        // Simulate latency
-        try await Task.sleep(nanoseconds: 500_000_000)
-
-        // Placeholder logic: accept any email/password that meets validation
-        // In a real app, call your backend and verify credentials.
-        // You might throw `AuthError.userNotFound` or `AuthError.network` as appropriate.
-        return QHUser(email: email, displayName: email.split(separator: "@").first.map(String.init))
-    }
-
-    private func createUser(email: String, password: String, displayName: String?) async throws -> QHUser {
-        // Simulate latency
-        try await Task.sleep(nanoseconds: 600_000_000)
-
-        // Placeholder logic: create and return a new user
-        return QHUser(email: email, displayName: displayName)
     }
 
     private func persistSession(user: QHUser) {

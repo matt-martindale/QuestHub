@@ -15,33 +15,47 @@ struct EmailSignInView: View {
     @State private var email: String = ""
     @State private var confirmEmail: String = ""
     @State private var password: String = ""
+    @State private var displayName: String = ""
 
     // UI state
     @State private var isSecureEntry: Bool = true
     @State private var errorMessage: String?
     @State private var isSubmitting: Bool = false
+    @State private var navigateToHub: Bool = false
+
+    @EnvironmentObject var auth: QHAuth
 
     var body: some View {
-        VStack(spacing: 20) {
-            header
+        NavigationStack {
+            VStack(spacing: 20) {
+                header
 
-            formFields
+                formFields
 
-            if let errorMessage {
-                Text(errorMessage)
-                    .foregroundStyle(.red)
-                    .font(.footnote)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
+                if let errorMessage {
+                    Text(errorMessage)
+                        .foregroundStyle(.red)
+                        .font(.footnote)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                }
+
+                primaryActionButton
+                    .disabled(!isFormValid || isSubmitting)
+
+                // Optional secondary guidance
+                secondaryHint
+
+                // Hidden navigation link triggered on success
+                NavigationLink(isActive: $navigateToHub) {
+                    OrganizerHubView()
+                } label: {
+                    EmptyView()
+                }
+                .hidden()
             }
-
-            primaryActionButton
-                .disabled(!isFormValid || isSubmitting)
-
-            // Optional secondary guidance
-            secondaryHint
+            .padding()
         }
-        .padding()
         .animation(.default, value: isLoginFlow)
     }
 }
@@ -77,6 +91,17 @@ private extension EmailSignInView {
                     .keyboardType(.emailAddress)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled(true)
+                    .submitLabel(.next)
+                    .padding(12)
+                    .background(.quaternary.opacity(0.15), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+            }
+
+            // Display Name (only for sign up, optional)
+            if !isLoginFlow {
+                TextField("Display name (optional)", text: $displayName)
+                    .textContentType(.name)
+                    .textInputAutocapitalization(.words)
+                    .autocorrectionDisabled(false)
                     .submitLabel(.next)
                     .padding(12)
                     .background(.quaternary.opacity(0.15), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
@@ -160,11 +185,22 @@ private extension EmailSignInView {
         }
 
         isSubmitting = true
-        // Simulate async submit; replace with your auth call
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+        Task { @MainActor in
+            let success: Bool
+            if isLoginFlow {
+                success = await auth.signIn(email: email, password: password)
+            } else {
+                let nameArg: String? = displayName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : displayName
+                success = await auth.signUp(email: email, password: password, displayName: nameArg)
+            }
+
+            if success {
+                errorMessage = nil
+                navigateToHub = true
+            } else {
+                errorMessage = auth.lastError?.localizedDescription ?? "Something went wrong. Please try again."
+            }
             isSubmitting = false
-            // On success, clear errors (parent can handle navigation)
-            errorMessage = nil
         }
     }
 
@@ -176,10 +212,13 @@ private extension EmailSignInView {
 }
 
 #Preview {
-    VStack {
-        EmailSignInView(isLoginFlow: true)
-        Divider().padding()
-        EmailSignInView(isLoginFlow: false)
+    NavigationStack {
+        VStack {
+            EmailSignInView(isLoginFlow: true)
+            Divider().padding()
+            EmailSignInView(isLoginFlow: false)
+        }
+        .padding()
+        .environmentObject(QHAuth())
     }
-    .padding()
 }
