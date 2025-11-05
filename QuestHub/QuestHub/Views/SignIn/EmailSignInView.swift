@@ -96,9 +96,9 @@ private extension EmailSignInView {
                     .background(.quaternary.opacity(0.15), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
             }
 
-            // Display Name (only for sign up, optional)
+            // Display Name (only for sign up, required)
             if !isLoginFlow {
-                TextField(UIStrings.displayNameOptional, text: $displayName)
+                TextField(UIStrings.displayName, text: $displayName)
                     .textContentType(.name)
                     .textInputAutocapitalization(.words)
                     .autocorrectionDisabled(false)
@@ -167,7 +167,7 @@ private extension EmailSignInView {
         if isLoginFlow {
             return isValidEmail(email) && !password.isEmpty
         } else {
-            return isValidEmail(email) && email == confirmEmail && !password.isEmpty
+            return isValidEmail(email) && email == confirmEmail && !password.isEmpty && !displayName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         }
     }
 
@@ -178,6 +178,8 @@ private extension EmailSignInView {
                 errorMessage = UIStrings.enterValidEmail
             } else if !isLoginFlow && email != confirmEmail {
                 errorMessage = UIStrings.emailNotMatch
+            } else if !isLoginFlow && displayName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                errorMessage = UIStrings.enterDisplayName
             } else if password.isEmpty {
                 errorMessage = UIStrings.emptyPassword
             }
@@ -190,8 +192,8 @@ private extension EmailSignInView {
             if isLoginFlow {
                 success = await auth.signIn(email: email, password: password)
             } else {
-                let nameArg: String? = displayName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : displayName
-                success = await auth.signUp(email: email, password: password, displayName: nameArg)
+                let trimmedName = displayName.trimmingCharacters(in: .whitespacesAndNewlines)
+                success = await auth.signUp(email: email, password: password, displayName: trimmedName)
             }
 
             if success {

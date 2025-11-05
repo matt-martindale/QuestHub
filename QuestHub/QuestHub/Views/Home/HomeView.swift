@@ -29,12 +29,14 @@ struct HomeView: View {
                             .font(.headline)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color(.systemBackground))
-                            .foregroundColor(.primary)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.qhPrimaryBlue, lineWidth: 4)
-                            )
+                            .background(Color.qhPrimaryBlue)
+                            .foregroundColor(.white)
+//                            .background(Color(.systemBackground))
+//                            .foregroundColor(.primary)
+//                            .overlay(
+//                                RoundedRectangle(cornerRadius: 12)
+//                                    .stroke(Color.qhPrimaryBlue, lineWidth: 4)
+//                            )
                             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                     }
 
@@ -43,8 +45,14 @@ struct HomeView: View {
                             .font(.headline)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color.qhPrimaryBlue)
-                            .foregroundColor(.white)
+//                            .background(Color.qhPrimaryBlue)
+//                            .foregroundColor(.white)
+                            .background(Color(.systemBackground))
+                            .foregroundColor(.primary)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color.qhPrimaryBlue, lineWidth: 4)
+                            )
                             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                     }
                 }
@@ -149,9 +157,9 @@ struct HomeView: View {
 
 #Preview {
     let auth = QHAuth()
-    // Uncomment to preview the signed-in state
-    // Task { @MainActor in auth.restoreSessionIfAvailable() }
-    return HomeView()
+    // Optionally simulate a signed-in state for previews, e.g.:
+    // auth.currentUser = QHUser(id: "preview", email: "preview@example.com", displayName: "Preview User")
+    HomeView()
         .environmentObject(auth)
         .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
 }
