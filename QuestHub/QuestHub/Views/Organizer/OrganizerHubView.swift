@@ -14,8 +14,8 @@ struct OrganizerHubView: View {
     
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                // Content area
+            ZStack(alignment: .bottom) {
+                // Content area (fills and scrolls behind)
                 VStack(spacing: 16) {
                     if let user = auth.currentUser {
                         // Empty vs non-empty state
@@ -57,7 +57,8 @@ struct OrganizerHubView: View {
                                     }
                                 }
                             }
-                            .frame(maxHeight: .infinity)
+                            // Allow the list to extend under the bottom buttons
+                            .contentMargins(.bottom, 150)
                         }
                     } else {
                         Text(UIStrings.noUserSignedIn)
@@ -67,22 +68,20 @@ struct OrganizerHubView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
 
-                // Bottom action area (always visible)
+                // Bottom action overlay (clear background, floats above content)
                 VStack(spacing: 8) {
                     if auth.currentUser != nil {
-                        // Primary create quest button
                         Button {
                             // Navigate to create quest page
                         } label: {
                             Label("Create a Quest", systemImage: "wand.and.stars")
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 12)
-                                .backgroundStyle(Color(.systemBackground))
+                                .background(Color.clear)
                                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                         }
                         .buttonStyle(.glass)
 
-                        // Create Mock Quest button (unchanged behavior)
                         Button {
                             guard let uid = auth.currentUser?.id else { return }
                             Task { @MainActor in
@@ -103,9 +102,7 @@ struct OrganizerHubView: View {
                     }
                 }
                 .padding(.horizontal)
-                .padding(.top, 8)
                 .padding(.bottom)
-//                .background(.thinMaterial)
             }
             .navigationTitle(UIStrings.organizerHub)
             .toolbar {
