@@ -49,6 +49,41 @@ struct HomeView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color(.systemBackground))
+            .toolbar {
+                if let user = auth.currentUser {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Menu {
+                            Button(role: .destructive) {
+                                auth.signOut()
+                            } label: {
+                                Label("Sign Out", systemImage: "rectangle.portrait.and.arrow.right")
+                            }
+                        } label: {
+                            HStack(spacing: 8) {
+                                ZStack {
+                                    Circle()
+                                        .fill(Color(.systemGray5))
+                                    Text(initials(from: user))
+                                        .font(.caption.bold())
+                                        .foregroundColor(.primary)
+                                }
+                                .frame(width: 28, height: 28)
+
+                                VStack(alignment: .leading, spacing: 0) {
+                                    Text("Signed in as")
+                                        .font(.caption2)
+                                        .foregroundColor(.secondary)
+                                    Text(displayName(for: user))
+                                        .font(.caption)
+                                        .foregroundColor(.primary)
+                                }
+                            }
+                            .padding(.vertical, 2)
+                            .padding(.horizontal, 6)
+                        }
+                    }
+                }
+            }
         }
         .fullScreenCover(isPresented: $showOnboarding) {
             OnboardingView {
@@ -75,6 +110,27 @@ struct HomeView: View {
             SignInView()
                 .environmentObject(auth)
         }
+    }
+
+    private func displayName(for user: QHUser) -> String {
+        if let name = user.displayName, !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return name
+        }
+        // Fallback to email if no display name
+        return user.email
+    }
+
+    private func initials(from user: QHUser) -> String {
+        let name = (user.displayName?.trimmingCharacters(in: .whitespacesAndNewlines)).flatMap { $0.isEmpty ? nil : $0 } ?? user.email
+        let parts = name
+            .split(whereSeparator: { $0 == " " || $0 == "_" || $0 == "-" || $0 == "." })
+        let first = parts.first?.first
+        let second = parts.dropFirst().first?.first
+        let initials = String([first, second].compactMap { $0 }).uppercased()
+        if initials.isEmpty, let c = name.first {
+            return String(c).uppercased()
+        }
+        return initials
     }
 }
 

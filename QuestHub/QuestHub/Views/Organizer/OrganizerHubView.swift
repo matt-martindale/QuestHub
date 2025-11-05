@@ -38,7 +38,7 @@ struct OrganizerHubView: View {
         }
         .padding()
         .navigationTitle("Organizer Hub")
-        .navigationBarBackButtonHidden(true)
+//        .navigationBarBackButtonHidden(true)
     }
 }
 
