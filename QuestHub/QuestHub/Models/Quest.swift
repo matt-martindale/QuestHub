@@ -6,8 +6,12 @@
 //
 
 import Foundation
+import FirebaseFirestore
 
-class Quest: Codable, Equatable {
+class Quest: Identifiable, Codable, Equatable {
+    // Stable identity for SwiftUI and persistence
+    @DocumentID var id: String?
+
     // Basic metadata
     var title: String
     var subtitle: String?
@@ -21,7 +25,19 @@ class Quest: Codable, Equatable {
     var isLocked: Bool
     var password: String?
 
+    enum CodingKeys: String, CodingKey {
+        case id
+        case title
+        case subtitle
+        case details
+        case createdAt
+        case creatorID
+        case isLocked
+        case password
+    }
+
     init(
+        id: String? = nil,
         title: String,
         subtitle: String? = nil,
         details: String? = nil,
@@ -30,6 +46,7 @@ class Quest: Codable, Equatable {
         isLocked: Bool = false,
         password: String? = nil
     ) {
+        self.id = id
         self.title = title
         self.subtitle = subtitle
         self.details = details
@@ -40,7 +57,8 @@ class Quest: Codable, Equatable {
     }
 
     static func == (lhs: Quest, rhs: Quest) -> Bool {
-        return lhs.title == rhs.title &&
+        return lhs.id == rhs.id &&
+        lhs.title == rhs.title &&
         lhs.subtitle == rhs.subtitle &&
         lhs.details == rhs.details &&
         lhs.createdAt == rhs.createdAt &&
@@ -49,3 +67,4 @@ class Quest: Codable, Equatable {
         lhs.password == rhs.password
     }
 }
+

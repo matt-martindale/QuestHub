@@ -19,7 +19,7 @@ final class QHAuth: ObservableObject {
     @Published private(set) var lastError: Error?
     
     private var authListenerHandle: AuthStateDidChangeListenerHandle?
-    private let firestore = FirestoreService()
+    let firestore = FirestoreService()
     
     init() {
         startAuthStateListener()
