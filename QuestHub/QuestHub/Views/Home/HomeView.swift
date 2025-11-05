@@ -20,12 +20,12 @@ struct HomeView: View {
         NavigationStack {
             // Your main home content placeholder
             VStack(spacing: 8) {
-                Text("Welcome to QuestHub")
+                Text(UIStrings.welcomeToQuestHub)
                     .font(.largeTitle).bold()
 
                 VStack(spacing: 12) {
                     NavigationLink(destination: destinationForOrganizer()) {
-                        Text("Join as Organizer")
+                        Text(UIStrings.joinAsOrganizer)
                             .font(.headline)
                             .frame(maxWidth: .infinity)
                             .padding()
@@ -35,7 +35,7 @@ struct HomeView: View {
                     }
 
                     NavigationLink(destination: SearchQuestView()) {
-                        Text("Join as Player")
+                        Text(UIStrings.joinAsPlayer)
                             .font(.headline)
                             .frame(maxWidth: .infinity)
                             .padding()
@@ -56,7 +56,7 @@ struct HomeView: View {
                             Button(role: .destructive) {
                                 auth.signOut()
                             } label: {
-                                Label("Sign Out", systemImage: "rectangle.portrait.and.arrow.right")
+                                Label(UIStrings.signOut, systemImage: "rectangle.portrait.and.arrow.right")
                             }
                         } label: {
                             HStack(spacing: 8) {
@@ -70,7 +70,7 @@ struct HomeView: View {
                                 .frame(width: 28, height: 28)
 
                                 VStack(alignment: .leading, spacing: 0) {
-                                    Text("Signed in as")
+                                    Text(UIStrings.signedInAs)
                                         .font(.caption2)
                                         .foregroundColor(.secondary)
                                     Text(displayName(for: user))
@@ -147,15 +147,4 @@ struct HomeView: View {
     return HomeView()
         .environmentObject(auth)
         .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
-}
-
-struct SignedInOrganizerHomeView: View {
-    var body: some View {
-        VStack(spacing: 8) {
-            Text("Organizer Home").font(.largeTitle).bold()
-            Text("You're signed in as organizer.")
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(.systemBackground))
-    }
 }

@@ -20,10 +20,10 @@ struct SignInView: View {
     var body: some View {
         VStack(spacing: 24) {
             VStack(spacing: 8) {
-                Text("QuestHub")
+                Text(UIStrings.questHub)
                     .font(.largeTitle).bold()
                     .multilineTextAlignment(.center)
-                Text("Sign in or create an account to get started")
+                Text(UIStrings.signInToGetStarted)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -33,12 +33,12 @@ struct SignInView: View {
             VStack(spacing: 12) {
                 NavigationLink {
                     EmailSignInView(isLoginFlow: false)
-                        .navigationTitle("Sign Up")
+                        .navigationTitle(UIStrings.signUp)
                         .navigationBarTitleDisplayMode(.inline)
                 } label: {
                     HStack(spacing: 12) {
                         Image(systemName: "envelope.fill")
-                        Text("Continue with Email")
+                        Text(UIStrings.signInWithEmail)
                             .font(.headline)
                     }
                     .frame(maxWidth: .infinity)
@@ -73,7 +73,7 @@ struct SignInView: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: 50)
                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                .accessibilityLabel("Continue with Apple")
+                .accessibilityLabel(UIStrings.continueWithApple)
             }
             .padding(.horizontal)
 
@@ -86,10 +86,10 @@ struct SignInView: View {
 
             NavigationLink {
                 EmailSignInView(isLoginFlow: true)
-                    .navigationTitle("Log In")
+                    .navigationTitle(UIStrings.login)
                     .navigationBarTitleDisplayMode(.inline)
             } label: {
-                Text("Log In")
+                Text(UIStrings.loginWithEmail)
                     .font(.headline)
                     .frame(maxWidth: .infinity)
                     .padding()
@@ -103,8 +103,8 @@ struct SignInView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(.systemBackground))
-        .alert("Sign In Error", isPresented: .constant(signInError != nil)) {
-            Button("OK", role: .cancel) { signInError = nil }
+        .alert(UIStrings.signInError, isPresented: .constant(signInError != nil)) {
+            Button(UIStrings.ok, role: .cancel) { signInError = nil }
         } message: {
             Text(signInError ?? "")
         }

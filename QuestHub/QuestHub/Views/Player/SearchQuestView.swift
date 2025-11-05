@@ -13,11 +13,11 @@ struct SearchQuestView: View {
     var body: some View {
         VStack(spacing: 16) {
             Spacer()
-            Text("Enter Quest Code")
+            Text(UIStrings.enterQuestCode)
                 .font(.largeTitle).bold()
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-            TextField("e.g. ABCD-1234", text: $questCode)
+            TextField(UIStrings.exampleQuestCode, text: $questCode)
                 .textInputAutocapitalization(.characters)
                 .autocorrectionDisabled(true)
                 .textFieldStyle(.roundedBorder)
@@ -25,7 +25,7 @@ struct SearchQuestView: View {
             Button(action: {
                 // TODO: Trigger search for quest using questCode
             }) {
-                Text("Search")
+                Text(UIStrings.search)
                     .font(.headline)
                     .frame(maxWidth: .infinity)
                     .padding()
@@ -39,7 +39,7 @@ struct SearchQuestView: View {
             Spacer()
         }
         .padding()
-        .navigationTitle("Search Quest")
+        .navigationTitle(UIStrings.searchQuest)
     }
 }
 

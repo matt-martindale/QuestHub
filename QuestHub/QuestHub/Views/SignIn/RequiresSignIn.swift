@@ -17,11 +17,11 @@ struct RequiresSignIn: ViewModifier {
                 NavigationStack {
                     SignInView()
                         .environmentObject(auth)
-                        .navigationTitle("Sign In")
+                        .navigationTitle(UIStrings.signIn)
                         .navigationBarTitleDisplayMode(.inline)
                         .toolbar {
                             ToolbarItem(placement: .cancellationAction) {
-                                Button("Cancel") {
+                                Button(UIStrings.cancel) {
                                     showSignIn = false
                                     onCancel?()
                                 }

@@ -63,9 +63,9 @@ struct EmailSignInView: View {
 private extension EmailSignInView {
     var header: some View {
         VStack(spacing: 6) {
-            Text(isLoginFlow ? "Log in with Email" : "Create your account")
+            Text(isLoginFlow ? UIStrings.loginWithEmail : UIStrings.createYourAccount)
                 .font(.title2).bold()
-            Text(isLoginFlow ? "Enter your email and password to continue." : "Enter your email, confirm it, and choose a password.")
+            Text(isLoginFlow ? UIStrings.loginEnterEmailAndPassword : UIStrings.signInEnterEmailAndPassword)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -75,7 +75,7 @@ private extension EmailSignInView {
     var formFields: some View {
         VStack(spacing: 14) {
             // Email
-            TextField("Email", text: $email)
+            TextField(UIStrings.email, text: $email)
                 .textContentType(.emailAddress)
                 .keyboardType(.emailAddress)
                 .textInputAutocapitalization(.never)
@@ -86,7 +86,7 @@ private extension EmailSignInView {
 
             // Confirm Email (only for sign up)
             if !isLoginFlow {
-                TextField("Confirm email", text: $confirmEmail)
+                TextField(UIStrings.confirmEmail, text: $confirmEmail)
                     .textContentType(.emailAddress)
                     .keyboardType(.emailAddress)
                     .textInputAutocapitalization(.never)
@@ -98,7 +98,7 @@ private extension EmailSignInView {
 
             // Display Name (only for sign up, optional)
             if !isLoginFlow {
-                TextField("Display name (optional)", text: $displayName)
+                TextField(UIStrings.displayNameOptional, text: $displayName)
                     .textContentType(.name)
                     .textInputAutocapitalization(.words)
                     .autocorrectionDisabled(false)
@@ -110,11 +110,11 @@ private extension EmailSignInView {
             // Password
             Group {
                 if isSecureEntry {
-                    SecureField("Password", text: $password)
+                    SecureField(UIStrings.password, text: $password)
                         .textContentType(isLoginFlow ? .password : .newPassword)
                         .submitLabel(.go)
                 } else {
-                    TextField("Password", text: $password)
+                    TextField(UIStrings.password, text: $password)
                         .textContentType(isLoginFlow ? .password : .newPassword)
                         .submitLabel(.go)
                 }
@@ -137,7 +137,7 @@ private extension EmailSignInView {
         Button(action: submit) {
             HStack {
                 if isSubmitting { ProgressView().tint(.white) }
-                Text(isLoginFlow ? "Log In" : "Sign Up")
+                Text(isLoginFlow ? UIStrings.login : UIStrings.signUp)
                     .fontWeight(.semibold)
             }
             .frame(maxWidth: .infinity)
@@ -152,11 +152,11 @@ private extension EmailSignInView {
     var secondaryHint: some View {
         Group {
             if isLoginFlow {
-                Text("Don't have an account? Sign up on the previous screen.")
+                Text(UIStrings.loginHint)
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             } else {
-                Text("Already have an account? Switch to Log In.")
+                Text(UIStrings.signInHint)
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
@@ -175,11 +175,11 @@ private extension EmailSignInView {
         errorMessage = nil
         guard isFormValid else {
             if !isValidEmail(email) {
-                errorMessage = "Please enter a valid email address."
+                errorMessage = UIStrings.enterValidEmail
             } else if !isLoginFlow && email != confirmEmail {
-                errorMessage = "Email addresses do not match."
+                errorMessage = UIStrings.emailNotMatch
             } else if password.isEmpty {
-                errorMessage = "Password cannot be empty."
+                errorMessage = UIStrings.emptyPassword
             }
             return
         }
@@ -198,7 +198,7 @@ private extension EmailSignInView {
                 errorMessage = nil
                 navigateToHub = true
             } else {
-                errorMessage = auth.lastError?.localizedDescription ?? "Something went wrong. Please try again."
+                errorMessage = auth.lastError?.localizedDescription ?? UIStrings.ssww
             }
             isSubmitting = false
         }
