@@ -12,11 +12,13 @@ struct QHUser: Codable, Equatable, Identifiable {
     var email: String
     var displayName: String?
     var createdAt: Date
+    var quests: [Quest] = []
 
-    init(id: String = UUID().uuidString, email: String, displayName: String? = nil, createdAt: Date = Date()) {
+    init(id: String = UUID().uuidString, email: String, displayName: String? = nil, createdAt: Date = Date(), quests: [Quest] = []) {
         self.id = id
         self.email = email
         self.displayName = displayName
         self.createdAt = createdAt
+        self.quests = quests
     }
 }

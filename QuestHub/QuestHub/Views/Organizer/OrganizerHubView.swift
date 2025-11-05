@@ -14,10 +14,13 @@ struct OrganizerHubView: View {
     var body: some View {
         VStack(spacing: 16) {
             if let user = auth.currentUser {
-                Text("Welcome, \(user.displayName?.isEmpty == false ? user.displayName! : user.email)")
+                Text("\(UIStrings.welcome)\(user.displayName?.isEmpty == false ? user.displayName! : user.email)")
                     .font(.title2)
                     .fontWeight(.semibold)
                 Text("User ID: \(user.id)")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                Text("Quest ID: \(user.quests.first?.creatorID)")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
 
@@ -32,13 +35,12 @@ struct OrganizerHubView: View {
                 .buttonStyle(.bordered)
                 .padding(.top, 8)
             } else {
-                Text("No user is currently signed in.")
+                Text(UIStrings.noUserSignedIn)
                     .foregroundStyle(.secondary)
             }
         }
         .padding()
-        .navigationTitle("Organizer Hub")
-//        .navigationBarBackButtonHidden(true)
+        .navigationTitle(UIStrings.organizerHub)
     }
 }
 

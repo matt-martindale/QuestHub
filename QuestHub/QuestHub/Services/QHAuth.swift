@@ -9,6 +9,8 @@ import Foundation
 import Combine
 import FirebaseAuth
 import AuthenticationServices
+import FirebaseFirestore
+//import FirebaseFirestoreSwift
 
 @MainActor
 final class QHAuth: ObservableObject {
@@ -17,6 +19,7 @@ final class QHAuth: ObservableObject {
     @Published private(set) var lastError: Error?
     
     private var authListenerHandle: AuthStateDidChangeListenerHandle?
+    private let firestore = FirestoreService()
     
     init() {
         startAuthStateListener()
@@ -65,6 +68,24 @@ final class QHAuth: ObservableObject {
             try validate(email: email, password: password)
 
             _ = try await Auth.auth().signIn(withEmail: email, password: password)
+            if let fbUser = Auth.auth().currentUser {
+                // Build a local user first
+                var user = QHUser(
+                    id: fbUser.uid,
+                    email: fbUser.email ?? "",
+                    displayName: fbUser.displayName,
+                    createdAt: Date()
+                )
+                // Fetch quests from Firestore and attach
+                do {
+                    let quests = try await firestore.fetchQuests(forUserID: fbUser.uid)
+                    user.quests = quests
+                } catch {
+                    // Non-fatal: keep going but surface the error
+                    self.lastError = error
+                }
+                self.currentUser = user
+            }
             // Listener will update currentUser when Firebase signs in
             return true
         } catch {
@@ -96,12 +117,14 @@ final class QHAuth: ObservableObject {
 
             // Update local currentUser immediately so UI reflects the name right away
             let fbUser = result.user
-            let user = QHUser(
+            var user = QHUser(
                 id: fbUser.uid,
                 email: fbUser.email ?? "",
                 displayName: fbUser.displayName,
                 createdAt: Date()
             )
+            user.quests = []
+
             self.currentUser = user
 
             // Listener will also keep currentUser in sync going forward
@@ -174,13 +197,22 @@ final class QHAuth: ObservableObject {
         authListenerHandle = Auth.auth().addStateDidChangeListener { [weak self] _, fbUser in
             guard let self = self else { return }
             if let fbUser {
-                let user = QHUser(
-                    id: fbUser.uid,
-                    email: fbUser.email ?? "",
-                    displayName: fbUser.displayName,
-                    createdAt: Date()
-                )
-                self.currentUser = user
+                Task { [weak self] in
+                    guard let self = self else { return }
+                    var user = QHUser(
+                        id: fbUser.uid,
+                        email: fbUser.email ?? "",
+                        displayName: fbUser.displayName,
+                        createdAt: Date()
+                    )
+                    do {
+                        let quests = try await firestore.fetchQuests(forUserID: fbUser.uid)
+                        user.quests = quests
+                    } catch {
+                        self.lastError = error
+                    }
+                    self.currentUser = user
+                }
             } else {
                 self.currentUser = nil
             }

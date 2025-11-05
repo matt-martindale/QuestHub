@@ -49,4 +49,9 @@ struct UIStrings {
     static let enterQuestCode = "Enter Quest Code"
     static let exampleQuestCode = "Example: 123456"
     static let search = "Search"
+    
+    // Organizer Hub
+    static let organizerHub = "Organizer Hub"
+    static let welcome = "Welcome, "
+    static let noUserSignedIn = "Uh-oh. No user is currently signed in.\nTo create Quests, please sign in or create an account."
 }
