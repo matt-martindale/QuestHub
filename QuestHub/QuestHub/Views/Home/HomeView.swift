@@ -104,12 +104,8 @@ struct HomeView: View {
 
     @ViewBuilder
     private func destinationForOrganizer() -> some View {
-        if let _ = auth.currentUser {
-            OrganizerHubView()
-        } else {
-            SignInView()
-                .environmentObject(auth)
-        }
+        OrganizerHubView()
+            .requiresSignIn()
     }
 
     private func displayName(for user: QHUser) -> String {

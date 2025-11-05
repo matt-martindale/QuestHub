@@ -56,7 +56,32 @@ final class AuthService: AuthServicing {
             }
         }
 
-        // Persist Apple user ID
+        // Persist Apple user ID securely
         try KeychainService.storeAppleUserIdentifier(userID)
+    }
+
+    // MARK: - Compatibility helpers used by QHAuth
+    @MainActor
+    func handleAppleCredential(_ credential: ASAuthorizationAppleIDCredential, nonce: String) async throws {
+        // Reuse existing implementation
+        try await signInWithApple(credential: credential, nonce: nonce)
+    }
+
+    @MainActor
+    func updateDisplayName(_ displayName: String) async throws {
+        guard let user = Auth.auth().currentUser else {
+            throw NSError(domain: "AuthService", code: -2, userInfo: [NSLocalizedDescriptionKey: "No authenticated user to update display name."])
+        }
+        let changeRequest = user.createProfileChangeRequest()
+        changeRequest.displayName = displayName
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            changeRequest.commitChanges { error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume()
+                }
+            }
+        }
     }
 }
