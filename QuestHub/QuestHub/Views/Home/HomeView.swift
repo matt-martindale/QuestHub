@@ -20,11 +20,15 @@ struct HomeView: View {
         NavigationStack {
             // Your main home content placeholder
             VStack(spacing: 8) {
+                Spacer()
                 Image(systemName: "flag.2.crossed.circle")
-                    .font(.system(size: 50))
+                    .font(.system(size: 80))
                 
                 Text(UIStrings.welcomeToQuestHub)
                     .font(.largeTitle).bold()
+                
+                Spacer()
+                    .frame(height: 20)
 
                 VStack(spacing: 12) {
                     NavigationLink(destination: destinationForOrganizer()) {
@@ -61,6 +65,9 @@ struct HomeView: View {
                 }
                 .padding(.top, 24)
                 .padding(.horizontal)
+                
+                Spacer()
+                Spacer()
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color(.systemBackground))
