@@ -84,14 +84,27 @@ final class QHAuth: ObservableObject {
 
             let result = try await Auth.auth().createUser(withEmail: email, password: password)
 
-            // Update display name if provided
+            // If a display name was provided, set it and commit the change
             if let displayName, !displayName.isEmpty {
                 let changeReq = result.user.createProfileChangeRequest()
                 changeReq.displayName = displayName
                 try await changeReq.commitChanges()
             }
 
-            // Listener will update currentUser when Firebase signs up/signs in
+            // Ensure the in-memory user reflects the latest profile changes
+            try await result.user.reload()
+
+            // Update local currentUser immediately so UI reflects the name right away
+            let fbUser = result.user
+            let user = QHUser(
+                id: fbUser.uid,
+                email: fbUser.email ?? "",
+                displayName: fbUser.displayName,
+                createdAt: Date()
+            )
+            self.currentUser = user
+
+            // Listener will also keep currentUser in sync going forward
             return true
         } catch {
             lastError = mapFirebaseError(error)
