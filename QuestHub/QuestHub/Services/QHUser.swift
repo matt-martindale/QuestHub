@@ -28,13 +28,26 @@ final class QHAuth: ObservableObject {
     @Published private(set) var currentUser: QHUser?
     @Published private(set) var isSigningIn: Bool = false
     @Published private(set) var lastError: Error?
-
+    
+    private var authListenerHandle: AuthStateDidChangeListenerHandle?
+    
+    init() {
+        startAuthStateListener()
+    }
+    
+    deinit {
+        if let handle = authListenerHandle {
+            Auth.auth().removeStateDidChangeListener(handle)
+        }
+    }
+    
     enum AuthError: LocalizedError, Equatable {
         case invalidEmail
         case shortPassword
         case userNotFound
         case emailAlreadyInUse
         case wrongPassword
+        case invalidCredentials
         case network
         case unknown
 
@@ -45,6 +58,7 @@ final class QHAuth: ObservableObject {
             case .userNotFound: return "No user found with those credentials."
             case .emailAlreadyInUse: return "An account with this email already exists."
             case .wrongPassword: return "The password is incorrect."
+            case .invalidCredentials: return "Invalid login credentials"
             case .network: return "A network error occurred. Please try again."
             case .unknown: return "An unknown error occurred."
             }
@@ -63,19 +77,8 @@ final class QHAuth: ObservableObject {
         do {
             try validate(email: email, password: password)
 
-            let result = try await Auth.auth().signIn(withEmail: email, password: password)
-            let fbUser = result.user
-            let user = QHUser(
-                id: fbUser.uid,
-                email: fbUser.email ?? email,
-                displayName: fbUser.displayName,
-                createdAt: Date() // Firebase provides metadata, but we keep a local date for simplicity
-            )
-
-            // No local persistence; rely on Firebase session. Optionally mirror for offline UI.
-            persistSession(user: user)
-
-            currentUser = user
+            _ = try await Auth.auth().signIn(withEmail: email, password: password)
+            // Listener will update currentUser when Firebase signs in
             return true
         } catch {
             lastError = mapFirebaseError(error)
@@ -101,16 +104,7 @@ final class QHAuth: ObservableObject {
                 try await changeReq.commitChanges()
             }
 
-            let fbUser = result.user
-            let user = QHUser(
-                id: fbUser.uid,
-                email: fbUser.email ?? email,
-                displayName: fbUser.displayName ?? displayName,
-                createdAt: Date()
-            )
-
-            persistSession(user: user)
-            currentUser = user
+            // Listener will update currentUser when Firebase signs up/signs in
             return true
         } catch {
             lastError = mapFirebaseError(error)
@@ -126,44 +120,19 @@ final class QHAuth: ObservableObject {
             // Surface sign-out errors but still clear local state
             lastError = error
         }
-        currentUser = nil
-        clearPersistedSession()
-    }
-
-    /// Attempts to restore a previously persisted session (if any).
-    func restoreSessionIfAvailable() {
-        if let fbUser = Auth.auth().currentUser {
-            let user = QHUser(
-                id: fbUser.uid,
-                email: fbUser.email ?? "",
-                displayName: fbUser.displayName,
-                createdAt: Date()
-            )
-            currentUser = user
-            persistSession(user: user) // keep local mirror for UI convenience
-            return
-        }
-        if let data = UserDefaults.standard.data(forKey: Self.sessionKey),
-           let user = try? JSONDecoder().decode(QHUser.self, from: data) {
-            currentUser = user
-        }
+        // Listener will clear currentUser when sign out completes
     }
 
     // MARK: - Private helpers
 
     private func mapFirebaseError(_ error: Error) -> Error {
         let nsError = error as NSError
-        if nsError.domain == AuthErrorDomain, let code = AuthErrorCode(rawValue: nsError.code) {
-            switch code {
-            case .invalidEmail: return AuthError.invalidEmail
-            case .userNotFound: return AuthError.userNotFound
-            case .emailAlreadyInUse: return AuthError.emailAlreadyInUse
-            case .wrongPassword: return AuthError.wrongPassword
-            case .networkError: return AuthError.network
-            default: return AuthError.unknown
-            }
+        // If it's a Firebase Auth error, return it as-is to preserve localization
+        if nsError.domain == AuthErrorDomain, AuthErrorCode(rawValue: nsError.code) != nil {
+            return nsError
         }
-        return error
+        // Otherwise, fall back to your own categorization if you want
+        return AuthError.unknown
     }
 
     private func validate(email: String, password: String) throws {
@@ -174,17 +143,21 @@ final class QHAuth: ObservableObject {
             throw AuthError.shortPassword
         }
     }
-
-    private func persistSession(user: QHUser) {
-        if let data = try? JSONEncoder().encode(user) {
-            UserDefaults.standard.set(data, forKey: Self.sessionKey)
+    
+    private func startAuthStateListener() {
+        authListenerHandle = Auth.auth().addStateDidChangeListener { [weak self] _, fbUser in
+            guard let self = self else { return }
+            if let fbUser {
+                let user = QHUser(
+                    id: fbUser.uid,
+                    email: fbUser.email ?? "",
+                    displayName: fbUser.displayName,
+                    createdAt: Date()
+                )
+                self.currentUser = user
+            } else {
+                self.currentUser = nil
+            }
         }
     }
-
-    private func clearPersistedSession() {
-        UserDefaults.standard.removeObject(forKey: Self.sessionKey)
-    }
-
-    private static let sessionKey = "QHUserSession"
 }
-

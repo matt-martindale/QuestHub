@@ -9,6 +9,7 @@ import SwiftUI
 
 struct OrganizerHubView: View {
     @EnvironmentObject var auth: QHAuth
+    @Environment(\.dismiss) private var dismiss
     
     var body: some View {
         VStack(spacing: 16) {
@@ -22,6 +23,7 @@ struct OrganizerHubView: View {
 
                 Button(role: .destructive) {
                     auth.signOut()
+                    dismiss()
                 } label: {
                     Text("Sign Out")
                         .frame(maxWidth: .infinity)
@@ -36,6 +38,7 @@ struct OrganizerHubView: View {
         }
         .padding()
         .navigationTitle("Organizer Hub")
+        .navigationBarBackButtonHidden(true)
     }
 }
 
@@ -43,3 +46,4 @@ struct OrganizerHubView: View {
     OrganizerHubView()
         .environmentObject(QHAuth())
 }
+

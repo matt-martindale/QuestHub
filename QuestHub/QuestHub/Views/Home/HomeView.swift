@@ -70,8 +70,7 @@ struct HomeView: View {
     @ViewBuilder
     private func destinationForOrganizer() -> some View {
         if let _ = auth.currentUser {
-            // TODO: Replace with your real organizer home/destination
-            SignedInOrganizerHomeView()
+            OrganizerHubView()
         } else {
             SignInView()
                 .environmentObject(auth)
