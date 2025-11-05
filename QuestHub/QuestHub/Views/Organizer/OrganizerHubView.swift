@@ -107,7 +107,7 @@ struct OrganizerHubView: View {
             }
             .navigationTitle(UIStrings.organizerHub)
             .toolbar {
-                if let user = auth.currentUser {
+                if let _ = auth.currentUser {
                     ToolbarItem(placement: .topBarTrailing) {
                         Menu {
                             Button() {
