@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 import FirebaseAuth
+import AuthenticationServices
 
 struct QHUser: Codable, Equatable, Identifiable {
     let id: String
@@ -110,6 +111,10 @@ final class QHAuth: ObservableObject {
             lastError = mapFirebaseError(error)
             return false
         }
+    }
+    
+    func handleAppleCredential(_ credential: ASAuthorizationAppleIDCredential, nonce: String) async throws {
+        try await AuthService.shared.signInWithApple(credential: credential, nonce: nonce)
     }
 
     /// Signs the current user out and clears any persisted session.
