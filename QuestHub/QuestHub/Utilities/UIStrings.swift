@@ -54,4 +54,5 @@ struct UIStrings {
     static let organizerHub = "Organizer Hub"
     static let welcome = "Welcome, "
     static let noUserSignedIn = "Uh-oh. No user is currently signed in.\nTo create Quests, please sign in or create an account."
+    static let account = "Account"
 }
