@@ -104,8 +104,18 @@ struct HomeView: View {
 
     @ViewBuilder
     private func destinationForOrganizer() -> some View {
-        OrganizerHubView()
-            .requiresSignIn()
+        OrganizerDestination()
+    }
+
+    private struct OrganizerDestination: View {
+        @Environment(\.dismiss) private var dismiss
+        var body: some View {
+            OrganizerHubView()
+                .requiresSignIn {
+                    // Pop back if the user cancels sign-in
+                    dismiss()
+                }
+        }
     }
 
     private func displayName(for user: QHUser) -> String {
