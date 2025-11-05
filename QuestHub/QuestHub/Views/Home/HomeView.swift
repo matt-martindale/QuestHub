@@ -29,8 +29,12 @@ struct HomeView: View {
                             .font(.headline)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color(.secondarySystemBackground))
+                            .background(Color(.systemBackground))
                             .foregroundColor(.primary)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color.qhPrimaryBlue, lineWidth: 4)
+                            )
                             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                     }
 
@@ -39,7 +43,7 @@ struct HomeView: View {
                             .font(.headline)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color.accentColor)
+                            .background(Color.qhPrimaryBlue)
                             .foregroundColor(.white)
                             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                     }
@@ -63,6 +67,9 @@ struct HomeView: View {
                                 ZStack {
                                     Circle()
                                         .fill(Color(.systemGray5))
+                                        .overlay(
+                                            Circle().stroke(Color.qhPrimaryBlue, lineWidth: 1)
+                                        )
                                     Text(initials(from: user))
                                         .font(.caption.bold())
                                         .foregroundColor(.primary)

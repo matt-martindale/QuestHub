@@ -11,6 +11,7 @@ import FirebaseAuth
 
 struct SignInView: View {
     @EnvironmentObject var auth: QHAuth
+    @Environment(\.colorScheme) private var colorScheme
     @State private var isSigningInWithApple = false
     @State private var navigateToOrganizer = false
     @State private var signInError: String?
@@ -18,7 +19,7 @@ struct SignInView: View {
     private let appleSignInManager = AppleSignInManager()
 
     var body: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: 14) {
             VStack(spacing: 8) {
                 Text(UIStrings.questHub)
                     .font(.largeTitle).bold()
@@ -69,7 +70,7 @@ struct SignInView: View {
                         isSigningInWithApple = false
                     }
                 })
-                .signInWithAppleButtonStyle(.black)
+                .signInWithAppleButtonStyle(colorScheme == .dark ? .white : .black)
                 .frame(maxWidth: .infinity)
                 .frame(height: 50)
                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
@@ -77,12 +78,14 @@ struct SignInView: View {
             }
             .padding(.horizontal)
 
-            NavigationLink(isActive: $navigateToOrganizer) {
-                OrganizerHubView()
-                    .navigationBarBackButtonHidden(true)
-            } label: {
-                EmptyView()
-            }
+//            NavigationLink(isActive: $navigateToOrganizer) {
+//                OrganizerHubView()
+//                    .navigationBarBackButtonHidden(true)
+//            } label: {
+//                EmptyView()
+//            }
+            
+            Text("-- or --")
 
             NavigationLink {
                 EmailSignInView(isLoginFlow: true)
@@ -93,8 +96,12 @@ struct SignInView: View {
                     .font(.headline)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(Color.accentColor)
-                    .foregroundColor(.white)
+                    .background(Color(.systemBackground))
+                    .foregroundColor(.primary)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.qhPrimaryBlue, lineWidth: 4)
+                    )
                     .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             }
             .padding(.horizontal)
