@@ -27,6 +27,7 @@ struct UIStrings {
     static let signUp = "Sign Up"
     static let signInWithEmail = "Sign in with Email"
     static let continueWithApple = "Continue with Apple"
+    static let or = "- or -"
     static let login = "Log In"
     static let loginWithEmail = "Log in with Email"
     static let signInError = "Sign in error"

@@ -141,11 +141,11 @@ private extension EmailSignInView {
                     .fontWeight(.semibold)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
+            .padding(.vertical, 8)
         }
         .buttonStyle(.borderedProminent)
-        .tint(.accentColor)
-        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .tint(Color.qhPrimaryBlue)
+        .clipShape(.capsule)
         .padding(.top, 8)
     }
 

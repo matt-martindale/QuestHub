@@ -20,6 +20,9 @@ struct HomeView: View {
         NavigationStack {
             // Your main home content placeholder
             VStack(spacing: 8) {
+                Image(systemName: "flag.2.crossed.circle")
+                    .font(.system(size: 50))
+                
                 Text(UIStrings.welcomeToQuestHub)
                     .font(.largeTitle).bold()
 
@@ -29,15 +32,15 @@ struct HomeView: View {
                             .font(.headline)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color.qhPrimaryBlue)
-                            .foregroundColor(.white)
-//                            .background(Color(.systemBackground))
-//                            .foregroundColor(.primary)
-//                            .overlay(
-//                                RoundedRectangle(cornerRadius: 12)
-//                                    .stroke(Color.qhPrimaryBlue, lineWidth: 4)
-//                            )
-                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+//                            .background(Color.qhPrimaryBlue)
+//                            .foregroundColor(.white)
+                            .background(Color(.systemBackground))
+                            .foregroundColor(.primary)
+                            .overlay(
+                                Capsule()
+                                    .stroke(Color.qhPrimaryBlue, lineWidth: 4)
+                            )
+                            .clipShape(.capsule)
                     }
 
                     NavigationLink(destination: SearchQuestView()) {
@@ -50,10 +53,10 @@ struct HomeView: View {
                             .background(Color(.systemBackground))
                             .foregroundColor(.primary)
                             .overlay(
-                                RoundedRectangle(cornerRadius: 12)
+                                Capsule()
                                     .stroke(Color.qhPrimaryBlue, lineWidth: 4)
                             )
-                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                            .clipShape(.capsule)
                     }
                 }
                 .padding(.top, 24)

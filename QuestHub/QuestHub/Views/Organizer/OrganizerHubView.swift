@@ -81,6 +81,7 @@ struct OrganizerHubView: View {
                                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                         }
                         .buttonStyle(.glass)
+                        .shadow(color: Color.qhPrimaryBlue.opacity(0.25), radius: 8, x: 0, y: 4)
 
                         Button {
                             guard let uid = auth.currentUser?.id else { return }

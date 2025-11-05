@@ -46,7 +46,7 @@ struct SignInView: View {
                     .padding()
                     .background(Color(.secondarySystemBackground))
                     .foregroundColor(.primary)
-                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .clipShape(.capsule)
                 }
 
                 SignInWithAppleButton(.signIn, onRequest: { request in
@@ -73,7 +73,7 @@ struct SignInView: View {
                 .signInWithAppleButtonStyle(colorScheme == .dark ? .white : .black)
                 .frame(maxWidth: .infinity)
                 .frame(height: 50)
-                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .clipShape(.capsule)
                 .accessibilityLabel(UIStrings.continueWithApple)
             }
             .padding(.horizontal)
@@ -85,7 +85,7 @@ struct SignInView: View {
 //                EmptyView()
 //            }
             
-            Text("-- or --")
+            Text(UIStrings.or)
 
             NavigationLink {
                 EmailSignInView(isLoginFlow: true)
@@ -99,10 +99,10 @@ struct SignInView: View {
                     .background(Color(.systemBackground))
                     .foregroundColor(.primary)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 12)
+                        Capsule()
                             .stroke(Color.qhPrimaryBlue, lineWidth: 4)
                     )
-                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .clipShape(.capsule)
             }
             .padding(.horizontal)
 
