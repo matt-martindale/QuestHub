@@ -77,7 +77,13 @@ struct CreateQuestView: View {
                 }
 
                 // Section 2 — Challenges
-                Section(header: Text("Challenges").font(.headline)) {
+                Section(header:
+                        HStack {
+                            Text("Challenges")
+                                .font(.headline)
+                            Spacer()
+                            EditButton()
+                        }) {
                     ForEach(challenges.indices, id: \.self) { index in
                         let challenge = challenges[index]
                         Button {
@@ -185,9 +191,6 @@ struct CreateQuestView: View {
                     ToolbarItem(placement: .topBarTrailing) {
                         SignedInUserMenu(user: user, allowSignOut: false)
                     }
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    EditButton()
                 }
             }
         }
