@@ -212,7 +212,7 @@ struct CreateQuestView: View {
             }
             .padding()
         }
-        .sheet(isPresented: $isPresentingCreateChallenge) {
+        .fullScreenCover(isPresented: $isPresentingCreateChallenge) {
             let existing = editingChallengeIndex.flatMap { challenges[$0] }
             CreateChallengeView(challenge: existing) { result in
                 switch result {
