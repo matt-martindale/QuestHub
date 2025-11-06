@@ -54,6 +54,7 @@ struct CreateQuestView: View {
                         .background(.quaternary.opacity(0.15), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                     }
                 }
+                .listRowSeparator(.hidden)
 
                 // Section 2 — Challenges
                 Section(header:
@@ -113,7 +114,9 @@ struct CreateQuestView: View {
                             .background(.quaternary.opacity(0.15), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                             .transition(.opacity.combined(with: .move(edge: .top)))
                     }
-//                }
+                }
+                
+                Section {
                     HStack {
                         Spacer()
                         Button {
@@ -132,8 +135,9 @@ struct CreateQuestView: View {
                         .disabled(!viewModel.canSave)
                         Spacer()
                     }
-                    .padding(.vertical, 20)
                 }
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
                 
             }
             .listStyle(.insetGrouped)
@@ -153,6 +157,7 @@ struct CreateQuestView: View {
                     }
                 }
             }
+            
         }
         .fullScreenCover(isPresented: $viewModel.isPresentingCreateChallenge) {
             let existing = viewModel.editingChallengeIndex.flatMap { viewModel.challenges[$0] }
