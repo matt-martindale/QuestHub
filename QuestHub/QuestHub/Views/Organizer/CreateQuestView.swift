@@ -7,6 +7,18 @@
 
 import SwiftUI
 
+struct Challenge: Identifiable, Hashable {
+    let id: UUID
+    var title: String
+    var details: String
+
+    init(id: UUID = UUID(), title: String, details: String) {
+        self.id = id
+        self.title = title
+        self.details = details
+    }
+}
+
 struct CreateQuestView: View {
     @EnvironmentObject var auth: QHAuth
     @Environment(\.dismiss) private var dismiss
@@ -18,44 +30,111 @@ struct CreateQuestView: View {
     @State private var password: String = ""
     @State private var showPasswordInfo: Bool = false
 
+    @State private var challenges: [Challenge] = []
+    @State private var isPresentingCreateChallenge: Bool = false
+    @State private var editingChallengeIndex: Int? = nil
+
     var body: some View {
         NavigationStack(path: $path) {
             ScrollView {
                 VStack(spacing: 18) {
-                    VStack(alignment: .leading) {
-                        Text("Title")
-                        TextField("Ex: Thanksgiving scavenger hunt", text: $title)
-                            .textInputAutocapitalization(.sentences)
-                            .submitLabel(.next)
-                            .padding(12)
-                            .background(.quaternary.opacity(0.15), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-                    }
-                    
-                    VStack(alignment: .leading) {
-                        Text("Subtitle")
-                        TextField("Ex: A Harvest of Clues! (optional)", text: $subtitle)
-                            .textInputAutocapitalization(.sentences)
-                            .submitLabel(.next)
-                            .padding(12)
-                            .background(.quaternary.opacity(0.15), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-                    }
-                    
-                    VStack(alignment: .leading) {
-                        Text("Description")
-                        ZStack(alignment: .topLeading) {
-                            if descriptionText.isEmpty {
-                                Text("Add more details about your quest here.")
-                                    .foregroundStyle(.tertiary)
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 16)
-                            }
-                            TextEditor(text: $descriptionText)
+                    VStack(alignment: .leading, spacing: 14) {
+                        VStack(alignment: .leading) {
+                            Text("Title")
+                            TextField("Ex: Thanksgiving scavenger hunt", text: $title)
                                 .textInputAutocapitalization(.sentences)
-                                .scrollContentBackground(.hidden)
-                                .padding(8)
+                                .submitLabel(.next)
+                                .padding(12)
+                                .background(.quaternary.opacity(0.15), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                         }
-                        .frame(minHeight: 120)
-                        .background(.quaternary.opacity(0.15), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+
+                        VStack(alignment: .leading) {
+                            Text("Subtitle")
+                            TextField("(optional)", text: $subtitle)
+                                .textInputAutocapitalization(.sentences)
+                                .submitLabel(.next)
+                                .padding(12)
+                                .background(.quaternary.opacity(0.15), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                        }
+
+                        VStack(alignment: .leading) {
+                            Text("Description")
+                            ZStack(alignment: .topLeading) {
+                                if descriptionText.isEmpty {
+                                    Text("Add more details about your quest here.")
+                                        .foregroundStyle(.tertiary)
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 16)
+                                }
+                                TextEditor(text: $descriptionText)
+                                    .textInputAutocapitalization(.sentences)
+                                    .scrollContentBackground(.hidden)
+                                    .padding(8)
+                            }
+                            .frame(minHeight: 120)
+                            .background(.quaternary.opacity(0.15), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                        }
+                    }
+                    .padding(14)
+                    .background(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .fill(.tertiary.opacity(0.08))
+                    )
+
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack {
+                            Text("Challenges")
+                                .font(.headline)
+                            Spacer()
+                            Button {
+                                editingChallengeIndex = nil
+                                isPresentingCreateChallenge = true
+                            } label: {
+                                Label("Add Challenge", systemImage: "plus.circle.fill")
+                            }
+                            .buttonStyle(.borderedProminent)
+                        }
+
+                        if challenges.isEmpty {
+                            Text("No challenges yet. Tap Add to create one.")
+                                .foregroundStyle(.secondary)
+                                .padding(.vertical, 8)
+                        } else {
+                            VStack(spacing: 0) {
+                                ForEach(Array(challenges.enumerated()), id: \.element.id) { index, challenge in
+                                    Button {
+                                        editingChallengeIndex = index
+                                        isPresentingCreateChallenge = true
+                                    } label: {
+                                        HStack(alignment: .firstTextBaseline) {
+                                            VStack(alignment: .leading, spacing: 4) {
+                                                Text(challenge.title)
+                                                    .font(.body)
+                                                    .foregroundStyle(.primary)
+                                                if !challenge.details.isEmpty {
+                                                    Text(challenge.details)
+                                                        .font(.subheadline)
+                                                        .foregroundStyle(.secondary)
+                                                        .lineLimit(2)
+                                                }
+                                            }
+                                            Spacer()
+                                            Image(systemName: "chevron.right")
+                                                .foregroundStyle(.tertiary)
+                                        }
+                                        .contentShape(Rectangle())
+                                        .padding(.vertical, 10)
+                                        .padding(.horizontal, 12)
+                                    }
+                                    .buttonStyle(.plain)
+
+                                    if index < challenges.count - 1 {
+                                        Divider()
+                                    }
+                                }
+                            }
+                            .background(.quaternary.opacity(0.15), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                        }
                     }
                     
                     VStack(alignment: .leading, spacing: 8) {
@@ -99,6 +178,7 @@ struct CreateQuestView: View {
                             .transition(.opacity.combined(with: .move(edge: .top)))
                         }
                     }
+                    
                 }
             }
             .navigationTitle("Create Quest")
@@ -119,10 +199,32 @@ struct CreateQuestView: View {
             }
             .padding()
         }
+        .sheet(isPresented: $isPresentingCreateChallenge) {
+            let existing = editingChallengeIndex.flatMap { challenges[$0] }
+            CreateChallengeView(challenge: existing) { result in
+                switch result {
+                case .save(let newChallenge):
+                    if let idx = editingChallengeIndex {
+                        challenges[idx] = newChallenge
+                    } else {
+                        challenges.append(newChallenge)
+                    }
+                case .cancel:
+                    break
+                case .delete:
+                    if let idx = editingChallengeIndex {
+                        challenges.remove(at: idx)
+                    }
+                }
+                editingChallengeIndex = nil
+            }
+            .presentationDetents([.medium, .large])
+        }
         .interactiveDismissDisabled(true)
     }
 }
 
 #Preview {
     CreateQuestView()
+        .environmentObject(QHAuth())
 }
