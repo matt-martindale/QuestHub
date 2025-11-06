@@ -11,6 +11,8 @@ struct OrganizerHubView: View {
     @EnvironmentObject var auth: QHAuth
     @Environment(\.dismiss) private var dismiss
     @State private var isShowingCreateQuestSheet = false
+    @State private var selectedQuest: Quest?
+    @State private var isShowingEditQuestSheet = false
     
     var body: some View {
         NavigationStack {
@@ -41,13 +43,19 @@ struct OrganizerHubView: View {
                         } else {
                             List {
                                 ForEach(user.quests) { quest in
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text(quest.title ?? "title")
-                                            .font(.headline)
-                                        Text(quest.creatorDisplayName ?? "anonymous")
-                                            .font(.subheadline)
-                                            .foregroundStyle(.secondary)
+                                    Button {
+                                        selectedQuest = quest
+                                        isShowingEditQuestSheet = true
+                                    } label: {
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            Text(quest.title ?? "title")
+                                                .font(.headline)
+                                            Text(quest.creatorDisplayName ?? "anonymous")
+                                                .font(.subheadline)
+                                                .foregroundStyle(.secondary)
+                                        }
                                     }
+                                    .buttonStyle(.plain)
                                 }
                             }
                             // Allow the list to extend under the bottom buttons
@@ -98,6 +106,11 @@ struct OrganizerHubView: View {
             }
             .sheet(isPresented: $isShowingCreateQuestSheet) {
                 CreateQuestView(auth: auth)
+            }
+            .fullScreenCover(isPresented: $isShowingEditQuestSheet) {
+                if let quest = selectedQuest {
+                    CreateQuestView(auth: auth, questToEdit: quest)
+                }
             }
             .navigationTitle(UIStrings.organizerHub)
             .toolbar {

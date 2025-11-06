@@ -8,18 +8,18 @@
 import Foundation
 
 struct Challenge: Identifiable, Hashable {
-    let id: UUID
-    var title: String
-    var details: String
-    var points: Int
-    var completed: Bool
+    let id: String?
+    var title: String?
+    var details: String?
+    var points: Int?
+    var completed: Bool?
     var challengeType: ChallengeType
 
     init(
-        id: UUID = UUID(),
-        title: String,
-        details: String,
-        points: Int,
+        id: String? = nil,
+        title: String? = nil,
+        details: String? = nil,
+        points: Int? = nil,
         completed: Bool = false,
         challengeType: ChallengeType
     ) {
@@ -39,17 +39,17 @@ struct Challenge: Identifiable, Hashable {
 }
 
 struct PhotoData: Hashable {
-    var imageData: Data
+    var imageData: Data?
     var caption: String?
 }
 
 struct MultipleChoiceData: Hashable {
-    var prompt: String
-    var anwers: [String]
-    var correctAnswer: Int
+    var prompt: String?
+    var anwers: [String]?
+    var correctAnswer: Int?
 }
 
 struct QuestionData: Hashable {
-    var prompt: String
-    var answer: String
+    var prompt: String?
+    var answer: String?
 }

@@ -8,11 +8,11 @@ struct ChallengeRowView: View {
         Button(action: onTap) {
             HStack(alignment: .firstTextBaseline) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(challenge.title)
+                    Text(challenge.title ?? "Title missing")
                         .font(.body)
                         .foregroundStyle(.primary)
-                    if !challenge.details.isEmpty {
-                        Text(challenge.details)
+                    if let details = challenge.details, !details.isEmpty {
+                        Text(details)
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                             .lineLimit(2)

@@ -12,12 +12,12 @@ struct CreateQuestView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel: CreateQuestViewModel
 
-    init(auth: QHAuth) {
-        _viewModel = StateObject(wrappedValue: CreateQuestViewModel(auth: auth))
+    init(auth: QHAuth, questToEdit: Quest? = nil) {
+        _viewModel = StateObject(wrappedValue: CreateQuestViewModel(auth: auth, questToEdit: questToEdit))
     }
 
     var body: some View {
-        NavigationStack(path: $viewModel.path) {
+        NavigationStack {
             List {
                 // Section 1 — Quest info
                 Section {
@@ -144,7 +144,7 @@ struct CreateQuestView: View {
                 
             }
             .listStyle(.insetGrouped)
-            .navigationTitle("Create Quest")
+            .navigationTitle(viewModel.isEditing ? "Edit Quest" : "Create Quest")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -158,8 +158,8 @@ struct CreateQuestView: View {
             }
             
         }
-        .onChange(of: viewModel.didFinishSaving) {
-            if viewModel.didFinishSaving { dismiss() }
+        .onChange(of: viewModel.didFinishSaving) { _, newValue in
+            if newValue { dismiss() }
         }
         .fullScreenCover(isPresented: $viewModel.isPresentingCreateChallenge) {
             let existing = viewModel.editingChallengeIndex.flatMap { viewModel.challenges[$0] }

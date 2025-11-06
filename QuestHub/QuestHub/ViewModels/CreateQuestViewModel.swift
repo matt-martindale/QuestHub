@@ -15,6 +15,7 @@ final class CreateQuestViewModel: ObservableObject {
     @Published var challenges: [Challenge] = []
     @Published var isPresentingCreateChallenge: Bool = false
     @Published var editingChallengeIndex: Int? = nil
+    @Published var isEditing: Bool = false
 
     let auth: QHAuth
     private let firestore: FirestoreService
@@ -23,9 +24,34 @@ final class CreateQuestViewModel: ObservableObject {
     @Published var didFinishSaving: Bool = false
 
     // We require the shared auth instance to be injected to avoid creating multiple instances and missing UI updates.
-    init(auth: QHAuth, firestore: FirestoreService = FirestoreService()) {
+    init(auth: QHAuth, questToEdit: Quest? = nil, firestore: FirestoreService = FirestoreService()) {
         self.auth = auth
         self.firestore = firestore
+        if let quest = questToEdit {
+            // Prefill fields for editing
+            self.isEditing = true
+            self.title = quest.title ?? ""
+            self.subtitle = quest.subtitle ?? ""
+            self.descriptionText = quest.details ?? ""
+            self.isPasswordProtected = quest.isLocked ?? false
+            self.password = quest.password ?? ""
+            // Map quest challenges to local Challenge model if available
+            if let questChallenges = quest.challenges {
+                self.challenges = questChallenges.map { qc in
+                    let title = qc.title ?? ""
+                    let details = qc.details ?? ""
+                    let points = qc.points ?? 0
+                    let id: String = qc.id ?? IDGenerator.makeShortID()
+                    return Challenge(
+                        id: id,
+                        title: title,
+                        details: details,
+                        points: points,
+                        challengeType: .question(QuestionData(prompt: "prompt", answer: "answer"))
+                    )
+                }
+            }
+        }
     }
 
     // MARK: - Challenge actions
@@ -89,7 +115,7 @@ final class CreateQuestViewModel: ObservableObject {
                 "password": isPasswordProtected ? password : "",
                 "challenges": challenges.map { ch in
                     return [
-                        "id": ch.id.uuidString,
+                        "id": ch.id,
                         "title": ch.title,
                         "details": ch.details,
                         "points": ch.points
@@ -118,4 +144,3 @@ final class CreateQuestViewModel: ObservableObject {
         }
     }
 }
-

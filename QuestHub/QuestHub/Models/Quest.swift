@@ -17,6 +17,7 @@ class Quest: Identifiable, Codable, Equatable {
     var subtitle: String?
     var details: String?
     var partyLimit: Int?
+    var challenges: [Challenge]?
 
     // Ownership and timing
     var createdAt: Date
@@ -46,6 +47,7 @@ class Quest: Identifiable, Codable, Equatable {
         subtitle: String? = nil,
         details: String? = nil,
         partyLimit: Int? = nil,
+        challenges: [Challenge]? = [],
         createdAt: Date = Date(),
         creatorID: String? = nil,
         creatorDisplayName: String? = nil,
@@ -57,6 +59,7 @@ class Quest: Identifiable, Codable, Equatable {
         self.subtitle = subtitle
         self.details = details
         self.partyLimit = partyLimit
+        self.challenges = challenges
         self.createdAt = createdAt
         self.creatorID = creatorID
         self.creatorDisplayName = creatorDisplayName
@@ -70,6 +73,7 @@ class Quest: Identifiable, Codable, Equatable {
         lhs.subtitle == rhs.subtitle &&
         lhs.details == rhs.details &&
         lhs.partyLimit == rhs.partyLimit &&
+        lhs.challenges == rhs.challenges &&
         lhs.createdAt == rhs.createdAt &&
         lhs.creatorID == rhs.creatorID &&
         lhs.creatorDisplayName == rhs.creatorDisplayName &&
