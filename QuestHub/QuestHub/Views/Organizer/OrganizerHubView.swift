@@ -74,7 +74,7 @@ struct OrganizerHubView: View {
                         Button {
                             isShowingCreateQuestSheet = true
                         } label: {
-                            Label("Create a Quest", systemImage: "wand.and.stars")
+                            Label("Create Quest", systemImage: "wand.and.stars")
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 12)
                                 .background(Color.clear)
@@ -83,22 +83,22 @@ struct OrganizerHubView: View {
                         .buttonStyle(.glass)
                         .shadow(color: Color.qhPrimaryBlue.opacity(0.25), radius: 8, x: 0, y: 4)
 
-                        Button {
-                            guard let user = auth.currentUser else { return }
-                            Task { @MainActor in
-                                do {
-                                    try await auth.firestore.createMockQuest(forUser: user)
-                                    _ = try await auth.firestore.fetchQuests(forUserID: user.id)
-                                } catch {
-                                    print("Failed to create mock quest: \(error)")
-                                }
-                            }
-                        } label: {
-                            Label("Create Mock Quest", systemImage: "wand.and.stars")
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 10)
-                        }
-                        .buttonStyle(.borderedProminent)
+//                        Button {
+//                            guard let user = auth.currentUser else { return }
+//                            Task { @MainActor in
+//                                do {
+//                                    try await auth.firestore.createMockQuest(forUser: user)
+//                                    _ = try await auth.firestore.fetchQuests(forUserID: user.id)
+//                                } catch {
+//                                    print("Failed to create mock quest: \(error)")
+//                                }
+//                            }
+//                        } label: {
+//                            Label("Create Mock Quest", systemImage: "wand.and.stars")
+//                                .frame(maxWidth: .infinity)
+//                                .padding(.vertical, 10)
+//                        }
+//                        .buttonStyle(.borderedProminent)
                     }
                 }
                 .padding(.horizontal)
