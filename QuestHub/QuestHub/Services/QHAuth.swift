@@ -57,6 +57,13 @@ final class QHAuth: ObservableObject {
 
     // MARK: - Public API
 
+    /// Updates the currently signed-in user's quests in-memory so UI can refresh.
+    func updateCurrentUserQuests(_ quests: [Quest]) {
+        guard var user = self.currentUser else { return }
+        user.quests = quests
+        self.currentUser = user
+    }
+
     /// Attempts to sign in with email and password.
     /// Replace the internals with your backend call.
     func signIn(email: String, password: String) async -> Bool {
@@ -219,3 +226,4 @@ final class QHAuth: ObservableObject {
         }
     }
 }
+

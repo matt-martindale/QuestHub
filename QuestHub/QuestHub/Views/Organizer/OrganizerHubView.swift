@@ -10,7 +10,6 @@ import SwiftUI
 struct OrganizerHubView: View {
     @EnvironmentObject var auth: QHAuth
     @Environment(\.dismiss) private var dismiss
-    @State private var quests: [Quest] = []
     @State private var isShowingCreateQuestSheet = false
     
     var body: some View {
@@ -20,7 +19,7 @@ struct OrganizerHubView: View {
                     if let user = auth.currentUser {
                         
                         // Empty vs non-empty state
-                        if user.quests.isEmpty && quests.isEmpty {
+                        if user.quests.isEmpty {
                             VStack(spacing: 8) {
                                 Text("\(UIStrings.welcome)\(user.displayName?.isEmpty == false ? user.displayName! : user.email ?? "anonymous")")
                                     .font(.title2)
@@ -41,20 +40,13 @@ struct OrganizerHubView: View {
                             .contentShape(Rectangle())
                         } else {
                             List {
-                                if quests.isEmpty {
-                                    Text("No quests yet")
-                                        .foregroundStyle(.secondary)
-                                } else {
-                                    ForEach(quests) { quest in
-                                        VStack(alignment: .leading, spacing: 4) {
-                                            Text(user.id)
-                                                .font(.headline)
-                                            if let subtitle = quest.subtitle, !subtitle.isEmpty {
-                                                Text(quest.id ?? "nil")
-                                                    .font(.subheadline)
-                                                    .foregroundStyle(.secondary)
-                                            }
-                                        }
+                                ForEach(user.quests) { quest in
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(quest.title ?? "title")
+                                            .font(.headline)
+                                        Text(quest.creatorDisplayName ?? "anonymous")
+                                            .font(.subheadline)
+                                            .foregroundStyle(.secondary)
                                     }
                                 }
                             }
@@ -88,8 +80,7 @@ struct OrganizerHubView: View {
                             Task { @MainActor in
                                 do {
                                     try await auth.firestore.createMockQuest(forUser: user)
-                                    let latest = try await auth.firestore.fetchQuests(forUserID: user.id)
-                                    quests = latest
+                                    _ = try await auth.firestore.fetchQuests(forUserID: user.id)
                                 } catch {
                                     print("Failed to create mock quest: \(error)")
                                 }
@@ -106,8 +97,7 @@ struct OrganizerHubView: View {
                 .padding(.bottom)
             }
             .sheet(isPresented: $isShowingCreateQuestSheet) {
-                CreateQuestView()
-                    .environmentObject(auth)
+                CreateQuestView(auth: auth)
             }
             .navigationTitle(UIStrings.organizerHub)
             .toolbar {
@@ -137,15 +127,6 @@ struct OrganizerHubView: View {
                             .padding(.horizontal, 6)
                         }
                     }
-                }
-            }
-            .task(id: auth.currentUser?.id) {
-                guard let uid = auth.currentUser?.id else { return }
-                do {
-                    quests = try await auth.firestore.fetchQuests(forUserID: uid)
-                } catch {
-                    // Optionally handle error UI later
-                    print("Failed to fetch quests: \(error)")
                 }
             }
         }

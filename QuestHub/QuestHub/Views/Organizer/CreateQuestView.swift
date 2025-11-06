@@ -9,9 +9,12 @@ import SwiftUI
 import Combine
 
 struct CreateQuestView: View {
-    @EnvironmentObject var auth: QHAuth
     @Environment(\.dismiss) private var dismiss
-    @StateObject private var viewModel = CreateQuestViewModel()
+    @StateObject private var viewModel: CreateQuestViewModel
+
+    init(auth: QHAuth) {
+        _viewModel = StateObject(wrappedValue: CreateQuestViewModel(auth: auth))
+    }
 
     var body: some View {
         NavigationStack(path: $viewModel.path) {
@@ -151,7 +154,7 @@ struct CreateQuestView: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
                 }
-                if let user = auth.currentUser {
+                if let user = viewModel.auth.currentUser {
                     ToolbarItem(placement: .topBarTrailing) {
                         SignedInUserMenu(user: user, allowSignOut: false)
                     }
@@ -171,6 +174,7 @@ struct CreateQuestView: View {
 }
 
 #Preview {
-    CreateQuestView()
-        .environmentObject(QHAuth())
+    let auth = QHAuth()
+    return CreateQuestView(auth: auth)
+        .environmentObject(auth)
 }

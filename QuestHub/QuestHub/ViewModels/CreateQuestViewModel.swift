@@ -1,28 +1,31 @@
 import Foundation
 import SwiftUI
 import Combine
+import FirebaseFirestore
 
 @MainActor
 final class CreateQuestViewModel: ObservableObject {
-    // Navigation
     @Published var path: [String] = []
-
-    // Quest fields
     @Published var title: String = ""
     @Published var subtitle: String = ""
     @Published var descriptionText: String = ""
-
-    // Password
     @Published var isPasswordProtected: Bool = false
     @Published var password: String = ""
     @Published var showPasswordInfo: Bool = false
-
-    // Challenges
     @Published var challenges: [Challenge] = []
     @Published var isPresentingCreateChallenge: Bool = false
     @Published var editingChallengeIndex: Int? = nil
 
-    init() {}
+    let auth: QHAuth
+    private let firestore: FirestoreService
+
+    @Published var isSaving: Bool = false
+
+    // We require the shared auth instance to be injected to avoid creating multiple instances and missing UI updates.
+    init(auth: QHAuth, firestore: FirestoreService = FirestoreService()) {
+        self.auth = auth
+        self.firestore = firestore
+    }
 
     // MARK: - Challenge actions
     func beginAddChallenge() {
@@ -67,9 +70,52 @@ final class CreateQuestViewModel: ObservableObject {
     }
 
     func saveQuest() {
-        // TODO: Implement actual save logic (e.g., call a repository or service)
-        // For now, this is a placeholder to be wired up by the view.
-        // You can post notifications, update navigation, or call back to a coordinator here.
-        print("Save quest tapped with title: \(title)")
+        guard canSave else { return }
+        isSaving = true
+        Task { @MainActor in
+            defer { isSaving = false }
+            guard let user = auth.currentUser else { return }
+
+            // Build quest dictionary for Firestore (align with your Firestore schema)
+            let data: [String: Any] = [
+                "title": title.trimmingCharacters(in: .whitespacesAndNewlines),
+                "subtitle": subtitle.trimmingCharacters(in: .whitespacesAndNewlines),
+                "details": descriptionText.trimmingCharacters(in: .whitespacesAndNewlines),
+                "createdAt": Date(),
+                "creatorID": user.id,
+                "creatorDisplayName": user.displayName ?? user.email ?? "anonymous",
+                "isLocked": isPasswordProtected,
+                "password": isPasswordProtected ? password : "",
+                "challenges": challenges.map { ch in
+                    return [
+                        "id": ch.id.uuidString,
+                        "title": ch.title,
+                        "details": ch.details,
+                        "points": ch.points
+                    ]
+                }
+            ]
+
+            do {
+                let db = FirebaseFirestore.Firestore.firestore()
+                let collection = db.collection("users").document(user.id).collection("quests")
+                _ = try await collection.addDocument(data: data)
+                
+                // Removed parameterless updateCurrentUserQuests() call; use fetched latest instead
+                do {
+                    let latest = try await firestore.fetchQuests(forUserID: user.id)
+                    auth.updateCurrentUserQuests(latest)
+                } catch {
+                    // Non-fatal; proceed with navigation
+                }
+
+                // Navigate back by clearing path
+                path.removeAll()
+            } catch {
+                // TODO: Surface error to UI if desired
+                print("Failed to save quest: \(error)")
+            }
+        }
     }
 }
+
