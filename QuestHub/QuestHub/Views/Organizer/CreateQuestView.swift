@@ -86,23 +86,11 @@ struct CreateQuestView: View {
                             Text("Challenges")
                                 .font(.headline)
                             Spacer()
-                            Button {
-                                editingChallengeIndex = nil
-                                isPresentingCreateChallenge = true
-                            } label: {
-                                Image(systemName: "plus.circle.fill")
-                                    .font(.system(size: 25))
-                                    .tint(Color.qhPrimaryBlue)
-                            }
                         }
 
-                        if challenges.isEmpty {
-                            Text("No challenges yet. Tap Add to create one.")
-                                .foregroundStyle(.secondary)
-                                .padding(.vertical, 8)
-                        } else {
                             VStack(spacing: 0) {
-                                ForEach(Array(challenges.enumerated()), id: \.element.id) { index, challenge in
+                                ForEach(challenges.indices, id: \.self) { index in
+                                    let challenge = challenges[index]
                                     Button {
                                         editingChallengeIndex = index
                                         isPresentingCreateChallenge = true
@@ -133,9 +121,28 @@ struct CreateQuestView: View {
                                         Divider()
                                     }
                                 }
+                                // Trailing "Add challenge" row
+                                if !challenges.isEmpty {
+                                    Divider()
+                                }
+                                Button {
+                                    editingChallengeIndex = nil
+                                    isPresentingCreateChallenge = true
+                                } label: {
+                                    HStack(alignment: .firstTextBaseline) {
+                                        Image(systemName: "plus.circle.fill")
+                                            .foregroundStyle(Color.qhPrimaryBlue)
+                                        Text("Add challenge")
+                                            .foregroundStyle(Color.qhPrimaryBlue)
+                                        Spacer()
+                                    }
+                                    .contentShape(Rectangle())
+                                    .padding(.vertical, 10)
+                                    .padding(.horizontal, 12)
+                                }
+                                .buttonStyle(.plain)
                             }
                             .background(.quaternary.opacity(0.15), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-                        }
                     }
                     .padding(14)
                     .background(
@@ -234,3 +241,4 @@ struct CreateQuestView: View {
     CreateQuestView()
         .environmentObject(QHAuth())
 }
+
