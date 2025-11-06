@@ -6,7 +6,9 @@ struct FirestoreService {
     
     func fetchQuests(forUserID userID: String) async throws -> [Quest] {
         let collection = db.collection("users").document(userID).collection("quests")
-        let snapshot = try await collection.getDocuments()
+        let snapshot = try await collection
+            .order(by: "createdAt", descending: true)
+            .getDocuments()
         var quests: [Quest] = []
         quests.reserveCapacity(snapshot.documents.count)
         for document in snapshot.documents {
@@ -17,7 +19,12 @@ struct FirestoreService {
                 continue
             }
         }
-        return quests
+        // Defensive local sort by createdAt (newest first) in case some docs lack the field or server ordering can't be applied
+        return quests.sorted { (lhs, rhs) in
+            let l = (lhs.createdAt ?? Date.distantPast)
+            let r = (rhs.createdAt ?? Date.distantPast)
+            return l > r
+        }
     }
     
     func createMockQuest(forUser user: QHUser) async throws {
