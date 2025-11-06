@@ -105,6 +105,7 @@ final class CreateQuestViewModel: ObservableObject {
 
             // Build quest dictionary for Firestore (align with your Firestore schema)
             let data: [String: Any] = [
+                "id": IDGenerator.makeShortID(),
                 "title": title.trimmingCharacters(in: .whitespacesAndNewlines),
                 "subtitle": subtitle.trimmingCharacters(in: .whitespacesAndNewlines),
                 "details": descriptionText.trimmingCharacters(in: .whitespacesAndNewlines),
