@@ -107,7 +107,7 @@ struct OrganizerHubView: View {
             .sheet(isPresented: $isShowingCreateQuestSheet) {
                 CreateQuestView(auth: auth)
             }
-            .fullScreenCover(isPresented: $isShowingEditQuestSheet) {
+            .sheet(isPresented: $isShowingEditQuestSheet) {
                 if let quest = selectedQuest {
                     CreateQuestView(auth: auth, questToEdit: quest)
                 }
