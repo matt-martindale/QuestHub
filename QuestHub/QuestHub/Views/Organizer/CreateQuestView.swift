@@ -90,9 +90,10 @@ struct CreateQuestView: View {
                                 editingChallengeIndex = nil
                                 isPresentingCreateChallenge = true
                             } label: {
-                                Label("Add Challenge", systemImage: "plus.circle.fill")
+                                Image(systemName: "plus.circle.fill")
+                                    .font(.system(size: 25))
+                                    .tint(Color.qhPrimaryBlue)
                             }
-                            .buttonStyle(.borderedProminent)
                         }
 
                         if challenges.isEmpty {
@@ -136,6 +137,11 @@ struct CreateQuestView: View {
                             .background(.quaternary.opacity(0.15), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                         }
                     }
+                    .padding(14)
+                    .background(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .fill(.tertiary.opacity(0.08))
+                    )
                     
                     VStack(alignment: .leading, spacing: 8) {
                         Toggle(isOn: $isPasswordProtected) {
