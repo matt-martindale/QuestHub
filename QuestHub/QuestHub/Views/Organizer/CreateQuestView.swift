@@ -162,18 +162,28 @@ struct CreateQuestView: View {
                                 }
                                 .buttonStyle(.plain)
                                 .help("When enabled, players must enter this password to join your quest.")
-                                .popover(isPresented: $showPasswordInfo, arrowEdge: .top) {
-                                    VStack(alignment: .leading, spacing: 8) {
-                                        Text("Password protection")
-                                            .font(.headline)
+                                .sheet(isPresented: $showPasswordInfo) {
+                                    VStack(alignment: .leading, spacing: 12) {
+                                        HStack() {
+                                            Spacer()
+                                            Button("Done") { showPasswordInfo = false }
+                                                .padding()
+                                                .bold()
+                                        }
+                                        Spacer()
+                                        HStack {
+                                            Text("Password protection")
+                                                .font(.headline)
+                                            Spacer()
+                                        }
                                         Text("When enabled, players must enter this password to join your quest. Share the password only with the people you want to participate.")
                                             .font(.subheadline)
                                             .foregroundStyle(.secondary)
-                                        Button("Got it") { showPasswordInfo = false }
-                                            .padding(.top, 8)
+                                        Spacer()
                                     }
                                     .padding()
-                                    .frame(maxWidth: 320)
+                                    .presentationDetents([.medium]) // Optional: choose sizes, e.g. [.medium, .large]
+                                    .presentationDragIndicator(.visible) // Optional
                                 }
                             }
                         }
