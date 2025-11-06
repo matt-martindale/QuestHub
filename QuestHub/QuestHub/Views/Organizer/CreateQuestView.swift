@@ -6,42 +6,21 @@
 //
 
 import SwiftUI
-
-struct Challenge: Identifiable, Hashable {
-    let id: UUID
-    var title: String
-    var details: String
-
-    init(id: UUID = UUID(), title: String, details: String) {
-        self.id = id
-        self.title = title
-        self.details = details
-    }
-}
+import Combine
 
 struct CreateQuestView: View {
     @EnvironmentObject var auth: QHAuth
     @Environment(\.dismiss) private var dismiss
-    @State private var path: [String] = []
-    @State private var title: String = ""
-    @State private var subtitle: String = ""
-    @State private var descriptionText: String = ""
-    @State private var isPasswordProtected: Bool = false
-    @State private var password: String = ""
-    @State private var showPasswordInfo: Bool = false
-
-    @State private var challenges: [Challenge] = []
-    @State private var isPresentingCreateChallenge: Bool = false
-    @State private var editingChallengeIndex: Int? = nil
+    @StateObject private var viewModel = CreateQuestViewModel()
 
     var body: some View {
-        NavigationStack(path: $path) {
+        NavigationStack(path: $viewModel.path) {
             List {
                 // Section 1 — Quest info
                 Section {
                     VStack(alignment: .leading) {
                         Text("Title")
-                        TextField("Ex: Thanksgiving scavenger hunt", text: $title)
+                        TextField("Ex: Thanksgiving scavenger hunt", text: $viewModel.title)
                             .textInputAutocapitalization(.sentences)
                             .submitLabel(.next)
                             .padding(12)
@@ -50,7 +29,7 @@ struct CreateQuestView: View {
                     
                     VStack(alignment: .leading) {
                         Text("Subtitle")
-                        TextField("(optional)", text: $subtitle)
+                        TextField("(optional)", text: $viewModel.subtitle)
                             .textInputAutocapitalization(.sentences)
                             .submitLabel(.next)
                             .padding(12)
@@ -60,13 +39,13 @@ struct CreateQuestView: View {
                     VStack(alignment: .leading) {
                         Text("Description")
                         ZStack(alignment: .topLeading) {
-                            if descriptionText.isEmpty {
+                            if viewModel.descriptionText.isEmpty {
                                 Text("Add more details about your quest here.")
                                     .foregroundStyle(.tertiary)
                                     .padding(.horizontal, 16)
                                     .padding(.vertical, 16)
                             }
-                            TextEditor(text: $descriptionText)
+                            TextEditor(text: $viewModel.descriptionText)
                                 .textInputAutocapitalization(.sentences)
                                 .scrollContentBackground(.hidden)
                                 .padding(8)
@@ -84,40 +63,18 @@ struct CreateQuestView: View {
                             Spacer()
                             EditButton()
                         }) {
-                    ForEach(challenges.indices, id: \.self) { index in
-                        let challenge = challenges[index]
-                        Button {
-                            editingChallengeIndex = index
-                            isPresentingCreateChallenge = true
-                        } label: {
-                            HStack(alignment: .firstTextBaseline) {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(challenge.title)
-                                        .font(.body)
-                                        .foregroundStyle(.primary)
-                                    if !challenge.details.isEmpty {
-                                        Text(challenge.details)
-                                            .font(.subheadline)
-                                            .foregroundStyle(.secondary)
-                                            .lineLimit(2)
-                                    }
-                                }
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .foregroundStyle(.tertiary)
-                            }
-                            .contentShape(Rectangle())
-                            .padding(.vertical, 6)
+                    ForEach(viewModel.challenges.indices, id: \.self) { index in
+                        let challenge = viewModel.challenges[index]
+                        ChallengeRowView(challenge: challenge) {
+                            viewModel.beginEditChallenge(at: index)
                         }
-                        .buttonStyle(.plain)
                     }
                     .onMove { indices, newOffset in
-                        challenges.move(fromOffsets: indices, toOffset: newOffset)
+                        viewModel.moveChallenges(from: indices, to: newOffset)
                     }
 
                     Button {
-                        editingChallengeIndex = nil
-                        isPresentingCreateChallenge = true
+                        viewModel.beginAddChallenge()
                     } label: {
                         Label("Add challenge", systemImage: "plus.circle.fill")
                             .foregroundStyle(Color.qhPrimaryBlue)
@@ -127,47 +84,29 @@ struct CreateQuestView: View {
 
                 // Section 3 — Password
                 Section {
-                    Toggle(isOn: $isPasswordProtected) {
+                    Toggle(isOn: $viewModel.isPasswordProtected) {
                         HStack(spacing: 6) {
                             Text("Password protect this quest")
                             Button {
-                                showPasswordInfo = true
+                                viewModel.showPasswordInfo = true
                             } label: {
                                 Image(systemName: "questionmark.circle")
                                     .foregroundStyle(.secondary)
                             }
                             .buttonStyle(.plain)
                             .help("When enabled, players must enter this password to join your quest.")
-                            .sheet(isPresented: $showPasswordInfo) {
-                                VStack(alignment: .leading, spacing: 12) {
-                                    HStack {
-                                        Spacer()
-                                        Button("Done") { showPasswordInfo = false }
-                                            .padding()
-                                            .bold()
-                                    }
-                                    Spacer()
-                                    HStack {
-                                        Text("Password protection")
-                                            .font(.headline)
-                                        Spacer()
-                                    }
-                                    Text("When enabled, players must enter this password to join your quest. Share the password only with the people you want to participate.")
-                                        .font(.subheadline)
-                                        .foregroundStyle(.secondary)
-                                    Spacer()
-                                }
-                                .padding()
-                                .presentationDetents([.medium])
-                                .presentationDragIndicator(.visible)
+                            .sheet(isPresented: $viewModel.showPasswordInfo) {
+                                PasswordInfoSheetView { viewModel.showPasswordInfo = false }
+                                    .presentationDetents([.medium])
+                                    .presentationDragIndicator(.visible)
                             }
                         }
                     }
                     .padding(.trailing, 12)
                     .toggleStyle(.switch)
 
-                    if isPasswordProtected {
-                        TextField("Enter a password", text: $password)
+                    if viewModel.isPasswordProtected {
+                        TextField("Enter a password", text: $viewModel.password)
                             .textInputAutocapitalization(.never)
                             .textContentType(.password)
                             .padding(12)
@@ -194,24 +133,10 @@ struct CreateQuestView: View {
                 }
             }
         }
-        .fullScreenCover(isPresented: $isPresentingCreateChallenge) {
-            let existing = editingChallengeIndex.flatMap { challenges[$0] }
+        .fullScreenCover(isPresented: $viewModel.isPresentingCreateChallenge) {
+            let existing = viewModel.editingChallengeIndex.flatMap { viewModel.challenges[$0] }
             CreateChallengeView(challenge: existing) { result in
-                switch result {
-                case .save(let newChallenge):
-                    if let idx = editingChallengeIndex {
-                        challenges[idx] = newChallenge
-                    } else {
-                        challenges.append(newChallenge)
-                    }
-                case .cancel:
-                    break
-                case .delete:
-                    if let idx = editingChallengeIndex {
-                        challenges.remove(at: idx)
-                    }
-                }
-                editingChallengeIndex = nil
+                viewModel.handleChallengeResult(result)
             }
             .presentationDetents([.medium, .large])
         }
