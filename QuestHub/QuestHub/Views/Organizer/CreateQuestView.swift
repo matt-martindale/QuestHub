@@ -102,7 +102,7 @@ struct CreateQuestView: View {
                 }
             }
             .navigationTitle("Create Quest")
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarTitleDisplayMode(.large)
             .navigationDestination(for: String.self) { route in
                 if route == "details" {
                 }
@@ -110,6 +110,11 @@ struct CreateQuestView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
+                }
+                if let user = auth.currentUser {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        SignedInUserMenu(user: user, allowSignOut: false)
+                    }
                 }
             }
             .padding()

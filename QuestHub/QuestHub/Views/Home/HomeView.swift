@@ -74,37 +74,8 @@ struct HomeView: View {
             .toolbar {
                 if let user = auth.currentUser {
                     ToolbarItem(placement: .topBarTrailing) {
-                        Menu {
-                            Button(role: .destructive) {
-                                auth.signOut()
-                            } label: {
-                                Label(UIStrings.signOut, systemImage: "rectangle.portrait.and.arrow.right")
-                            }
-                        } label: {
-                            HStack(spacing: 8) {
-                                ZStack {
-                                    Circle()
-                                        .fill(Color(.systemGray5))
-                                        .overlay(
-                                            Circle().stroke(Color.qhPrimaryBlue, lineWidth: 1)
-                                        )
-                                    Text(initials(from: user))
-                                        .font(.caption.bold())
-                                        .foregroundColor(.primary)
-                                }
-                                .frame(width: 28, height: 28)
-
-                                VStack(alignment: .leading, spacing: 0) {
-                                    Text(UIStrings.signedInAs)
-                                        .font(.caption2)
-                                        .foregroundColor(.secondary)
-                                    Text(displayName(for: user))
-                                        .font(.caption)
-                                        .foregroundColor(.primary)
-                                }
-                            }
-                            .padding(.vertical, 2)
-                            .padding(.horizontal, 6)
+                        SignedInUserMenu(user: user) {
+                            auth.signOut()
                         }
                     }
                 }
