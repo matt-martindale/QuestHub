@@ -146,10 +146,6 @@ struct CreateQuestView: View {
             .listStyle(.insetGrouped)
             .navigationTitle("Create Quest")
             .navigationBarTitleDisplayMode(.large)
-            .navigationDestination(for: String.self) { route in
-                if route == "details" {
-                }
-            }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
@@ -161,6 +157,9 @@ struct CreateQuestView: View {
                 }
             }
             
+        }
+        .onChange(of: viewModel.didFinishSaving) {
+            if viewModel.didFinishSaving { dismiss() }
         }
         .fullScreenCover(isPresented: $viewModel.isPresentingCreateChallenge) {
             let existing = viewModel.editingChallengeIndex.flatMap { viewModel.challenges[$0] }

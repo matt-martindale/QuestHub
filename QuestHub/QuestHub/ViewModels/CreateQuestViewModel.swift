@@ -20,6 +20,7 @@ final class CreateQuestViewModel: ObservableObject {
     private let firestore: FirestoreService
 
     @Published var isSaving: Bool = false
+    @Published var didFinishSaving: Bool = false
 
     // We require the shared auth instance to be injected to avoid creating multiple instances and missing UI updates.
     init(auth: QHAuth, firestore: FirestoreService = FirestoreService()) {
@@ -109,8 +110,7 @@ final class CreateQuestViewModel: ObservableObject {
                     // Non-fatal; proceed with navigation
                 }
 
-                // Navigate back by clearing path
-                path.removeAll()
+                didFinishSaving = true
             } catch {
                 // TODO: Surface error to UI if desired
                 print("Failed to save quest: \(error)")
