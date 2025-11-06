@@ -119,17 +119,17 @@ struct HomeView: View {
             return name
         }
         // Fallback to email if no display name
-        return user.email
+        return user.email ?? "anonymous"
     }
 
     private func initials(from user: QHUser) -> String {
         let name = (user.displayName?.trimmingCharacters(in: .whitespacesAndNewlines)).flatMap { $0.isEmpty ? nil : $0 } ?? user.email
-        let parts = name
+        let parts = name?
             .split(whereSeparator: { $0 == " " || $0 == "_" || $0 == "-" || $0 == "." })
-        let first = parts.first?.first
-        let second = parts.dropFirst().first?.first
+        let first = parts?.first?.first
+        let second = parts?.dropFirst().first?.first
         let initials = String([first, second].compactMap { $0 }).uppercased()
-        if initials.isEmpty, let c = name.first {
+        if initials.isEmpty, let c = name?.first {
             return String(c).uppercased()
         }
         return initials

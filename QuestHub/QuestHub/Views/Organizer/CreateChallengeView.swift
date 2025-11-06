@@ -57,8 +57,13 @@ struct CreateChallengeView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        let challenge = Challenge(title: title.trimmingCharacters(in: .whitespacesAndNewlines),
-                                                  details: details.trimmingCharacters(in: .whitespacesAndNewlines))
+                        let challenge = Challenge(
+                            id: existingChallenge?.id ?? UUID(),
+                            title: title.trimmingCharacters(in: .whitespacesAndNewlines),
+                            details: details.trimmingCharacters(in: .whitespacesAndNewlines),
+                            points: 30,
+                            challengeType: .question(QuestionData(prompt: "", answer: ""))
+                        )
                         completion(.save(challenge))
                         dismiss()
                     }

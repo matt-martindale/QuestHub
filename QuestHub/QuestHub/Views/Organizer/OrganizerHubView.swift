@@ -50,7 +50,7 @@ struct OrganizerHubView: View {
                                             Text(user.id)
                                                 .font(.headline)
                                             if let subtitle = quest.subtitle, !subtitle.isEmpty {
-                                                Text(subtitle)
+                                                Text(quest.id ?? "nil")
                                                     .font(.subheadline)
                                                     .foregroundStyle(.secondary)
                                             }
@@ -84,11 +84,11 @@ struct OrganizerHubView: View {
                         .shadow(color: Color.qhPrimaryBlue.opacity(0.25), radius: 8, x: 0, y: 4)
 
                         Button {
-                            guard let uid = auth.currentUser?.id else { return }
+                            guard let user = auth.currentUser else { return }
                             Task { @MainActor in
                                 do {
-                                    try await auth.firestore.createMockQuest(forUserID: uid)
-                                    let latest = try await auth.firestore.fetchQuests(forUserID: uid)
+                                    try await auth.firestore.createMockQuest(forUser: user)
+                                    let latest = try await auth.firestore.fetchQuests(forUserID: user.id)
                                     quests = latest
                                 } catch {
                                     print("Failed to create mock quest: \(error)")

@@ -30,5 +30,5 @@ struct ChallengeRowView: View {
 }
 
 #Preview {
-    ChallengeRowView(challenge: Challenge(title: "Find the turkey", details: "Locate the hidden turkey near the big oak tree.")) {}
+    ChallengeRowView(challenge: Challenge(title: "Thanksgiving hunt", details: "Find the turkey", points: 30, challengeType: .question(QuestionData(prompt: "What is your name", answer: "Matt")))) {}
 }

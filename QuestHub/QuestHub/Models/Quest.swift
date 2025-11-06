@@ -13,17 +13,18 @@ class Quest: Identifiable, Codable, Equatable {
     @DocumentID var id: String?
 
     // Basic metadata
-    var title: String
+    var title: String?
     var subtitle: String?
     var details: String?
-    var partyLimit: Int
+    var partyLimit: Int?
 
     // Ownership and timing
     var createdAt: Date
-    var creatorID: String
+    var creatorID: String?
+    var creatorDisplayName: String?
 
     // Access control
-    var isLocked: Bool
+    var isLocked: Bool?
     var password: String?
 
     enum CodingKeys: String, CodingKey {
@@ -34,18 +35,20 @@ class Quest: Identifiable, Codable, Equatable {
         case partyLimit
         case createdAt
         case creatorID
+        case creatorDisplayName
         case isLocked
         case password
     }
 
     init(
         id: String? = nil,
-        title: String,
+        title: String? = nil,
         subtitle: String? = nil,
         details: String? = nil,
-        partyLimit: Int,
+        partyLimit: Int? = nil,
         createdAt: Date = Date(),
-        creatorID: String,
+        creatorID: String? = nil,
+        creatorDisplayName: String? = nil,
         isLocked: Bool = false,
         password: String? = nil
     ) {
@@ -56,6 +59,7 @@ class Quest: Identifiable, Codable, Equatable {
         self.partyLimit = partyLimit
         self.createdAt = createdAt
         self.creatorID = creatorID
+        self.creatorDisplayName = creatorDisplayName
         self.isLocked = isLocked
         self.password = password
     }
@@ -68,6 +72,7 @@ class Quest: Identifiable, Codable, Equatable {
         lhs.partyLimit == rhs.partyLimit &&
         lhs.createdAt == rhs.createdAt &&
         lhs.creatorID == rhs.creatorID &&
+        lhs.creatorDisplayName == rhs.creatorDisplayName &&
         lhs.isLocked == rhs.isLocked &&
         lhs.password == rhs.password
     }

@@ -20,15 +20,16 @@ struct FirestoreService {
         return quests
     }
     
-    func createMockQuest(forUserID userID: String) async throws {
-        let collection = db.collection("users").document(userID).collection("quests")
+    func createMockQuest(forUser user: QHUser) async throws {
+        let collection = db.collection("users").document(user.id).collection("quests")
         let mock: [String: Any] = [
             "title": "Demo Quest",
             "subtitle": "First steps",
             "details": "This is a mock quest created for testing.",
             "partyLimit": 50,
             "createdAt": Date(),
-            "creatorID": userID,
+            "creatorID": user.id,
+            "creatorDisplayName": user.displayName ?? user.email ?? "anonymous",
             "isLocked": false,
             "password": "password"
         ]

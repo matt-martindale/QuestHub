@@ -9,12 +9,12 @@ import Foundation
 
 struct QHUser: Codable, Equatable, Identifiable {
     let id: String
-    var email: String
+    var email: String?
     var displayName: String?
     var createdAt: Date
     var quests: [Quest] = []
 
-    init(id: String = UUID().uuidString, email: String, displayName: String? = nil, createdAt: Date = Date(), quests: [Quest] = []) {
+    init(id: String = UUID().uuidString, email: String? = nil, displayName: String? = nil, createdAt: Date = Date(), quests: [Quest] = []) {
         self.id = id
         self.email = email
         self.displayName = displayName
