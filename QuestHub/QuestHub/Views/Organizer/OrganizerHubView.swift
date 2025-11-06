@@ -11,13 +11,14 @@ struct OrganizerHubView: View {
     @EnvironmentObject var auth: QHAuth
     @Environment(\.dismiss) private var dismiss
     @State private var quests: [Quest] = []
+    @State private var isShowingCreateQuestSheet = false
     
     var body: some View {
         NavigationStack {
             ZStack(alignment: .bottom) {
-                // Content area (fills and scrolls behind)
                 VStack(spacing: 16) {
                     if let user = auth.currentUser {
+                        
                         // Empty vs non-empty state
                         if user.quests.isEmpty && quests.isEmpty {
                             VStack(spacing: 8) {
@@ -68,11 +69,10 @@ struct OrganizerHubView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
 
-                // Bottom action overlay (clear background, floats above content)
                 VStack(spacing: 8) {
                     if auth.currentUser != nil {
                         Button {
-                            // Navigate to create quest page
+                            isShowingCreateQuestSheet = true
                         } label: {
                             Label("Create a Quest", systemImage: "wand.and.stars")
                                 .frame(maxWidth: .infinity)
@@ -104,6 +104,10 @@ struct OrganizerHubView: View {
                 }
                 .padding(.horizontal)
                 .padding(.bottom)
+            }
+            .sheet(isPresented: $isShowingCreateQuestSheet) {
+                CreateQuestView()
+                    .environmentObject(auth)
             }
             .navigationTitle(UIStrings.organizerHub)
             .toolbar {
