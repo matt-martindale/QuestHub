@@ -2,18 +2,6 @@ import Foundation
 import SwiftUI
 import Combine
 
-struct Challenge: Identifiable, Hashable {
-    let id: UUID
-    var title: String
-    var details: String
-
-    init(id: UUID = UUID(), title: String, details: String) {
-        self.id = id
-        self.title = title
-        self.details = details
-    }
-}
-
 @MainActor
 final class CreateQuestViewModel: ObservableObject {
     // Navigation
