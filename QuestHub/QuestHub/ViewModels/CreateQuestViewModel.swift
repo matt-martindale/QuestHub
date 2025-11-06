@@ -57,5 +57,19 @@ final class CreateQuestViewModel: ObservableObject {
     func moveChallenges(from offsets: IndexSet, to destination: Int) {
         challenges.move(fromOffsets: offsets, toOffset: destination)
     }
-}
 
+    // MARK: - Save
+    var canSave: Bool {
+        let hasTitle = !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        let hasAtLeastOneChallenge = !challenges.isEmpty
+        let passwordOK = !isPasswordProtected || !password.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        return hasTitle && hasAtLeastOneChallenge && passwordOK
+    }
+
+    func saveQuest() {
+        // TODO: Implement actual save logic (e.g., call a repository or service)
+        // For now, this is a placeholder to be wired up by the view.
+        // You can post notifications, update navigation, or call back to a coordinator here.
+        print("Save quest tapped with title: \(title)")
+    }
+}

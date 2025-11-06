@@ -113,7 +113,28 @@ struct CreateQuestView: View {
                             .background(.quaternary.opacity(0.15), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                             .transition(.opacity.combined(with: .move(edge: .top)))
                     }
+//                }
+                    HStack {
+                        Spacer()
+                        Button {
+                            // TODO: Implement save quest logic in the view model
+                            viewModel.saveQuest()
+                        } label: {
+                            Text("Save Quest")
+                                .font(.headline)
+                                .foregroundStyle(.white)
+                                .padding(.vertical, 12)
+                                .padding(.horizontal, 20)
+                                .frame(maxWidth: .infinity)
+                                .background(Color.qhPrimaryBlue, in: .capsule)
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(!viewModel.canSave)
+                        Spacer()
+                    }
+                    .padding(.vertical, 20)
                 }
+                
             }
             .listStyle(.insetGrouped)
             .navigationTitle("Create Quest")

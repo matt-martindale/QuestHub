@@ -22,7 +22,7 @@ struct OrganizerHubView: View {
                         // Empty vs non-empty state
                         if user.quests.isEmpty && quests.isEmpty {
                             VStack(spacing: 8) {
-                                Text("\(UIStrings.welcome)\(user.displayName?.isEmpty == false ? user.displayName! : user.email)")
+                                Text("\(UIStrings.welcome)\(user.displayName?.isEmpty == false ? user.displayName! : user.email ?? "anonymous")")
                                     .font(.title2)
                                     .fontWeight(.semibold)
                                 VStack(spacing: 8) {
