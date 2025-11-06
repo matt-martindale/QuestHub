@@ -26,9 +26,11 @@ struct FirestoreService {
             "title": "Demo Quest",
             "subtitle": "First steps",
             "details": "This is a mock quest created for testing.",
+            "partyLimit": 50,
             "createdAt": Date(),
             "creatorID": userID,
-            "isLocked": false
+            "isLocked": false,
+            "password": "password"
         ]
         _ = try await collection.addDocument(data: mock)
     }

@@ -47,7 +47,7 @@ struct OrganizerHubView: View {
                                 } else {
                                     ForEach(quests) { quest in
                                         VStack(alignment: .leading, spacing: 4) {
-                                            Text(quest.title)
+                                            Text(user.id)
                                                 .font(.headline)
                                             if let subtitle = quest.subtitle, !subtitle.isEmpty {
                                                 Text(subtitle)
