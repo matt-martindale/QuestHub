@@ -14,6 +14,19 @@ struct OrganizerHubView: View {
     @State private var selectedQuest: Quest?
     @State private var isShowingEditQuestSheet = false
     
+    private func refreshQuests() async {
+        guard let user = auth.currentUser else { return }
+        do {
+            let latest = try await auth.firestore.fetchQuests(forUserID: user.id)
+            await MainActor.run {
+                auth.updateCurrentUserQuests(latest)
+            }
+        } catch {
+            // You might want to surface an error toast in the future
+            print("Failed to refresh quests: \(error)")
+        }
+    }
+    
     var body: some View {
         NavigationStack {
             ZStack(alignment: .bottom) {
@@ -40,6 +53,9 @@ struct OrganizerHubView: View {
                             }
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                             .contentShape(Rectangle())
+                            .refreshable {
+                                await refreshQuests()
+                            }
                         } else {
                             List {
                                 ForEach(user.quests) { quest in
@@ -65,6 +81,9 @@ struct OrganizerHubView: View {
                             .scrollContentBackground(.hidden)
                             // Allow the list to extend under the bottom buttons
                             .contentMargins(.bottom, 150)
+                            .refreshable {
+                                await refreshQuests()
+                            }
                         }
                     } else {
                         Text(UIStrings.noUserSignedIn)
