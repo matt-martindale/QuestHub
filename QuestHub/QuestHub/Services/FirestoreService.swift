@@ -52,10 +52,14 @@ struct FirestoreService {
         }
 
         let userQuests = db.collection("users").document(userID).collection("quests")
+        let questsCollection = db.collection("quests")
+        
         if isUpdating {
             try await userQuests.document(id).setData(data, merge: true)
+            try await questsCollection.document(id).setData(data, merge: true)
         } else {
             try await userQuests.document(id).setData(data)
+            try await questsCollection.document(id).setData(data)
         }
 
         return id
