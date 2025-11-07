@@ -10,13 +10,21 @@ final class CreateQuestViewModel: ObservableObject {
     @Published var subtitle: String = ""
     @Published var descriptionText: String = ""
     @Published var maxPlayersSelection: Int = 0
-    @Published var maxPlayers: Int? = nil
     @Published var isPasswordProtected: Bool = false
     @Published var password: String = ""
     @Published var challenges: [Challenge] = []
     @Published var isPresentingCreateChallenge: Bool = false
     @Published var editingChallengeIndex: Int? = nil
     @Published var isEditing: Bool = false
+
+    var maxPlayers: Int {
+        switch maxPlayersSelection {
+        case 0: return 10
+        case 1: return 100
+        case 2: return 1000 // use a high cap to represent 100+
+        default: return 10
+        }
+    }
 
     private var editingQuestID: String? = nil
 
@@ -65,37 +73,15 @@ final class CreateQuestViewModel: ObservableObject {
                 } else {
                     self.maxPlayersSelection = 2
                 }
-                self.maxPlayers = existingMax
             }
         } else {
             // New quest defaults
             self.maxPlayersSelection = 0
-            self.updateMaxPlayersFromSelection()
         }
-
-        $maxPlayersSelection
-            .removeDuplicates()
-            .sink { [weak self] _ in
-                self?.updateMaxPlayersFromSelection()
-            }
-            .store(in: &cancellables)
     }
     
     convenience init(auth: QHAuth, questToEdit: Quest? = nil) {
         self.init(auth: auth, questToEdit: questToEdit, firestore: FirestoreService())
-    }
-
-    private func updateMaxPlayersFromSelection() {
-        switch maxPlayersSelection {
-        case 0:
-            maxPlayers = 10
-        case 1:
-            maxPlayers = 100
-        case 2:
-            maxPlayers = 1000 // use a high cap to represent 100+
-        default:
-            maxPlayers = 10
-        }
     }
 
     // MARK: - Challenge actions
@@ -185,4 +171,3 @@ final class CreateQuestViewModel: ObservableObject {
         }
     }
 }
-
