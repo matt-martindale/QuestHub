@@ -147,7 +147,7 @@ final class CreateQuestViewModel: ObservableObject {
             questToSave.maxPlayers = self.maxPlayers
             questToSave.creatorID = user.id
             questToSave.creatorDisplayName = creatorDisplayName
-            questToSave.status = .inactive
+            questToSave.status = .paused
             questToSave.password = self.password
             questToSave.challenges = self.challenges
 

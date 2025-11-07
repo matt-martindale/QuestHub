@@ -75,8 +75,8 @@ struct QuestListItemView: View {
                 // Quest status stack
                 HStack {
                     switch quest.status {
-                    case .some(.inactive):
-                        Text("Quest is inactive")
+                    case .some(.paused):
+                        Text("Quest is paused")
                             .font(.callout)
                         Image(systemName: "pause.circle.fill")
                             .foregroundStyle(.yellow)

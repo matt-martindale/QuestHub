@@ -10,7 +10,7 @@ import FirebaseFirestore
 
 enum QuestStatus: String, Codable {
     case active
-    case inactive
+    case paused
     case locked
 }
 
@@ -61,7 +61,7 @@ class Quest: Identifiable, Codable, Equatable {
         updatedAt: Date = Date(),
         creatorID: String? = nil,
         creatorDisplayName: String? = nil,
-        status: QuestStatus? = .inactive,
+        status: QuestStatus? = .paused,
         password: String? = nil
     ) {
         self.id = id
