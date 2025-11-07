@@ -1,5 +1,6 @@
 import Foundation
 import FirebaseFirestore
+import FirebaseAuth
 
 struct PlayerEntry: Codable {
     let userId: String
@@ -42,6 +43,11 @@ final class QuestService {
         let qRef = questRef(questId)
         let uRef = userRef(userId)
         let pRef = playerRef(questId: questId, userId: userId)
+        
+        guard let authUid = Auth.auth().currentUser?.uid, authUid == userId else {
+              completion(.failure(NSError(domain: "QuestService", code: 401, userInfo: [NSLocalizedDescriptionKey: "Not authenticated as provided userId"])))
+              return
+          }
 
         db.runTransaction({ (transaction, errorPointer) -> Any? in
             let snapshot: DocumentSnapshot
@@ -57,14 +63,8 @@ final class QuestService {
                 return nil
             }
 
-            let currentPlayers = data["playerList"] as? [String] ?? []
             let playersCount = data["playersCount"] as? Int ?? 0
             let maxPlayers = data["maxPlayers"] as? Int ?? Int.max
-
-            // Already joined? No-op for quest and user arrays; still ensure subcollection exists after transaction.
-            if currentPlayers.contains(userId) {
-                return nil
-            }
 
             if maxPlayersEnforced && playersCount >= maxPlayers {
                 errorPointer?.pointee = NSError(domain: "QuestService", code: 409, userInfo: [NSLocalizedDescriptionKey: "Quest is full"]) 
@@ -73,7 +73,6 @@ final class QuestService {
 
             // Update quest doc
             transaction.updateData([
-                "playerList": FieldValue.arrayUnion([userId]),
                 "playersCount": FieldValue.increment(Int64(1))
             ], forDocument: qRef)
 
@@ -90,19 +89,15 @@ final class QuestService {
             }
 
             // After transaction, ensure the players subcollection doc exists/updated with metadata
-            let entry = PlayerEntry(userId: userId, displayName: userDisplayName, joinedAt: Date())
-            do {
-                let encoded = try JSONEncoder().encode(entry)
-                let json = try JSONSerialization.jsonObject(with: encoded, options: []) as? [String: Any] ?? [:]
-                self?.playerRef(questId: questId, userId: userId).setData(json, merge: true) { err in
-                    if let err = err {
-                        completion(.failure(err))
-                    } else {
-                        completion(.success(()))
-                    }
+            pRef.setData([
+                "userId": userId,
+                "displayName": userDisplayName
+            ], merge: false) { err in
+                if let err = err {
+                    completion(.failure(err))
+                } else {
+                    completion(.success(()))
                 }
-            } catch {
-                completion(.failure(error))
             }
         }
     }
