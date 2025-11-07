@@ -25,7 +25,6 @@ final class CreateQuestViewModel: ObservableObject {
     @Published var isSaving: Bool = false
     @Published var didFinishSaving: Bool = false
 
-    // We require the shared auth instance to be injected to avoid creating multiple instances and missing UI updates.
     init(auth: QHAuth, questToEdit: Quest? = nil, firestore: FirestoreService = FirestoreService()) {
         self.auth = auth
         self.firestore = firestore

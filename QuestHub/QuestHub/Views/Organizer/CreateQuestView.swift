@@ -167,19 +167,6 @@ struct CreateQuestView: View {
                         .buttonStyle(.glass)
                         .shadow(color: Color.qhPrimaryBlue.opacity(0.25), radius: 4, x: 0, y: 4)
                         
-//                        Button {
-//                            viewModel.saveQuest()
-//                        } label: {
-//                            Text("Save Quest")
-//                                .font(.headline)
-//                                .foregroundStyle(.white)
-//                                .padding(.vertical, 12)
-//                                .padding(.horizontal, 20)
-//                                .frame(maxWidth: .infinity)
-//                                .background(Color.qhPrimaryBlue, in: .capsule)
-//                        }
-//                        .buttonStyle(.plain)
-//                        .disabled(!viewModel.canSave)
                     }
                 }
                 .listRowBackground(Color.clear)

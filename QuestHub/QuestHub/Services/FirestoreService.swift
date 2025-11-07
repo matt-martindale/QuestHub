@@ -27,33 +27,8 @@ struct FirestoreService {
         }
     }
     
-    func createMockQuest(forUser user: QHUser) async throws {
-        let collection = db.collection("users").document(user.id).collection("quests")
-        let mock: [String: Any] = [
-            "title": "Demo Quest",
-            "subtitle": "First steps",
-            "details": "This is a mock quest created for testing.",
-            "partyLimit": 50,
-            "createdAt": Date(),
-            "creatorID": user.id,
-            "creatorDisplayName": user.displayName ?? user.email ?? "anonymous",
-            "isLocked": false,
-            "password": "password"
-        ]
-        _ = try await collection.addDocument(data: mock)
-    }
-    
     @discardableResult
-    func saveQuest(
-        questID: String?,
-        userID: String,
-        creatorDisplayName: String,
-        title: String,
-        subtitle: String,
-        description: String,
-        isLocked: Bool,
-        password: String,
-        challenges: [[String: Any]]
+    func saveQuest(questID: String?, userID: String, creatorDisplayName: String, title: String, subtitle: String, description: String, isLocked: Bool, password: String, challenges: [[String: Any]]
     ) async throws -> String {
         let isUpdating = (questID != nil)
         let id = questID ?? IDGenerator.makeShortID()
