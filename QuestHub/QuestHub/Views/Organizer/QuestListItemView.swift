@@ -21,8 +21,9 @@ struct QuestListItemView: View {
                     HStack {
                         HStack {
                             Image(systemName: "person.crop.circle")
+                                .font(.footnote)
                                 .foregroundStyle(.secondary)
-                                .padding(.trailing, 8)
+                                .padding(.horizontal, 3)
                             Text(quest.creatorDisplayName ?? "anonymous")
                                 .font(.footnote)
                                 .foregroundStyle(.secondary)
@@ -41,8 +42,9 @@ struct QuestListItemView: View {
                     HStack {
                         HStack {
                             Image(systemName: "person.2.fill")
+                                .font(.footnote)
                                 .foregroundStyle(.secondary)
-                            Text("20/\(quest.maxPlayers ?? 1) players")
+                            Text("0/\(quest.maxPlayers ?? 1) players")
                                 .font(.footnote)
                                 .foregroundStyle(.secondary)
                         }
@@ -59,8 +61,9 @@ struct QuestListItemView: View {
                     
                     HStack {
                         Image(systemName: "calendar")
+                            .font(.footnote)
                             .foregroundStyle(.secondary)
-                            .padding(.trailing, 8)
+                            .padding(.horizontal, 3)
                         Text(quest.createdAt?.formatted(date: .abbreviated, time: .omitted) ?? "Unknown date")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
@@ -71,11 +74,24 @@ struct QuestListItemView: View {
                 
                 // Quest status stack
                 HStack {
-                    if let status = quest.status, status == .inactive {
+                    switch quest.status {
+                    case .some(.inactive):
+                        Text("Quest is inactive")
+                            .font(.callout)
+                        Image(systemName: "pause.circle.fill")
+                            .foregroundStyle(.yellow)
+                    case .some(.active):
+                        Text("Quest is active")
+                            .font(.callout)
+                        Image(systemName: "bolt.circle.fill")
+                            .foregroundStyle(.green)
+                    case .some(.locked):
                         Text("Quest is locked")
                             .font(.callout)
                         Image(systemName: "lock.fill")
                             .foregroundStyle(Color.qhPrimaryRed)
+                    case .none:
+                        EmptyView()
                     }
                     Spacer()
                     Button(action: onEdit) {
@@ -93,6 +109,6 @@ struct QuestListItemView: View {
 }
 
 #Preview {
-    QuestListItemView(quest: Quest(id: "IDH4HD", title: "Thanksgiving scavenger hunt", subtitle: "subtitle", description: "description", maxPlayers: 50, challenges: [], createdAt: Date(), updatedAt: Date(), creatorID: "u1", creatorDisplayName: "Alice", status: .inactive, password: "password")){}
+    QuestListItemView(quest: Quest(id: "IDH4HD", title: "Thanksgiving scavenger hunt", subtitle: "subtitle", description: "description", maxPlayers: 50, challenges: [], createdAt: Date(), updatedAt: Date(), creatorID: "u1", creatorDisplayName: "Alice", status: .active, password: "password")){}
         .padding()
 }
