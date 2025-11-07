@@ -43,26 +43,10 @@ struct OrganizerHubView: View {
                         } else {
                             List {
                                 ForEach(user.quests) { quest in
-                                    HStack {
-                                        VStack(alignment: .leading, spacing: 4) {
-                                            Text(quest.title ?? "title")
-                                                .font(.headline)
-                                            Text(quest.creatorDisplayName ?? "anonymous")
-                                                .font(.subheadline)
-                                                .foregroundStyle(.secondary)
-                                        }
-                                        Spacer()
-                                        Button {
-                                            selectedQuest = quest
-                                            isShowingEditQuestSheet = true
-                                        } label: {
-                                            Text("Edit")
-                                                .padding(8)
-                                        }
-                                        .buttonStyle(.borderless)
-                                        .accessibilityLabel("Edit quest")
+                                    QuestListItemView(quest: quest) {
+                                        selectedQuest = quest
+                                        isShowingEditQuestSheet = true
                                     }
-                                    .contentShape(Rectangle())
                                 }
                             }
                             // Allow the list to extend under the bottom buttons
