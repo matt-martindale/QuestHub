@@ -11,6 +11,8 @@ import Combine
 struct CreateQuestView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel: CreateQuestViewModel
+    @State private var showMaxPlayersInfo: Bool = false
+    @State private var showPasswordInfo: Bool = false
 
     init(auth: QHAuth, questToEdit: Quest? = nil) {
         _viewModel = StateObject(wrappedValue: CreateQuestViewModel(auth: auth, questToEdit: questToEdit))
@@ -99,14 +101,29 @@ struct CreateQuestView: View {
                         .font(.headline)
                 }) {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Max players")
-                            .padding(.bottom, 6)
+                        HStack(spacing: 6) {
+                            Text("Max players")
+                            Button {
+                                showMaxPlayersInfo = true
+                            } label: {
+                                Image(systemName: "questionmark.circle")
+                                    .foregroundStyle(.secondary)
+                            }
+                            .buttonStyle(.plain)
+                            .help("Learn how max players affects your quest.")
+                        }
+                        .padding(.bottom, 6)
                         Picker("Max players", selection: $viewModel.maxPlayers) {
                             Text("1–10").tag(0)
                             Text("11–100").tag(1)
                             Text("100+").tag(2)
                         }
                         .pickerStyle(.segmented)
+                        .sheet(isPresented: $showMaxPlayersInfo) {
+                            InfoSheetView(viewModel: InfoSheetViewModel(flow: .maxPlayers)) { showMaxPlayersInfo = false }
+                                .presentationDetents([.medium])
+                                .presentationDragIndicator(.visible)
+                        }
                     }
                     .padding(.top, 4)
                     
@@ -114,15 +131,15 @@ struct CreateQuestView: View {
                         HStack(spacing: 6) {
                             Text("Password protect this quest")
                             Button {
-                                viewModel.showPasswordInfo = true
+                                showPasswordInfo = true
                             } label: {
                                 Image(systemName: "questionmark.circle")
                                     .foregroundStyle(.secondary)
                             }
                             .buttonStyle(.plain)
                             .help("When enabled, players must enter this password to join your quest.")
-                            .sheet(isPresented: $viewModel.showPasswordInfo) {
-                                PasswordInfoSheetView { viewModel.showPasswordInfo = false }
+                            .sheet(isPresented: $showPasswordInfo) {
+                                InfoSheetView(viewModel: InfoSheetViewModel(flow: .password)) { showPasswordInfo = false }
                                     .presentationDetents([.medium])
                                     .presentationDragIndicator(.visible)
                             }

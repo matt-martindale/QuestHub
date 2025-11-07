@@ -12,7 +12,6 @@ final class CreateQuestViewModel: ObservableObject {
     @Published var maxPlayers: Int? = nil
     @Published var isPasswordProtected: Bool = false
     @Published var password: String = ""
-    @Published var showPasswordInfo: Bool = false
     @Published var challenges: [Challenge] = []
     @Published var isPresentingCreateChallenge: Bool = false
     @Published var editingChallengeIndex: Int? = nil
