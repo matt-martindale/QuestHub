@@ -67,12 +67,12 @@ struct CreateQuestView: View {
 
                 // Section 2 — Challenges
                 Section(header:
-                        HStack {
-                            Text("Challenges")
-                                .font(.headline)
-                            Spacer()
-                            EditButton()
-                        }) {
+                            HStack {
+                    Text("Challenges")
+                        .font(.headline)
+                    Spacer()
+                    EditButton()
+                }) {
                     ForEach(viewModel.challenges.indices, id: \.self) { index in
                         let challenge = viewModel.challenges[index]
                         ChallengeRowView(challenge: challenge) {
@@ -82,7 +82,7 @@ struct CreateQuestView: View {
                     .onMove { indices, newOffset in
                         viewModel.moveChallenges(from: indices, to: newOffset)
                     }
-
+                    
                     Button {
                         viewModel.beginAddChallenge()
                     } label: {
@@ -93,7 +93,23 @@ struct CreateQuestView: View {
                 }
 
                 // Section 3 — Password
-                Section {
+                Section(header:
+                            HStack {
+                    Text("Settings")
+                        .font(.headline)
+                }) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Max players")
+                            .padding(.bottom, 6)
+                        Picker("Max players", selection: $viewModel.maxPlayers) {
+                            Text("1–10").tag(0)
+                            Text("11–100").tag(1)
+                            Text("100+").tag(2)
+                        }
+                        .pickerStyle(.segmented)
+                    }
+                    .padding(.top, 4)
+                    
                     Toggle(isOn: $viewModel.isPasswordProtected) {
                         HStack(spacing: 6) {
                             Text("Password protect this quest")

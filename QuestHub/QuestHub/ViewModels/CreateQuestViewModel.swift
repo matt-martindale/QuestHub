@@ -9,6 +9,7 @@ final class CreateQuestViewModel: ObservableObject {
     @Published var title: String = ""
     @Published var subtitle: String = ""
     @Published var descriptionText: String = ""
+    @Published var maxPlayers: Int? = nil
     @Published var isPasswordProtected: Bool = false
     @Published var password: String = ""
     @Published var showPasswordInfo: Bool = false

@@ -16,7 +16,7 @@ class Quest: Identifiable, Codable, Equatable {
     var title: String?
     var subtitle: String?
     var details: String?
-    var partyLimit: Int?
+    var maxPlayers: Int?
     var challenges: [Challenge]?
 
     // Ownership and timing
@@ -34,7 +34,7 @@ class Quest: Identifiable, Codable, Equatable {
         case title
         case subtitle
         case details
-        case partyLimit
+        case maxPlayers
         case challenges
         case createdAt
         case updatedAt
@@ -49,7 +49,7 @@ class Quest: Identifiable, Codable, Equatable {
         title: String? = nil,
         subtitle: String? = nil,
         details: String? = nil,
-        partyLimit: Int? = nil,
+        maxPlayers: Int? = nil,
         challenges: [Challenge]? = [],
         createdAt: Date = Date(),
         updatedAt: Date = Date(),
@@ -62,7 +62,7 @@ class Quest: Identifiable, Codable, Equatable {
         self.title = title
         self.subtitle = subtitle
         self.details = details
-        self.partyLimit = partyLimit
+        self.maxPlayers = maxPlayers
         self.challenges = challenges
         self.createdAt = createdAt
         self.updatedAt = updatedAt
@@ -77,7 +77,7 @@ class Quest: Identifiable, Codable, Equatable {
         lhs.title == rhs.title &&
         lhs.subtitle == rhs.subtitle &&
         lhs.details == rhs.details &&
-        lhs.partyLimit == rhs.partyLimit &&
+        lhs.maxPlayers == rhs.maxPlayers &&
         lhs.challenges == rhs.challenges &&
         lhs.createdAt == rhs.createdAt &&
         lhs.updatedAt == rhs.updatedAt &&
