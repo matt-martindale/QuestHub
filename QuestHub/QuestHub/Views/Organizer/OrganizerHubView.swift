@@ -65,7 +65,7 @@ struct OrganizerHubView: View {
                                     }
                                     .listRowSeparator(.hidden)
                                     .listRowInsets(EdgeInsets())
-                                    .padding(.vertical, 28)
+                                    .padding(.vertical, 16)
                                     .padding(.horizontal, 12)
                                     .glassEffect(in: .rect(cornerRadius: 20))
                                     .listRowBackground(Color.clear)
