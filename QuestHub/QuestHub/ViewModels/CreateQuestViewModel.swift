@@ -34,7 +34,7 @@ final class CreateQuestViewModel: ObservableObject {
             self.isEditing = true
             self.title = quest.title ?? ""
             self.subtitle = quest.subtitle ?? ""
-            self.descriptionText = quest.details ?? ""
+            self.descriptionText = quest.description ?? ""
             self.isPasswordProtected = quest.isLocked ?? false
             self.password = quest.password ?? ""
             // Map quest challenges to local Challenge model if available
@@ -119,7 +119,7 @@ final class CreateQuestViewModel: ObservableObject {
                 "id": questID,
                 "title": title.trimmingCharacters(in: .whitespacesAndNewlines),
                 "subtitle": subtitle.trimmingCharacters(in: .whitespacesAndNewlines),
-                "details": descriptionText.trimmingCharacters(in: .whitespacesAndNewlines),
+                "description": descriptionText.trimmingCharacters(in: .whitespacesAndNewlines),
                 "creatorID": user.id,
                 "creatorDisplayName": user.displayName ?? user.email ?? "anonymous",
                 "isLocked": isPasswordProtected,

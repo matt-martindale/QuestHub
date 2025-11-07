@@ -15,7 +15,7 @@ class Quest: Identifiable, Codable, Equatable {
     // Basic metadata
     var title: String?
     var subtitle: String?
-    var details: String?
+    var description: String?
     var maxPlayers: Int?
     var challenges: [Challenge]?
 
@@ -33,7 +33,7 @@ class Quest: Identifiable, Codable, Equatable {
         case id
         case title
         case subtitle
-        case details
+        case description
         case maxPlayers
         case challenges
         case createdAt
@@ -48,7 +48,7 @@ class Quest: Identifiable, Codable, Equatable {
         id: String? = nil,
         title: String? = nil,
         subtitle: String? = nil,
-        details: String? = nil,
+        description: String? = nil,
         maxPlayers: Int? = nil,
         challenges: [Challenge]? = [],
         createdAt: Date = Date(),
@@ -61,7 +61,7 @@ class Quest: Identifiable, Codable, Equatable {
         self.id = id
         self.title = title
         self.subtitle = subtitle
-        self.details = details
+        self.description = description
         self.maxPlayers = maxPlayers
         self.challenges = challenges
         self.createdAt = createdAt
@@ -76,7 +76,7 @@ class Quest: Identifiable, Codable, Equatable {
         return lhs.id == rhs.id &&
         lhs.title == rhs.title &&
         lhs.subtitle == rhs.subtitle &&
-        lhs.details == rhs.details &&
+        lhs.description == rhs.description &&
         lhs.maxPlayers == rhs.maxPlayers &&
         lhs.challenges == rhs.challenges &&
         lhs.createdAt == rhs.createdAt &&

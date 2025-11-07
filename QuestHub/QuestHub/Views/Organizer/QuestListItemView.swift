@@ -26,7 +26,7 @@ struct QuestListItemView: View {
 }
 
 #Preview {
-    QuestListItemView(quest: Quest(id: "demo", title: "Sample Quest", subtitle: "", details: "", challenges: [], createdAt: Date(), updatedAt: Date(), creatorID: "u1", creatorDisplayName: "Alice", isLocked: false, password: nil)) {
+    QuestListItemView(quest: Quest(id: "demo", title: "Sample Quest", subtitle: "", description: "", challenges: [], createdAt: Date(), updatedAt: Date(), creatorID: "u1", creatorDisplayName: "Alice", isLocked: false, password: nil)) {
         // edit action preview
     }
 }

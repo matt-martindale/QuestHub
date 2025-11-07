@@ -25,8 +25,6 @@ struct CreateQuestView: View {
                 Section {
                     VStack(alignment: .leading) {
                         Text("Title")
-                            .font(.headline)
-                            .foregroundStyle(.secondary)
                         TextField("Ex: Thanksgiving scavenger hunt", text: $viewModel.title)
                             .textInputAutocapitalization(.sentences)
                             .submitLabel(.next)
@@ -36,8 +34,6 @@ struct CreateQuestView: View {
                     
                     VStack(alignment: .leading) {
                         Text("Subtitle")
-                            .font(.headline)
-                            .foregroundStyle(.secondary)
                         TextField("(optional)", text: $viewModel.subtitle)
                             .textInputAutocapitalization(.sentences)
                             .submitLabel(.next)
@@ -47,8 +43,6 @@ struct CreateQuestView: View {
                     
                     VStack(alignment: .leading) {
                         Text("Description")
-                            .font(.headline)
-                            .foregroundStyle(.secondary)
                         ZStack(alignment: .topLeading) {
                             if viewModel.descriptionText.isEmpty {
                                 Text("Add more details about your quest here.")
