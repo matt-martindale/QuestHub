@@ -47,7 +47,8 @@ final class CreateQuestViewModel: ObservableObject {
                         title: title,
                         details: details,
                         points: points,
-                        challengeType: .question(QuestionData(prompt: "prompt", answer: "answer"))
+//                        challengeType: .question(QuestionData(prompt: "prompt", answer: "answer")
+//                                                )
                     )
                 }
             }

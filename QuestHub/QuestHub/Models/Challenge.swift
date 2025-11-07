@@ -7,13 +7,13 @@
 
 import Foundation
 
-struct Challenge: Identifiable, Hashable {
+struct Challenge: Codable, Identifiable, Hashable {
     let id: String?
     var title: String?
     var details: String?
     var points: Int?
     var completed: Bool?
-    var challengeType: ChallengeType
+//    var challengeType: ChallengeType
 
     init(
         id: String? = nil,
@@ -21,35 +21,35 @@ struct Challenge: Identifiable, Hashable {
         details: String? = nil,
         points: Int? = nil,
         completed: Bool = false,
-        challengeType: ChallengeType
+//        challengeType: ChallengeType
     ) {
         self.id = id
         self.title = title
         self.details = details
         self.points = points
         self.completed = completed
-        self.challengeType = challengeType
+//        self.challengeType = challengeType
     }
 
-    enum ChallengeType: Hashable {
+    enum ChallengeType: Codable, Hashable {
         case photo(PhotoData)
         case multipleChoice(MultipleChoiceData)
         case question(QuestionData)
     }
 }
 
-struct PhotoData: Hashable {
+struct PhotoData: Codable, Hashable {
     var imageData: Data?
     var caption: String?
 }
 
-struct MultipleChoiceData: Hashable {
+struct MultipleChoiceData: Codable, Hashable {
     var prompt: String?
     var anwers: [String]?
     var correctAnswer: Int?
 }
 
-struct QuestionData: Hashable {
+struct QuestionData: Codable, Hashable {
     var prompt: String?
     var answer: String?
 }

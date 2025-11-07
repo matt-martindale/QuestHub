@@ -10,7 +10,7 @@ import FirebaseFirestore
 
 class Quest: Identifiable, Codable, Equatable {
     // Stable identity for SwiftUI and persistence
-    @DocumentID var id: String?
+    var id: String?
 
     // Basic metadata
     var title: String?
@@ -34,6 +34,7 @@ class Quest: Identifiable, Codable, Equatable {
         case subtitle
         case details
         case partyLimit
+        case challenges
         case createdAt
         case creatorID
         case creatorDisplayName
