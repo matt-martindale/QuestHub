@@ -67,11 +67,7 @@ struct OrganizerHubView: View {
                                     .listRowInsets(EdgeInsets())
                                     .padding(.vertical, 28)
                                     .padding(.horizontal, 12)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                            .fill(.background) // or .ultraThinMaterial for a glassy look
-                                            .shadow(color: .black.opacity(0.2), radius: 6, x: 0, y: 3)
-                                    )
+                                    .glassEffect(in: .rect(cornerRadius: 20))
                                     .listRowBackground(Color.clear)
                                 }
                             }
