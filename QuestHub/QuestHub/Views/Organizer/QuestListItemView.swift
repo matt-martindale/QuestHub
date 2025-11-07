@@ -22,6 +22,7 @@ struct QuestListItemView: View {
                         HStack {
                             Image(systemName: "person.crop.circle")
                                 .foregroundStyle(.secondary)
+                                .padding(.trailing, 8)
                             Text(quest.creatorDisplayName ?? "anonymous")
                                 .font(.footnote)
                                 .foregroundStyle(.secondary)
@@ -55,6 +56,16 @@ struct QuestListItemView: View {
                                 .fontWeight(.medium)
                         }
                     }
+                    
+                    HStack {
+                        Image(systemName: "calendar")
+                            .foregroundStyle(.secondary)
+                            .padding(.trailing, 8)
+                        Text(quest.createdAt?.formatted(date: .abbreviated, time: .omitted) ?? "Unknown date")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                    
                 }
                 .padding(.top)
                 
