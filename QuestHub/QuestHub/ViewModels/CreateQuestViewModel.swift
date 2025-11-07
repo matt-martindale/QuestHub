@@ -17,6 +17,8 @@ final class CreateQuestViewModel: ObservableObject {
     @Published var editingChallengeIndex: Int? = nil
     @Published var isEditing: Bool = false
 
+    private var editingQuestID: String? = nil
+
     let auth: QHAuth
     private let firestore: FirestoreService
 
@@ -52,6 +54,7 @@ final class CreateQuestViewModel: ObservableObject {
                     )
                 }
             }
+            self.editingQuestID = quest.id
         }
     }
 
@@ -104,13 +107,19 @@ final class CreateQuestViewModel: ObservableObject {
             defer { isSaving = false }
             guard let user = auth.currentUser else { return }
 
+            // Determine whether we're creating a new quest or updating an existing one
+            let db = FirebaseFirestore.Firestore.firestore()
+            let userQuests = db.collection("users").document(user.id).collection("quests")
+
+            let isUpdating = (editingQuestID != nil)
+            let questID = editingQuestID ?? IDGenerator.makeShortID()
+
             // Build quest dictionary for Firestore (align with your Firestore schema)
-            let data: [String: Any] = [
-                "id": IDGenerator.makeShortID(),
+            var data: [String: Any] = [
+                "id": questID,
                 "title": title.trimmingCharacters(in: .whitespacesAndNewlines),
                 "subtitle": subtitle.trimmingCharacters(in: .whitespacesAndNewlines),
                 "details": descriptionText.trimmingCharacters(in: .whitespacesAndNewlines),
-                "createdAt": Date(),
                 "creatorID": user.id,
                 "creatorDisplayName": user.displayName ?? user.email ?? "anonymous",
                 "isLocked": isPasswordProtected,
@@ -125,12 +134,24 @@ final class CreateQuestViewModel: ObservableObject {
                 }
             ]
 
+            if isUpdating {
+                data["updatedAt"] = Date()
+            } else {
+                data["createdAt"] = Date()
+            }
+
             do {
-                let db = FirebaseFirestore.Firestore.firestore()
-                let collection = db.collection("users").document(user.id).collection("quests")
-                _ = try await collection.addDocument(data: data)
-                
-                // Removed parameterless updateCurrentUserQuests() call; use fetched latest instead
+                if isUpdating, let questID = editingQuestID {
+                    // Overwrite existing quest document (merge to preserve any fields we didn't specify if needed)
+                    try await userQuests.document(questID).setData(data, merge: true)
+                } else {
+                    // Create new quest with known id so future edits can target this document
+                    try await userQuests.document(questID).setData(data)
+                    // Store the new id for any further edits in this session
+                    self.editingQuestID = questID
+                }
+
+                // Refresh user's quests in auth
                 do {
                     let latest = try await firestore.fetchQuests(forUserID: user.id)
                     auth.updateCurrentUserQuests(latest)
