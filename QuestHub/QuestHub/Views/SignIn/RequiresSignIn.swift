@@ -10,7 +10,7 @@ struct RequiresSignIn: ViewModifier {
     func body(content: Content) -> some View {
         content
             .onAppear { updatePresentation() }
-            .onChange(of: auth.currentUser) { _ in
+            .onChange(of: auth.currentUser) {
                 updatePresentation()
             }
             .sheet(isPresented: $showSignIn) {

@@ -12,7 +12,9 @@ struct SignInGate<Content: View>: View {
             content()
         }
         .onAppear { updatePresentation() }
-        .onChange(of: auth.currentUser) { _ in updatePresentation() }
+        .onChange(of: auth.currentUser) {
+            updatePresentation()
+        }
         .sheet(isPresented: $showSignIn) {
             NavigationStack {
                 SignInView()
