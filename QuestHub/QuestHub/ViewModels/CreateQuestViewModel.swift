@@ -44,7 +44,7 @@ final class CreateQuestViewModel: ObservableObject {
             self.title = quest.title ?? ""
             self.subtitle = quest.subtitle ?? ""
             self.descriptionText = quest.description ?? ""
-            self.isPasswordProtected = quest.isLocked ?? false
+            self.isPasswordProtected = !(quest.password ?? "").isEmpty ? true : false
             self.password = quest.password ?? ""
             // Map quest challenges to local Challenge model if available
             if let questChallenges = quest.challenges {
@@ -147,7 +147,7 @@ final class CreateQuestViewModel: ObservableObject {
             questToSave.maxPlayers = self.maxPlayers
             questToSave.creatorID = user.id
             questToSave.creatorDisplayName = creatorDisplayName
-            questToSave.isLocked = self.isPasswordProtected
+            questToSave.status = .inactive
             questToSave.password = self.password
             questToSave.challenges = self.challenges
 

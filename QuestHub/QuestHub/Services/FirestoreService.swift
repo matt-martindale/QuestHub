@@ -51,8 +51,8 @@ struct FirestoreService {
             "maxPlayers": quest.maxPlayers ?? 0,
             "creatorID": quest.creatorID ?? "",
             "creatorDisplayName": quest.creatorDisplayName ?? "",
-            "isLocked": quest.isLocked ?? false,
-            "password": (quest.isLocked ?? false) ? (quest.password ?? "") : "",
+            "status": quest.status?.rawValue ?? "inactive",
+            "password": quest.password ?? "",
             "challenges": encodedChallenges
         ]
 

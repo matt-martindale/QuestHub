@@ -71,7 +71,7 @@ struct QuestListItemView: View {
                 
                 // Quest status stack
                 HStack {
-                    if let isLocked = quest.isLocked, isLocked {
+                    if let status = quest.status, status == .inactive {
                         Text("Quest is locked")
                             .font(.callout)
                         Image(systemName: "lock.fill")
@@ -93,6 +93,6 @@ struct QuestListItemView: View {
 }
 
 #Preview {
-    QuestListItemView(quest: Quest(id: "IDH4HD", title: "Thanksgiving scavenger hunt", subtitle: "subtitle", description: "description", maxPlayers: 50, challenges: [], createdAt: Date(), updatedAt: Date(), creatorID: "u1", creatorDisplayName: "Alice", isLocked: true, password: "password")){}
+    QuestListItemView(quest: Quest(id: "IDH4HD", title: "Thanksgiving scavenger hunt", subtitle: "subtitle", description: "description", maxPlayers: 50, challenges: [], createdAt: Date(), updatedAt: Date(), creatorID: "u1", creatorDisplayName: "Alice", status: .inactive, password: "password")){}
         .padding()
 }

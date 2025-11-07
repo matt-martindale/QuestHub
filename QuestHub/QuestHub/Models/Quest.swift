@@ -8,6 +8,12 @@
 import Foundation
 import FirebaseFirestore
 
+enum QuestStatus: String, Codable {
+    case active
+    case inactive
+    case locked
+}
+
 class Quest: Identifiable, Codable, Equatable {
     // Stable identity for SwiftUI and persistence
     var id: String?
@@ -26,7 +32,7 @@ class Quest: Identifiable, Codable, Equatable {
     var creatorDisplayName: String?
 
     // Access control
-    var isLocked: Bool?
+    var status: QuestStatus?
     var password: String?
 
     enum CodingKeys: String, CodingKey {
@@ -40,7 +46,7 @@ class Quest: Identifiable, Codable, Equatable {
         case updatedAt
         case creatorID
         case creatorDisplayName
-        case isLocked
+        case status
         case password
     }
 
@@ -55,7 +61,7 @@ class Quest: Identifiable, Codable, Equatable {
         updatedAt: Date = Date(),
         creatorID: String? = nil,
         creatorDisplayName: String? = nil,
-        isLocked: Bool = false,
+        status: QuestStatus? = .inactive,
         password: String? = nil
     ) {
         self.id = id
@@ -68,7 +74,7 @@ class Quest: Identifiable, Codable, Equatable {
         self.updatedAt = updatedAt
         self.creatorID = creatorID
         self.creatorDisplayName = creatorDisplayName
-        self.isLocked = isLocked
+        self.status = status
         self.password = password
     }
 
@@ -83,7 +89,7 @@ class Quest: Identifiable, Codable, Equatable {
         lhs.updatedAt == rhs.updatedAt &&
         lhs.creatorID == rhs.creatorID &&
         lhs.creatorDisplayName == rhs.creatorDisplayName &&
-        lhs.isLocked == rhs.isLocked &&
+        lhs.status == rhs.status &&
         lhs.password == rhs.password
     }
 }
