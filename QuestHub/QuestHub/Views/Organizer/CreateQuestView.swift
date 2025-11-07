@@ -23,6 +23,8 @@ struct CreateQuestView: View {
                 Section {
                     VStack(alignment: .leading) {
                         Text("Title")
+                            .font(.headline)
+                            .foregroundStyle(.secondary)
                         TextField("Ex: Thanksgiving scavenger hunt", text: $viewModel.title)
                             .textInputAutocapitalization(.sentences)
                             .submitLabel(.next)
@@ -32,6 +34,8 @@ struct CreateQuestView: View {
                     
                     VStack(alignment: .leading) {
                         Text("Subtitle")
+                            .font(.headline)
+                            .foregroundStyle(.secondary)
                         TextField("(optional)", text: $viewModel.subtitle)
                             .textInputAutocapitalization(.sentences)
                             .submitLabel(.next)
@@ -41,6 +45,8 @@ struct CreateQuestView: View {
                     
                     VStack(alignment: .leading) {
                         Text("Description")
+                            .font(.headline)
+                            .foregroundStyle(.secondary)
                         ZStack(alignment: .topLeading) {
                             if viewModel.descriptionText.isEmpty {
                                 Text("Add more details about your quest here.")
@@ -121,22 +127,32 @@ struct CreateQuestView: View {
                 
                 Section {
                     HStack {
-                        Spacer()
                         Button {
-                            // TODO: Implement save quest logic in the view model
                             viewModel.saveQuest()
                         } label: {
                             Text("Save Quest")
-                                .font(.headline)
-                                .foregroundStyle(.white)
-                                .padding(.vertical, 12)
-                                .padding(.horizontal, 20)
                                 .frame(maxWidth: .infinity)
-                                .background(Color.qhPrimaryBlue, in: .capsule)
+                                .padding(.vertical, 12)
+                                .background(Color.clear)
+                                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                         }
-                        .buttonStyle(.plain)
-                        .disabled(!viewModel.canSave)
-                        Spacer()
+                        .padding()
+                        .buttonStyle(.glass)
+                        .shadow(color: Color.qhPrimaryBlue.opacity(0.25), radius: 4, x: 0, y: 4)
+                        
+//                        Button {
+//                            viewModel.saveQuest()
+//                        } label: {
+//                            Text("Save Quest")
+//                                .font(.headline)
+//                                .foregroundStyle(.white)
+//                                .padding(.vertical, 12)
+//                                .padding(.horizontal, 20)
+//                                .frame(maxWidth: .infinity)
+//                                .background(Color.qhPrimaryBlue, in: .capsule)
+//                        }
+//                        .buttonStyle(.plain)
+//                        .disabled(!viewModel.canSave)
                     }
                 }
                 .listRowBackground(Color.clear)
