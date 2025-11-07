@@ -47,8 +47,22 @@ struct OrganizerHubView: View {
                                         selectedQuest = quest
                                         isShowingEditQuestSheet = true
                                     }
+                                    .listRowSeparator(.hidden) // hide the connecting lines
+                                    .listRowInsets(EdgeInsets()) // allow full-width background
+                                    .padding(.vertical, 28) // spacing between items
+                                    .padding(.horizontal, 12)  // inset from edges
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                            .fill(.background) // or .ultraThinMaterial for a glassy look
+                                            .shadow(color: .black.opacity(0.2), radius: 6, x: 0, y: 3)
+                                    )
+                                    .listRowBackground(Color.clear) // avoid default row background
                                 }
                             }
+                            .listStyle(.plain)
+                            .contentMargins(.horizontal, 16)
+                            .listRowSpacing(16)
+                            .scrollContentBackground(.hidden)
                             // Allow the list to extend under the bottom buttons
                             .contentMargins(.bottom, 150)
                         }
