@@ -107,7 +107,7 @@ struct CreateQuestView: View {
                             .help("Learn how max players affects your quest.")
                         }
                         .padding(.bottom, 6)
-                        Picker("Max players", selection: $viewModel.maxPlayers) {
+                        Picker("Max players", selection: $viewModel.maxPlayersSelection) {
                             Text("1–10").tag(0)
                             Text("11–100").tag(1)
                             Text("100+").tag(2)

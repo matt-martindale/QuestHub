@@ -9,6 +9,7 @@ final class CreateQuestViewModel: ObservableObject {
     @Published var title: String = ""
     @Published var subtitle: String = ""
     @Published var descriptionText: String = ""
+    @Published var maxPlayersSelection: Int = 0
     @Published var maxPlayers: Int? = nil
     @Published var isPasswordProtected: Bool = false
     @Published var password: String = ""
@@ -21,6 +22,7 @@ final class CreateQuestViewModel: ObservableObject {
 
     let auth: QHAuth
     private let firestore: FirestoreService
+    private var cancellables: Set<AnyCancellable> = []
 
     @Published var isSaving: Bool = false
     @Published var didFinishSaving: Bool = false
@@ -54,11 +56,46 @@ final class CreateQuestViewModel: ObservableObject {
                 }
             }
             self.editingQuestID = quest.id
+            // Map an existing quest's max players to a selection if available
+            if let existingMax = quest.maxPlayers {
+                if existingMax <= 10 {
+                    self.maxPlayersSelection = 0
+                } else if existingMax <= 100 {
+                    self.maxPlayersSelection = 1
+                } else {
+                    self.maxPlayersSelection = 2
+                }
+                self.maxPlayers = existingMax
+            }
+        } else {
+            // New quest defaults
+            self.maxPlayersSelection = 0
+            self.updateMaxPlayersFromSelection()
         }
+
+        $maxPlayersSelection
+            .removeDuplicates()
+            .sink { [weak self] _ in
+                self?.updateMaxPlayersFromSelection()
+            }
+            .store(in: &cancellables)
     }
     
     convenience init(auth: QHAuth, questToEdit: Quest? = nil) {
         self.init(auth: auth, questToEdit: questToEdit, firestore: FirestoreService())
+    }
+
+    private func updateMaxPlayersFromSelection() {
+        switch maxPlayersSelection {
+        case 0:
+            maxPlayers = 10
+        case 1:
+            maxPlayers = 100
+        case 2:
+            maxPlayers = 1000 // use a high cap to represent 100+
+        default:
+            maxPlayers = 10
+        }
     }
 
     // MARK: - Challenge actions
@@ -111,27 +148,25 @@ final class CreateQuestViewModel: ObservableObject {
             guard let user = auth.currentUser else { return }
 
             let creatorDisplayName = user.displayName ?? user.email ?? "anonymous"
-            let challengesPayload: [[String: Any]] = self.challenges.map { ch in
-                return [
-                    "id": ch.id ?? "",
-                    "title": ch.title ?? "",
-                    "details": ch.details ?? "",
-                    "points": ch.points ?? 0
-                ]
-            }
+
+            let trimmedTitle = self.title.trimmingCharacters(in: .whitespacesAndNewlines)
+            let trimmedSubtitle = self.subtitle.trimmingCharacters(in: .whitespacesAndNewlines)
+            let trimmedDescription = self.descriptionText.trimmingCharacters(in: .whitespacesAndNewlines)
+
+            let questToSave = Quest()
+            questToSave.id = self.editingQuestID
+            questToSave.title = trimmedTitle
+            questToSave.subtitle = trimmedSubtitle
+            questToSave.description = trimmedDescription
+            questToSave.maxPlayers = self.maxPlayers
+            questToSave.creatorID = user.id
+            questToSave.creatorDisplayName = creatorDisplayName
+            questToSave.isLocked = self.isPasswordProtected
+            questToSave.password = self.password
+            questToSave.challenges = self.challenges
 
             do {
-                let savedID = try await firestore.saveQuest(
-                    questID: self.editingQuestID,
-                    userID: user.id,
-                    creatorDisplayName: creatorDisplayName,
-                    title: self.title.trimmingCharacters(in: .whitespacesAndNewlines),
-                    subtitle: self.subtitle.trimmingCharacters(in: .whitespacesAndNewlines),
-                    description: self.descriptionText.trimmingCharacters(in: .whitespacesAndNewlines),
-                    isLocked: self.isPasswordProtected,
-                    password: self.password,
-                    challenges: challengesPayload
-                )
+                let savedID = try await firestore.saveQuest(questToSave)
                 self.editingQuestID = savedID
 
                 // Refresh user's quests in auth

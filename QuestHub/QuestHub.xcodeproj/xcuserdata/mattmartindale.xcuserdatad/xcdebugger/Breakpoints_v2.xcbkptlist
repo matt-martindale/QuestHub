@@ -46,9 +46,9 @@
             filePath = "QuestHub/Services/FirestoreService.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "55"
-            endingLineNumber = "55"
-            landmarkName = "saveQuest(questID:userID:creatorDisplayName:title:subtitle:description:isLocked:password:challenges:)"
+            startingLineNumber = "69"
+            endingLineNumber = "69"
+            landmarkName = "saveQuest(_:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

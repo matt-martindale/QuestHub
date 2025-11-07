@@ -28,32 +28,46 @@ struct FirestoreService {
     }
     
     @discardableResult
-    func saveQuest(questID: String?, userID: String, creatorDisplayName: String, title: String, subtitle: String, description: String, isLocked: Bool, password: String, challenges: [[String: Any]]
-    ) async throws -> String {
-        let isUpdating = (questID != nil)
-        let id = questID ?? IDGenerator.makeShortID()
+    func saveQuest(_ quest: Quest) async throws -> String {
+        // Determine if this is an update based on presence of an id
+        let isUpdating = (quest.id?.isEmpty == false)
+        let id = quest.id ?? IDGenerator.makeShortID()
 
+        let encodedChallenges: [[String: Any]] = (quest.challenges ?? []).map { ch in
+            return [
+                "id": ch.id ?? "",
+                "title": ch.title ?? "",
+                "details": ch.details ?? "",
+                "points": ch.points ?? 0
+            ]
+        }
+
+        // Build data dictionary from Quest
         var data: [String: Any] = [
             "id": id,
-            "title": title,
-            "subtitle": subtitle,
-            "description": description,
-            "creatorID": userID,
-            "creatorDisplayName": creatorDisplayName,
-            "isLocked": isLocked,
-            "password": isLocked ? password : "",
-            "challenges": challenges
+            "title": quest.title ?? "",
+            "subtitle": quest.subtitle ?? "",
+            "description": quest.description ?? "",
+            "maxPlayers": quest.maxPlayers ?? 0,
+            "creatorID": quest.creatorID ?? "",
+            "creatorDisplayName": quest.creatorDisplayName ?? "",
+            "isLocked": quest.isLocked ?? false,
+            "password": (quest.isLocked ?? false) ? (quest.password ?? "") : "",
+            "challenges": encodedChallenges
         ]
 
+        // Preserve existing timestamps when possible; set the appropriate one now
         if isUpdating {
             data["updatedAt"] = Date()
+            if let createdAt = quest.createdAt { data["createdAt"] = createdAt }
         } else {
             data["createdAt"] = Date()
         }
 
+        let userID = quest.creatorID ?? ""
         let userQuests = db.collection("users").document(userID).collection("quests")
         let questsCollection = db.collection("quests")
-        
+
         if isUpdating {
             try await userQuests.document(id).setData(data, merge: true)
             try await questsCollection.document(id).setData(data, merge: true)
@@ -65,3 +79,4 @@ struct FirestoreService {
         return id
     }
 }
+
