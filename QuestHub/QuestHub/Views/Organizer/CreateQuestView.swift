@@ -198,6 +198,11 @@ struct CreateQuestView: View {
             }
             .presentationDetents([.medium, .large])
         }
+        .onChange(of: viewModel.isPasswordProtected) { _, newValue in
+            if newValue == false {
+                viewModel.password = ""
+            }
+        }
         .interactiveDismissDisabled(true)
     }
 }
