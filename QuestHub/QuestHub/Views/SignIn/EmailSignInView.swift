@@ -45,16 +45,11 @@ struct EmailSignInView: View {
 
                 // Optional secondary guidance
                 secondaryHint
-
-                // Hidden navigation link triggered on success
-                NavigationLink(isActive: $navigateToHub) {
-                    OrganizerHubView()
-                } label: {
-                    EmptyView()
-                }
-                .hidden()
             }
             .padding()
+            .navigationDestination(isPresented: $navigateToHub) {
+                OrganizerHubView()
+            }
         }
         .animation(.default, value: isLoginFlow)
     }

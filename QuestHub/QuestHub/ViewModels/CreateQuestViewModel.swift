@@ -25,7 +25,7 @@ final class CreateQuestViewModel: ObservableObject {
     @Published var isSaving: Bool = false
     @Published var didFinishSaving: Bool = false
 
-    init(auth: QHAuth, questToEdit: Quest? = nil, firestore: FirestoreService = FirestoreService()) {
+    init(auth: QHAuth, questToEdit: Quest? = nil, firestore: FirestoreService) {
         self.auth = auth
         self.firestore = firestore
         if let quest = questToEdit {
@@ -55,6 +55,10 @@ final class CreateQuestViewModel: ObservableObject {
             }
             self.editingQuestID = quest.id
         }
+    }
+    
+    convenience init(auth: QHAuth, questToEdit: Quest? = nil) {
+        self.init(auth: auth, questToEdit: questToEdit, firestore: FirestoreService())
     }
 
     // MARK: - Challenge actions
@@ -109,10 +113,10 @@ final class CreateQuestViewModel: ObservableObject {
             let creatorDisplayName = user.displayName ?? user.email ?? "anonymous"
             let challengesPayload: [[String: Any]] = self.challenges.map { ch in
                 return [
-                    "id": ch.id,
-                    "title": ch.title,
-                    "details": ch.details,
-                    "points": ch.points
+                    "id": ch.id ?? "",
+                    "title": ch.title ?? "",
+                    "details": ch.details ?? "",
+                    "points": ch.points ?? 0
                 ]
             }
 
@@ -146,3 +150,4 @@ final class CreateQuestViewModel: ObservableObject {
         }
     }
 }
+
