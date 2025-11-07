@@ -63,6 +63,19 @@ final class QuestService {
                 return nil
             }
 
+            let playerSnapshot: DocumentSnapshot
+            do {
+                playerSnapshot = try transaction.getDocument(pRef)
+            } catch let error as NSError {
+                errorPointer?.pointee = error
+                return nil
+            }
+
+            // If the player doc already exists, do not increment count (no-op)
+            if playerSnapshot.exists {
+                return ["joined": false]
+            }
+
             let playersCount = data["playersCount"] as? Int ?? 0
             let maxPlayers = data["maxPlayers"] as? Int ?? Int.max
 
@@ -81,24 +94,36 @@ final class QuestService {
                 "quests": FieldValue.arrayUnion([questId])
             ], forDocument: uRef, merge: true)
 
-            return nil
-        }) { [weak self] (_, error) in
+            return ["joined": true]
+        }) { [weak self] (result, error) in
             if let error = error {
                 completion(.failure(error))
                 return
             }
 
-            // After transaction, ensure the players subcollection doc exists/updated with metadata
-            pRef.setData([
-                "userId": userId,
-                "displayName": userDisplayName
-            ], merge: false) { err in
-                if let err = err {
-                    completion(.failure(err))
-                } else {
-                    completion(.success(()))
+            let joined: Bool
+            if let dict = result as? [String: Bool], let j = dict["joined"] {
+                joined = j
+            } else {
+                joined = true // default to true if not provided
+            }
+
+            // After transaction, if we actually joined, create the player doc; otherwise, succeed without changes
+            if joined {
+                pRef.setData([
+                    "userId": userId,
+                    "displayName": userDisplayName
+                ], merge: false) { err in
+                    if let err = err {
+                        completion(.failure(err))
+                    } else {
+                        completion(.success(()))
+                    }
                 }
+            } else {
+                completion(.success(()))
             }
         }
     }
 }
+
