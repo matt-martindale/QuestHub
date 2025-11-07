@@ -107,49 +107,29 @@ final class CreateQuestViewModel: ObservableObject {
             defer { isSaving = false }
             guard let user = auth.currentUser else { return }
 
-            // Determine whether we're creating a new quest or updating an existing one
-            let db = FirebaseFirestore.Firestore.firestore()
-            let userQuests = db.collection("users").document(user.id).collection("quests")
-
-            let isUpdating = (editingQuestID != nil)
-            let questID = editingQuestID ?? IDGenerator.makeShortID()
-
-            // Build quest dictionary for Firestore (align with your Firestore schema)
-            var data: [String: Any] = [
-                "id": questID,
-                "title": title.trimmingCharacters(in: .whitespacesAndNewlines),
-                "subtitle": subtitle.trimmingCharacters(in: .whitespacesAndNewlines),
-                "description": descriptionText.trimmingCharacters(in: .whitespacesAndNewlines),
-                "creatorID": user.id,
-                "creatorDisplayName": user.displayName ?? user.email ?? "anonymous",
-                "isLocked": isPasswordProtected,
-                "password": isPasswordProtected ? password : "",
-                "challenges": challenges.map { ch in
-                    return [
-                        "id": ch.id,
-                        "title": ch.title,
-                        "details": ch.details,
-                        "points": ch.points
-                    ]
-                }
-            ]
-
-            if isUpdating {
-                data["updatedAt"] = Date()
-            } else {
-                data["createdAt"] = Date()
+            let creatorDisplayName = user.displayName ?? user.email ?? "anonymous"
+            let challengesPayload: [[String: Any]] = self.challenges.map { ch in
+                return [
+                    "id": ch.id,
+                    "title": ch.title,
+                    "details": ch.details,
+                    "points": ch.points
+                ]
             }
 
             do {
-                if isUpdating, let questID = editingQuestID {
-                    // Overwrite existing quest document (merge to preserve any fields we didn't specify if needed)
-                    try await userQuests.document(questID).setData(data, merge: true)
-                } else {
-                    // Create new quest with known id so future edits can target this document
-                    try await userQuests.document(questID).setData(data)
-                    // Store the new id for any further edits in this session
-                    self.editingQuestID = questID
-                }
+                let savedID = try await firestore.saveQuest(
+                    questID: self.editingQuestID,
+                    userID: user.id,
+                    creatorDisplayName: creatorDisplayName,
+                    title: self.title.trimmingCharacters(in: .whitespacesAndNewlines),
+                    subtitle: self.subtitle.trimmingCharacters(in: .whitespacesAndNewlines),
+                    description: self.descriptionText.trimmingCharacters(in: .whitespacesAndNewlines),
+                    isLocked: self.isPasswordProtected,
+                    password: self.password,
+                    challenges: challengesPayload
+                )
+                self.editingQuestID = savedID
 
                 // Refresh user's quests in auth
                 do {
