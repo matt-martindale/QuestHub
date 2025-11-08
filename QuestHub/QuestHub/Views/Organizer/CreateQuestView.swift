@@ -179,7 +179,7 @@ struct CreateQuestView: View {
                 }
                 
                 Section {
-                    HStack {
+                    VStack(spacing: 0) {
                         Button {
                             viewModel.saveQuest()
                         } label: {
@@ -189,9 +189,9 @@ struct CreateQuestView: View {
                                 .background(Color.clear)
                                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                         }
-                        .padding()
+//                        .padding()
                         .buttonStyle(.glass)
-                        .shadow(color: Color.qhPrimaryBlue.opacity(0.25), radius: 4, x: 0, y: 4)
+                        .shadow(color: Color.qhPrimaryBlue.opacity(0.25), radius: 8, x: 0, y: 0)
                         
                         if viewModel.isEditing {
                             Button {
@@ -203,9 +203,10 @@ struct CreateQuestView: View {
                                     .background(Color.clear)
                                     .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                             }
-                            .padding([.leading, .trailing, .bottom])
+                            .padding(.vertical)
                             .buttonStyle(.bordered)
                             .tint(.red)
+//                            .padding(.horizontal)
                         }
                     }
                 }
