@@ -112,7 +112,8 @@ final class QuestService {
             if joined {
                 pRef.setData([
                     "userId": userId,
-                    "displayName": userDisplayName
+                    "displayName": userDisplayName,
+                    "points": 0
                 ], merge: false) { err in
                     if let err = err {
                         completion(.failure(err))
