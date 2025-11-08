@@ -24,7 +24,6 @@ class Quest: Identifiable, Codable, Equatable {
     var description: String?
     var maxPlayers: Int?
     var playersCount: Int?
-    var playerList: [String]?
     var challenges: [Challenge]?
 
     // Ownership and timing
@@ -44,7 +43,6 @@ class Quest: Identifiable, Codable, Equatable {
         case description
         case maxPlayers
         case playersCount
-        case playerList
         case challenges
         case createdAt
         case updatedAt
@@ -61,7 +59,6 @@ class Quest: Identifiable, Codable, Equatable {
         description: String? = nil,
         maxPlayers: Int? = nil,
         playersCount: Int? = 0,
-        playerList: [String]? = [],
         challenges: [Challenge]? = [],
         createdAt: Date = Date(),
         updatedAt: Date = Date(),
@@ -76,7 +73,6 @@ class Quest: Identifiable, Codable, Equatable {
         self.description = description
         self.maxPlayers = maxPlayers
         self.playersCount = playersCount
-        self.playerList = playerList
         self.challenges = challenges
         self.createdAt = createdAt
         self.updatedAt = updatedAt
@@ -93,7 +89,6 @@ class Quest: Identifiable, Codable, Equatable {
         lhs.description == rhs.description &&
         lhs.maxPlayers == rhs.maxPlayers &&
         lhs.playersCount == rhs.playersCount &&
-        lhs.playerList == rhs.playerList &&
         lhs.challenges == rhs.challenges &&
         lhs.createdAt == rhs.createdAt &&
         lhs.updatedAt == rhs.updatedAt &&
