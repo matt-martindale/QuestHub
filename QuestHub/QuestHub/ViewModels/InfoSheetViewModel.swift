@@ -12,6 +12,7 @@ import Combine
 enum InfoFlow: Equatable {
     case password
     case maxPlayers
+    case requireSignIn
 }
 
 @MainActor
@@ -29,6 +30,8 @@ final class InfoSheetViewModel: ObservableObject {
             "Password protection"
         case .maxPlayers:
             "Maximum # of players"
+        case .requireSignIn:
+            "Require players to sign-in"
         }
     }
 
@@ -38,6 +41,8 @@ final class InfoSheetViewModel: ObservableObject {
             return "When enabled, players must enter this password to join your quest. Share the password only with the people you wish to participate."
         case .maxPlayers:
             return "Set the maximum number of players who can join your quest. Once the limit is reached, no additional players will be able to join. You can adjust this later."
+        case .requireSignIn:
+            return "If turned on, players must be signed-in to participate. It will allow you to contact players who have won. If turned off, players will need to enter a display name."
         }
     }
 }

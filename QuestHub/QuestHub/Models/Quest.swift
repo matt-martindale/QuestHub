@@ -35,6 +35,7 @@ class Quest: Identifiable, Codable, Equatable {
     // Access control
     var status: QuestStatus?
     var password: String?
+    var requireSignIn: Bool?
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -50,6 +51,7 @@ class Quest: Identifiable, Codable, Equatable {
         case creatorDisplayName
         case status
         case password
+        case requireSignIn
     }
 
     init(
@@ -65,7 +67,8 @@ class Quest: Identifiable, Codable, Equatable {
         creatorID: String? = nil,
         creatorDisplayName: String? = nil,
         status: QuestStatus? = .paused,
-        password: String? = nil
+        password: String? = nil,
+        requireSignIn: Bool = false
     ) {
         self.id = id
         self.title = title
@@ -80,6 +83,7 @@ class Quest: Identifiable, Codable, Equatable {
         self.creatorDisplayName = creatorDisplayName
         self.status = status
         self.password = password
+        self.requireSignIn = requireSignIn
     }
 
     static func == (lhs: Quest, rhs: Quest) -> Bool {
@@ -95,7 +99,8 @@ class Quest: Identifiable, Codable, Equatable {
         lhs.creatorID == rhs.creatorID &&
         lhs.creatorDisplayName == rhs.creatorDisplayName &&
         lhs.status == rhs.status &&
-        lhs.password == rhs.password
+        lhs.password == rhs.password &&
+        lhs.requireSignIn == rhs.requireSignIn
     }
 }
 

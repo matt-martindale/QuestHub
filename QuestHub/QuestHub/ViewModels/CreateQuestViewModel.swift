@@ -10,6 +10,7 @@ final class CreateQuestViewModel: ObservableObject {
     @Published var subtitle: String = ""
     @Published var descriptionText: String = ""
     @Published var maxPlayersSelection: Int = 0
+    @Published var requireSignIn: Bool = false
     @Published var isPasswordProtected: Bool = false
     @Published var password: String = ""
     @Published var challenges: [Challenge] = []
@@ -46,6 +47,7 @@ final class CreateQuestViewModel: ObservableObject {
             self.descriptionText = quest.description ?? ""
             self.isPasswordProtected = !(quest.password ?? "").isEmpty ? true : false
             self.password = quest.password ?? ""
+            self.requireSignIn = quest.requireSignIn ?? false
             // Map quest challenges to local Challenge model if available
             if let questChallenges = quest.challenges {
                 self.challenges = questChallenges.map { qc in
@@ -149,6 +151,7 @@ final class CreateQuestViewModel: ObservableObject {
             questToSave.creatorDisplayName = creatorDisplayName
             questToSave.status = .paused
             questToSave.password = self.password
+            questToSave.requireSignIn = self.requireSignIn
             questToSave.challenges = self.challenges
 
             do {
@@ -168,3 +171,4 @@ final class CreateQuestViewModel: ObservableObject {
         }
     }
 }
+

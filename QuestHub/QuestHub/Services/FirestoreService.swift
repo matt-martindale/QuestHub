@@ -53,6 +53,7 @@ struct FirestoreService {
             "creatorDisplayName": quest.creatorDisplayName ?? "",
             "status": quest.status?.rawValue ?? "inactive",
             "password": quest.password ?? "",
+            "requireSignIn": quest.requireSignIn ?? false,
             "challenges": encodedChallenges
         ]
 
@@ -64,7 +65,6 @@ struct FirestoreService {
             data["createdAt"] = Date()
         }
 
-        let userID = quest.creatorID ?? ""
         let questsCollection = db.collection("quests")
 
         if isUpdating {

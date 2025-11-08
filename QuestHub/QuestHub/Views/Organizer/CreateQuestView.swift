@@ -13,6 +13,7 @@ struct CreateQuestView: View {
     @StateObject private var viewModel: CreateQuestViewModel
     @State private var showMaxPlayersInfo: Bool = false
     @State private var showPasswordInfo: Bool = false
+    @State private var showRequireSignInInfo: Bool = false
 
     init(auth: QHAuth, questToEdit: Quest? = nil) {
         _viewModel = StateObject(wrappedValue: CreateQuestViewModel(auth: auth, questToEdit: questToEdit))
@@ -120,6 +121,28 @@ struct CreateQuestView: View {
                         }
                     }
                     .padding(.top, 4)
+                    
+                    Toggle(isOn: $viewModel.requireSignIn) {
+                        HStack(spacing: 6) {
+                            Text("Require players to sign-in")
+                            Button {
+                                showRequireSignInInfo = true
+                            } label: {
+                                Image(systemName: "questionmark.circle")
+                                    .foregroundStyle(.secondary)
+                            }
+                            .buttonStyle(.plain)
+                            .help("When enabled, players must be signed in to join your quest.")
+                            .sheet(isPresented: $showRequireSignInInfo) {
+                                InfoSheetView(viewModel: InfoSheetViewModel(flow: .requireSignIn)) { showRequireSignInInfo = false }
+                                    .presentationDetents([.medium])
+                                    .presentationDragIndicator(.visible)
+                            }
+                        }
+                    }
+                    .listRowSeparator(.hidden, edges: .bottom)
+                    .padding(.trailing, 12)
+                    .toggleStyle(.switch)
                     
                     Toggle(isOn: $viewModel.isPasswordProtected) {
                         HStack(spacing: 6) {
