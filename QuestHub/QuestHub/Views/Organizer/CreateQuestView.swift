@@ -139,6 +139,7 @@ struct CreateQuestView: View {
                             }
                         }
                     }
+                    .listRowSeparator(.hidden, edges: .bottom)
                     .padding(.trailing, 12)
                     .toggleStyle(.switch)
 
@@ -149,6 +150,7 @@ struct CreateQuestView: View {
                             .padding(12)
                             .background(.quaternary.opacity(0.15), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                             .transition(.opacity.combined(with: .move(edge: .top)))
+                            .listRowSeparator(.hidden, edges: .top)
                     }
                 }
                 
