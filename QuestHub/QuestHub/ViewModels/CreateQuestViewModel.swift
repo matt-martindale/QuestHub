@@ -155,12 +155,9 @@ final class CreateQuestViewModel: ObservableObject {
                 let savedID = try await firestore.saveQuest(questToSave)
                 self.editingQuestID = savedID
 
-                // Refresh user's quests in auth
+                // Refresh user's quests via auth so UI can reflect changes
                 do {
-                    let latest = try await firestore.fetchQuests(forUserID: user.id)
-                    auth.updateCurrentUserQuests(latest)
-                } catch {
-                    // Non-fatal; proceed with navigation
+                    _ = await auth.fetchCreatedQuests()
                 }
 
                 didFinishSaving = true

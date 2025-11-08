@@ -15,50 +15,43 @@ struct OrganizerHubView: View {
     @State private var isShowingEditQuestSheet = false
     
     private func refreshQuests() async {
-        guard let user = auth.currentUser else { return }
-        do {
-            let latest = try await auth.firestore.fetchQuests(forUserID: user.id)
-            await MainActor.run {
-                auth.updateCurrentUserQuests(latest)
-            }
-        } catch {
-            // You might want to surface an error toast in the future
-            print("Failed to refresh quests: \(error)")
-        }
+        _ = await auth.fetchCreatedQuests()
     }
     
     var body: some View {
         NavigationStack {
             ZStack(alignment: .bottom) {
                 VStack(spacing: 16) {
+                    if auth.isLoadingCreatedQuests {
+                        ProgressView("Loading quests…")
+                            .padding(.top, 16)
+                    }
                     if let user = auth.currentUser {
                         
                         // Empty vs non-empty state
-                        if user.quests.isEmpty {
-                            VStack(spacing: 8) {
-                                Text("\(UIStrings.welcome)\(user.displayName?.isEmpty == false ? user.displayName! : user.email ?? "anonymous")")
-                                    .font(.title2)
-                                    .fontWeight(.semibold)
+                        if auth.createdQuests.isEmpty {
+                            if !auth.isLoadingCreatedQuests {
                                 VStack(spacing: 8) {
-                                    Text("You don't have any quests yet.")
-                                        .font(.body)
-                                        .foregroundStyle(.secondary)
-                                    Image(systemName: "tray")
-                                        .font(.system(size: 80))
-                                    Text("Tap the button below to create your first quest.")
-                                        .font(.footnote)
-                                        .foregroundStyle(.tertiary)
+                                    Text("\(UIStrings.welcome)\(user.displayName?.isEmpty == false ? user.displayName! : user.email ?? "anonymous")")
+                                        .font(.title2)
+                                        .fontWeight(.semibold)
+                                    VStack(spacing: 8) {
+                                        Text("You don't have any quests yet.")
+                                            .font(.body)
+                                            .foregroundStyle(.secondary)
+                                        Image(systemName: "tray")
+                                            .font(.system(size: 80))
+                                        Text("Tap the button below to create your first quest.")
+                                            .font(.footnote)
+                                            .foregroundStyle(.tertiary)
+                                    }
+                                    .multilineTextAlignment(.center)
                                 }
-                                .multilineTextAlignment(.center)
-                            }
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .contentShape(Rectangle())
-                            .refreshable {
-                                await refreshQuests()
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
                             }
                         } else {
                             List {
-                                ForEach(user.quests) { quest in
+                                ForEach(auth.createdQuests) { quest in
                                     QuestListItemView(quest: quest) {
                                         selectedQuest = quest
                                         isShowingEditQuestSheet = true
@@ -75,6 +68,14 @@ struct OrganizerHubView: View {
                             .contentMargins(.horizontal, 16)
                             .listRowSpacing(16)
                             .scrollContentBackground(.hidden)
+                            .overlay {
+                                if auth.isLoadingCreatedQuests {
+                                    ZStack {
+                                        Color.clear
+                                        ProgressView("Loading quests…")
+                                    }
+                                }
+                            }
                             // Allow the list to extend under the bottom buttons
                             .contentMargins(.bottom, 150)
                             .refreshable {
@@ -102,27 +103,15 @@ struct OrganizerHubView: View {
                         }
                         .buttonStyle(.glass)
                         .shadow(color: Color.qhPrimaryBlue.opacity(0.25), radius: 8, x: 0, y: 4)
-
-//                        Button {
-//                            guard let user = auth.currentUser else { return }
-//                            Task { @MainActor in
-//                                do {
-//                                    try await auth.firestore.createMockQuest(forUser: user)
-//                                    _ = try await auth.firestore.fetchQuests(forUserID: user.id)
-//                                } catch {
-//                                    print("Failed to create mock quest: \(error)")
-//                                }
-//                            }
-//                        } label: {
-//                            Label("Create Mock Quest", systemImage: "wand.and.stars")
-//                                .frame(maxWidth: .infinity)
-//                                .padding(.vertical, 10)
-//                        }
-//                        .buttonStyle(.borderedProminent)
                     }
                 }
                 .padding(.horizontal)
                 .padding(.bottom)
+            }
+            .onAppear {
+                Task {
+                    await refreshQuests()
+                }
             }
             .sheet(isPresented: $isShowingCreateQuestSheet) {
                 CreateQuestView(auth: auth)
@@ -140,7 +129,11 @@ struct OrganizerHubView: View {
                             Button() {
                                 // Go to Account page
                             } label: {
-                                Label(UIStrings.account, systemImage: "person.fill")
+                                Label {
+                                    Text(auth.currentUser?.id ?? UIStrings.account)
+                                } icon: {
+                                    Image(systemName: "person.fill")
+                                }
                             }
                             Button(role: .destructive) {
                                 auth.signOut()
