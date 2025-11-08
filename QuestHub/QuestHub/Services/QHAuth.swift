@@ -10,12 +10,13 @@ import Combine
 import FirebaseAuth
 import AuthenticationServices
 import FirebaseFirestore
-//import FirebaseFirestoreSwift
 
 @MainActor
 final class QHAuth: ObservableObject {
     @Published private(set) var currentUser: QHUser?
     @Published private(set) var isSigningIn: Bool = false
+    @Published private(set) var isLoadingCreatedQuests: Bool = false
+    @Published private(set) var createdQuests: [Quest] = []
     @Published private(set) var lastError: Error?
     
     private var authListenerHandle: AuthStateDidChangeListenerHandle?
@@ -58,10 +59,9 @@ final class QHAuth: ObservableObject {
     // MARK: - Public API
 
     /// Updates the currently signed-in user's quests in-memory so UI can refresh.
+    /// Deprecated: Quests are now fetched separately via `fetchCreatedQuests()`.
     func updateCurrentUserQuests(_ quests: [Quest]) {
-        guard var user = self.currentUser else { return }
-        user.quests = quests
-        self.currentUser = user
+        // No-op: quests are fetched via `fetchCreatedQuests()`
     }
 
     /// Attempts to sign in with email and password.
@@ -83,14 +83,6 @@ final class QHAuth: ObservableObject {
                     displayName: fbUser.displayName,
                     createdAt: Date()
                 )
-                // Fetch quests from Firestore and attach
-                do {
-                    let quests = try await firestore.fetchQuests(forUserID: fbUser.uid)
-                    user.quests = quests
-                } catch {
-                    // Non-fatal: keep going but surface the error
-                    self.lastError = error
-                }
                 self.currentUser = user
             }
             // Listener will update currentUser when Firebase signs in
@@ -130,7 +122,6 @@ final class QHAuth: ObservableObject {
                 displayName: fbUser.displayName,
                 createdAt: Date()
             )
-            user.quests = []
 
             self.currentUser = user
 
@@ -142,6 +133,41 @@ final class QHAuth: ObservableObject {
         }
     }
     
+    /// Fetches quests created by the currently signed-in user from the root "quests" collection.
+    /// Returns an empty array if no user is signed in or if an error occurs.
+    func fetchCreatedQuests() async -> [Quest] {
+        isLoadingCreatedQuests = true
+        lastError = nil
+        defer { isLoadingCreatedQuests = false }
+
+        guard let userId = Auth.auth().currentUser?.uid else {
+            self.createdQuests = []
+            return []
+        }
+        do {
+            let snapshot = try await Firestore.firestore()
+                .collection("quests")
+                .whereField("creatorID", isEqualTo: userId)
+                .getDocuments()
+
+            var latest: [Quest] = []
+            for document in snapshot.documents {
+                if let quest = try? document.data(as: Quest.self) {
+                    latest.append(quest)
+                } else {
+                    continue
+                }
+            }
+            self.createdQuests = latest
+            return latest
+        } catch {
+            self.lastError = error
+            self.createdQuests = []
+            // isLoadingCreatedQuests is reset by defer
+            return []
+        }
+    }
+
     func handleAppleCredential(_ credential: ASAuthorizationAppleIDCredential, nonce: String) async throws {
         // First, let AuthService handle credential sign-in/linking
         try await AuthService.shared.handleAppleCredential(credential, nonce: nonce)
@@ -212,12 +238,6 @@ final class QHAuth: ObservableObject {
                         displayName: fbUser.displayName,
                         createdAt: Date()
                     )
-                    do {
-                        let quests = try await firestore.fetchQuests(forUserID: fbUser.uid)
-                        user.quests = quests
-                    } catch {
-                        self.lastError = error
-                    }
                     self.currentUser = user
                 }
             } else {

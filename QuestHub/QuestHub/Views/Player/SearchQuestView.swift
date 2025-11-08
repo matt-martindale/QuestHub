@@ -89,7 +89,6 @@ private extension SearchQuestView {
             quest.description = data["description"] as? String
             quest.maxPlayers = data["maxPlayers"] as? Int
             quest.playersCount = data["playersCount"] as? Int
-            quest.playerList = data["playerList"] as? [String]
             quest.creatorID = data["creatorID"] as? String
             quest.creatorDisplayName = data["creatorDisplayName"] as? String
             if let statusRaw = data["status"] as? String { quest.status = QuestStatus(rawValue: statusRaw) }
