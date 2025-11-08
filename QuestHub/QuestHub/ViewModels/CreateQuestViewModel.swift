@@ -35,6 +35,7 @@ final class CreateQuestViewModel: ObservableObject {
 
     @Published var isSaving: Bool = false
     @Published var didFinishSaving: Bool = false
+    @Published var didFinishDeleting: Bool = false
 
     init(auth: QHAuth, questToEdit: Quest? = nil, firestore: FirestoreService) {
         self.auth = auth
@@ -170,5 +171,20 @@ final class CreateQuestViewModel: ObservableObject {
             }
         }
     }
+    
+    func deleteQuest() {
+        guard let questID = editingQuestID else { return }
+        isSaving = true
+        Task { @MainActor in
+            defer { isSaving = false }
+            do {
+                try await firestore.deleteQuest(withID: questID)
+                // Refresh user's quests via auth so UI can reflect changes
+                do { _ = await auth.fetchCreatedQuests() }
+                didFinishDeleting = true
+            } catch {
+                print("Failed to delete quest: \(error)")
+            }
+        }
+    }
 }
-

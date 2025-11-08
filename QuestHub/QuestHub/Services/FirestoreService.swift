@@ -75,5 +75,9 @@ struct FirestoreService {
 
         return id
     }
+    
+    func deleteQuest(withID id: String) async throws {
+        let questsCollection = db.collection("quests")
+        try await questsCollection.document(id).delete()
+    }
 }
-

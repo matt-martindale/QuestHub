@@ -148,6 +148,7 @@ final class QHAuth: ObservableObject {
             let snapshot = try await Firestore.firestore()
                 .collection("quests")
                 .whereField("creatorID", isEqualTo: userId)
+                .order(by: "createdAt", descending: true)
                 .getDocuments()
 
             var latest: [Quest] = []

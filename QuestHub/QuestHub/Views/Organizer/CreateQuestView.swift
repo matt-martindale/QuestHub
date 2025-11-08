@@ -14,6 +14,7 @@ struct CreateQuestView: View {
     @State private var showMaxPlayersInfo: Bool = false
     @State private var showPasswordInfo: Bool = false
     @State private var showRequireSignInInfo: Bool = false
+    @State private var showDeleteConfirmation: Bool = false
 
     init(auth: QHAuth, questToEdit: Quest? = nil) {
         _viewModel = StateObject(wrappedValue: CreateQuestViewModel(auth: auth, questToEdit: questToEdit))
@@ -192,6 +193,20 @@ struct CreateQuestView: View {
                         .buttonStyle(.glass)
                         .shadow(color: Color.qhPrimaryBlue.opacity(0.25), radius: 4, x: 0, y: 4)
                         
+                        if viewModel.isEditing {
+                            Button {
+                                showDeleteConfirmation = true
+                            } label: {
+                                Text("Delete Quest")
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 12)
+                                    .background(Color.clear)
+                                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                            }
+                            .padding([.leading, .trailing, .bottom])
+                            .buttonStyle(.bordered)
+                            .tint(.red)
+                        }
                     }
                 }
                 .listRowBackground(Color.clear)
@@ -216,6 +231,9 @@ struct CreateQuestView: View {
         .onChange(of: viewModel.didFinishSaving) { _, newValue in
             if newValue { dismiss() }
         }
+        .onChange(of: viewModel.didFinishDeleting) { _, newValue in
+            if newValue { dismiss() }
+        }
         .fullScreenCover(isPresented: $viewModel.isPresentingCreateChallenge) {
             let existing = viewModel.editingChallengeIndex.flatMap { viewModel.challenges[$0] }
             CreateChallengeView(challenge: existing) { result in
@@ -227,6 +245,14 @@ struct CreateQuestView: View {
             if newValue == false {
                 viewModel.password = ""
             }
+        }
+        .alert("Delete this quest?", isPresented: $showDeleteConfirmation) {
+            Button("Delete", role: .destructive) {
+                viewModel.deleteQuest()
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("This action cannot be undone.")
         }
         .interactiveDismissDisabled(true)
     }
