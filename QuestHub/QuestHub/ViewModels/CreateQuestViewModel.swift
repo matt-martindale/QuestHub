@@ -17,6 +17,7 @@ final class CreateQuestViewModel: ObservableObject {
     @Published var isPresentingCreateChallenge: Bool = false
     @Published var editingChallengeIndex: Int? = nil
     @Published var isEditing: Bool = false
+    @Published var lastSavedQuest: Quest?
 
     var maxPlayers: Int {
         switch maxPlayersSelection {
@@ -158,6 +159,8 @@ final class CreateQuestViewModel: ObservableObject {
             do {
                 let savedID = try await firestore.saveQuest(questToSave)
                 self.editingQuestID = savedID
+                self.lastSavedQuest = questToSave
+                self.lastSavedQuest?.id = savedID
 
                 // Refresh user's quests via auth so UI can reflect changes
                 do {

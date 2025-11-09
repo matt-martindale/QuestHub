@@ -13,6 +13,91 @@ struct OrganizerHubView: View {
     @State private var isShowingCreateQuestSheet = false
     @State private var selectedQuest: Quest?
     @State private var isShowingEditQuestSheet = false
+    @State private var showCreationSuccessAlert = false
+    @State private var createdQuest: Quest?
+    
+    // MARK: - Small helpers to reduce type-checking complexity
+    private var isUserSignedIn: Bool { auth.currentUser != nil }
+
+    @ViewBuilder
+    private var loadingView: some View {
+        ProgressView("Loading quests…")
+            .padding(.top, 16)
+    }
+
+    @ViewBuilder
+    private func emptyStateView(for userDisplay: String) -> some View {
+        VStack(spacing: 8) {
+            Text("\(UIStrings.welcome)\(userDisplay)")
+                .font(.title2)
+                .fontWeight(.semibold)
+            VStack(spacing: 8) {
+                Text("You don't have any quests yet.")
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+                Image(systemName: "tray")
+                    .font(.system(size: 80))
+                Text("Tap the button below to create your first quest.")
+                    .font(.footnote)
+                    .foregroundStyle(.tertiary)
+            }
+            .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    @ViewBuilder
+    private var createButtonArea: some View {
+        VStack(spacing: 8) {
+            if isUserSignedIn {
+                Button {
+                    isShowingCreateQuestSheet = true
+                } label: {
+                    Label("Create Quest", systemImage: "wand.and.stars")
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(Color.clear)
+                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                }
+                .buttonStyle(.glass)
+                .shadow(color: Color.qhPrimaryBlue.opacity(0.25), radius: 8, x: 0, y: 4)
+            }
+        }
+        .padding(.horizontal)
+        .padding(.bottom)
+    }
+
+    @ViewBuilder
+    private var createdQuestsList: some View {
+        List {
+            ForEach(auth.createdQuests) { quest in
+                QuestListItemView(quest: quest) {
+                    selectedQuest = quest
+                    isShowingEditQuestSheet = true
+                }
+                .listRowSeparator(.hidden)
+                .listRowInsets(EdgeInsets())
+                .padding(.vertical, 16)
+                .padding(.horizontal, 12)
+                .glassEffect(in: .rect(cornerRadius: 20))
+                .listRowBackground(Color.clear)
+            }
+        }
+        .listStyle(.plain)
+        .contentMargins(.horizontal, 16)
+        .listRowSpacing(16)
+        .scrollContentBackground(.hidden)
+        .overlay(alignment: .center) {
+            if auth.isLoadingCreatedQuests {
+                ZStack {
+                    Color.clear
+                    ProgressView("Loading quests…")
+                }
+            }
+        }
+        .contentMargins(.bottom, 150)
+        .refreshable { await refreshQuests() }
+    }
     
     private func refreshQuests() async {
         _ = await auth.fetchCreatedQuests()
@@ -23,64 +108,17 @@ struct OrganizerHubView: View {
             ZStack(alignment: .bottom) {
                 VStack(spacing: 16) {
                     if auth.isLoadingCreatedQuests {
-                        ProgressView("Loading quests…")
-                            .padding(.top, 16)
+                        loadingView
                     }
+
                     if let user = auth.currentUser {
-                        
-                        // Empty vs non-empty state
+                        let display = (user.displayName?.isEmpty == false ? user.displayName! : (user.email ?? "anonymous"))
                         if auth.createdQuests.isEmpty {
                             if !auth.isLoadingCreatedQuests {
-                                VStack(spacing: 8) {
-                                    Text("\(UIStrings.welcome)\(user.displayName?.isEmpty == false ? user.displayName! : user.email ?? "anonymous")")
-                                        .font(.title2)
-                                        .fontWeight(.semibold)
-                                    VStack(spacing: 8) {
-                                        Text("You don't have any quests yet.")
-                                            .font(.body)
-                                            .foregroundStyle(.secondary)
-                                        Image(systemName: "tray")
-                                            .font(.system(size: 80))
-                                        Text("Tap the button below to create your first quest.")
-                                            .font(.footnote)
-                                            .foregroundStyle(.tertiary)
-                                    }
-                                    .multilineTextAlignment(.center)
-                                }
-                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                emptyStateView(for: display)
                             }
                         } else {
-                            List {
-                                ForEach(auth.createdQuests) { quest in
-                                    QuestListItemView(quest: quest) {
-                                        selectedQuest = quest
-                                        isShowingEditQuestSheet = true
-                                    }
-                                    .listRowSeparator(.hidden)
-                                    .listRowInsets(EdgeInsets())
-                                    .padding(.vertical, 16)
-                                    .padding(.horizontal, 12)
-                                    .glassEffect(in: .rect(cornerRadius: 20))
-                                    .listRowBackground(Color.clear)
-                                }
-                            }
-                            .listStyle(.plain)
-                            .contentMargins(.horizontal, 16)
-                            .listRowSpacing(16)
-                            .scrollContentBackground(.hidden)
-                            .overlay {
-                                if auth.isLoadingCreatedQuests {
-                                    ZStack {
-                                        Color.clear
-                                        ProgressView("Loading quests…")
-                                    }
-                                }
-                            }
-                            // Allow the list to extend under the bottom buttons
-                            .contentMargins(.bottom, 150)
-                            .refreshable {
-                                await refreshQuests()
-                            }
+                            createdQuestsList
                         }
                     } else {
                         Text(UIStrings.noUserSignedIn)
@@ -90,23 +128,7 @@ struct OrganizerHubView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
 
-                VStack(spacing: 8) {
-                    if auth.currentUser != nil {
-                        Button {
-                            isShowingCreateQuestSheet = true
-                        } label: {
-                            Label("Create Quest", systemImage: "wand.and.stars")
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 12)
-                                .background(Color.clear)
-                                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                        }
-                        .buttonStyle(.glass)
-                        .shadow(color: Color.qhPrimaryBlue.opacity(0.25), radius: 8, x: 0, y: 4)
-                    }
-                }
-                .padding(.horizontal)
-                .padding(.bottom)
+                createButtonArea
             }
             .onAppear {
                 Task {
@@ -114,12 +136,28 @@ struct OrganizerHubView: View {
                 }
             }
             .sheet(isPresented: $isShowingCreateQuestSheet) {
-                CreateQuestView(auth: auth)
+                CreateQuestView(auth: auth, onCreateSuccess: { quest in
+                    createdQuest = quest
+                    Task { await refreshQuests() }
+                    showCreationSuccessAlert = true
+                })
             }
             .sheet(isPresented: $isShowingEditQuestSheet) {
                 if let quest = selectedQuest {
                     CreateQuestView(auth: auth, questToEdit: quest)
                 }
+            }
+            .onChange(of: isShowingEditQuestSheet) { oldValue, newValue in
+                if oldValue == true && newValue == false {
+                    Task { await refreshQuests() }
+                }
+            }
+            .alert("Quest created!", isPresented: $showCreationSuccessAlert) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                let code: String = createdQuest?.id ?? "-"
+                let passwordText: String = createdQuest?.password?.isEmpty == true ? "" : " and\npassword: '\(createdQuest?.password ?? "-")'"
+                Text("Invite players to join by sharing the Quest code: '\(code)'\(passwordText).")
             }
             .navigationTitle(UIStrings.organizerHub)
             .toolbar {
@@ -163,3 +201,4 @@ struct OrganizerHubView: View {
     OrganizerHubView()
         .environmentObject(QHAuth())
 }
+

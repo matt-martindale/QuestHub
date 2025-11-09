@@ -15,8 +15,10 @@ struct CreateQuestView: View {
     @State private var showPasswordInfo: Bool = false
     @State private var showRequireSignInInfo: Bool = false
     @State private var showDeleteConfirmation: Bool = false
+    private let onCreateSuccess: ((Quest) -> Void)?
 
-    init(auth: QHAuth, questToEdit: Quest? = nil) {
+    init(auth: QHAuth, questToEdit: Quest? = nil, onCreateSuccess: ((Quest) -> Void)? = nil) {
+        self.onCreateSuccess = onCreateSuccess
         _viewModel = StateObject(wrappedValue: CreateQuestViewModel(auth: auth, questToEdit: questToEdit))
     }
 
@@ -189,7 +191,6 @@ struct CreateQuestView: View {
                                 .background(Color.clear)
                                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                         }
-//                        .padding()
                         .buttonStyle(.glass)
                         .shadow(color: Color.qhPrimaryBlue.opacity(0.25), radius: 8, x: 0, y: 0)
                         
@@ -206,7 +207,6 @@ struct CreateQuestView: View {
                             .padding(.vertical)
                             .buttonStyle(.bordered)
                             .tint(.red)
-//                            .padding(.horizontal)
                         }
                     }
                 }
@@ -230,7 +230,12 @@ struct CreateQuestView: View {
             
         }
         .onChange(of: viewModel.didFinishSaving) { _, newValue in
-            if newValue { dismiss() }
+            if newValue {
+                if viewModel.isEditing == false, let quest = viewModel.lastSavedQuest {
+                    onCreateSuccess?(quest)
+                }
+                dismiss()
+            }
         }
         .onChange(of: viewModel.didFinishDeleting) { _, newValue in
             if newValue { dismiss() }
