@@ -191,8 +191,20 @@ struct CreateQuestView: View {
                                 .background(Color.clear)
                                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                         }
+                        .disabled(!viewModel.canSave)
                         .buttonStyle(.glass)
-                        .shadow(color: Color.qhPrimaryBlue.opacity(0.25), radius: 8, x: 0, y: 0)
+                        .tint(viewModel.canSave ? Color.qhPrimaryBlue : .secondary)
+                        .background(
+                            Group {
+                                if viewModel.canSave {
+                                    LinearGradient(colors: [Color.qhPrimaryBlue.opacity(0.7), Color.qhPrimaryBlue.opacity(0.3)], startPoint: .topLeading, endPoint: .bottomTrailing)
+                                        .clipShape(RoundedRectangle(cornerRadius: 30, style: .continuous))
+                                } else {
+                                    Color.clear
+                                }
+                            }
+                        )
+                        .shadow(color: .clear.opacity(0.35), radius: 10, x: 0, y: 2)
                         
                         if viewModel.isEditing {
                             Button {

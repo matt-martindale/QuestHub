@@ -173,11 +173,6 @@ final class QuestService {
                 "playersCount": FieldValue.increment(Int64(1))
             ], forDocument: qRef)
 
-            // Update user doc: maintain an array of joined quest IDs (legacy support)
-            transaction.setData([
-                "quests": FieldValue.arrayUnion([questId])
-            ], forDocument: uRef, merge: true)
-
             return ["joined": true, "questId": questId, "questCode": questCode]
         }) { (result, error) in
             if let error = error {
