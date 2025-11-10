@@ -60,17 +60,13 @@ struct SearchQuestView: View {
 }
 
 private extension SearchQuestView {
-    func searchQuest() {
-        guard !questCode.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+    func performSearchAndJoin(with code: String) {
         isLoading = true
-        errorMessage = nil
-        foundQuest = nil
-        navigate = false
-
-        let code = questCode.trimmingCharacters(in: .whitespacesAndNewlines)
-        QuestService.shared.searchAndJoin(questCode: code,
-                                          userId: Auth.auth().currentUser?.uid ?? "",
-                                          userDisplayName: Auth.auth().currentUser?.displayName ?? "Player") { result in
+        QuestService.shared.searchAndJoin(
+            questCode: code,
+            userId: Auth.auth().currentUser?.uid ?? "",
+            userDisplayName: Auth.auth().currentUser?.displayName ?? "Player"
+        ) { result in
             isLoading = false
             switch result {
             case .success(let quest):
@@ -79,6 +75,28 @@ private extension SearchQuestView {
             case .failure(let error):
                 errorMessage = AlertMessage(text: error.localizedDescription)
             }
+        }
+    }
+
+    func searchQuest() {
+        guard !questCode.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+        errorMessage = nil
+        foundQuest = nil
+        navigate = false
+        
+        let code = questCode.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        if Auth.auth().currentUser == nil {
+            Auth.auth().signInAnonymously { result, error in
+                if let error = error {
+                    isLoading = false
+                    errorMessage = AlertMessage(text: error.localizedDescription)
+                    return
+                }
+                performSearchAndJoin(with: code)
+            }
+        } else {
+            performSearchAndJoin(with: code)
         }
     }
 }
