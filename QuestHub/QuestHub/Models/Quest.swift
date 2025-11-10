@@ -16,7 +16,8 @@ enum QuestStatus: String, Codable {
 
 class Quest: Identifiable, Codable, Equatable {
     // Stable identity for SwiftUI and persistence
-    var id: String?
+    @DocumentID var id: String?
+    var questCode: String? // Short format code for players to join
 
     // Basic metadata
     var title: String?
@@ -39,6 +40,7 @@ class Quest: Identifiable, Codable, Equatable {
 
     enum CodingKeys: String, CodingKey {
         case id
+        case questCode
         case title
         case subtitle
         case description
@@ -56,6 +58,7 @@ class Quest: Identifiable, Codable, Equatable {
 
     init(
         id: String? = nil,
+        questCode: String? = nil,
         title: String? = nil,
         subtitle: String? = nil,
         description: String? = nil,
@@ -71,6 +74,7 @@ class Quest: Identifiable, Codable, Equatable {
         requireSignIn: Bool = false
     ) {
         self.id = id
+        self.questCode = questCode
         self.title = title
         self.subtitle = subtitle
         self.description = description
@@ -88,6 +92,7 @@ class Quest: Identifiable, Codable, Equatable {
 
     static func == (lhs: Quest, rhs: Quest) -> Bool {
         return lhs.id == rhs.id &&
+        lhs.questCode == rhs.questCode &&
         lhs.title == rhs.title &&
         lhs.subtitle == rhs.subtitle &&
         lhs.description == rhs.description &&

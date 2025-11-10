@@ -160,7 +160,7 @@ final class CreateQuestViewModel: ObservableObject {
                 let savedID = try await firestore.saveQuest(questToSave)
                 self.editingQuestID = savedID
                 self.lastSavedQuest = questToSave
-                self.lastSavedQuest?.id = savedID
+                self.lastSavedQuest?.questCode = savedID
 
                 // Refresh user's quests via auth so UI can reflect changes
                 do {

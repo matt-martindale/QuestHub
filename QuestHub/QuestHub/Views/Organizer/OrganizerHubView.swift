@@ -155,7 +155,7 @@ struct OrganizerHubView: View {
             .alert("Quest created!", isPresented: $showCreationSuccessAlert) {
                 Button("OK", role: .cancel) { }
             } message: {
-                let code: String = createdQuest?.id ?? "-"
+                let code: String = createdQuest?.questCode ?? "-"
                 let passwordText: String = createdQuest?.password?.isEmpty == true ? "" : " and\npassword: '\(createdQuest?.password ?? "-")'"
                 Text("Invite players to join by sharing the Quest code: '\(code)'\(passwordText).")
             }
