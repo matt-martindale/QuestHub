@@ -68,45 +68,16 @@ private extension SearchQuestView {
         navigate = false
 
         let code = questCode.trimmingCharacters(in: .whitespacesAndNewlines)
-        let db = Firestore.firestore()
-        let ref = db.collection("quests").document(code)
-        ref.getDocument(source: .default) { snapshot, error in
+        QuestService.shared.searchAndJoin(questCode: code,
+                                          userId: Auth.auth().currentUser?.uid ?? "",
+                                          userDisplayName: Auth.auth().currentUser?.displayName ?? "Player") { result in
             isLoading = false
-            if let error = error {
+            switch result {
+            case .success(let quest):
+                foundQuest = quest
+                navigate = true
+            case .failure(let error):
                 errorMessage = AlertMessage(text: error.localizedDescription)
-                return
-            }
-            guard let snapshot = snapshot, snapshot.exists, let data = snapshot.data() else {
-                errorMessage = AlertMessage(text: "No quest found for code \(code)")
-                return
-            }
-
-            // Map Firestore data to Quest model
-            var quest = Quest()
-            quest.id = snapshot.documentID
-            quest.title = data["title"] as? String
-            quest.subtitle = data["subtitle"] as? String
-            quest.description = data["description"] as? String
-            quest.maxPlayers = data["maxPlayers"] as? Int
-            quest.playersCount = data["playersCount"] as? Int
-            quest.creatorID = data["creatorID"] as? String
-            quest.creatorDisplayName = data["creatorDisplayName"] as? String
-            if let statusRaw = data["status"] as? String { quest.status = QuestStatus(rawValue: statusRaw) }
-            // createdAt/updatedAt mapping if stored as Timestamps
-            if let createdTs = data["createdAt"] as? Timestamp { quest.createdAt = createdTs.dateValue() }
-            if let updatedTs = data["updatedAt"] as? Timestamp { quest.updatedAt = updatedTs.dateValue() }
-
-            // Attempt to join the quest before navigating
-            isLoading = true
-            QuestService.shared.joinQuest(questId: quest.id ?? code, userId: Auth.auth().currentUser?.uid ?? "", userDisplayName: quest.creatorDisplayName ?? "Player") { result in
-                isLoading = false
-                switch result {
-                case .success:
-                    foundQuest = quest
-                    navigate = true
-                case .failure(let joinError):
-                    errorMessage = AlertMessage(text: joinError.localizedDescription)
-                }
             }
         }
     }
