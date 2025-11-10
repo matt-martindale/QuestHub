@@ -1,7 +1,6 @@
 import Foundation
 import SwiftUI
 import Combine
-import FirebaseFirestore
 
 @MainActor
 final class CreateQuestViewModel: ObservableObject {
@@ -31,16 +30,16 @@ final class CreateQuestViewModel: ObservableObject {
     private var editingQuestID: String? = nil
 
     let auth: QHAuth
-    private let firestore: FirestoreService
+    private let questService: QuestService
     private var cancellables: Set<AnyCancellable> = []
 
     @Published var isSaving: Bool = false
     @Published var didFinishSaving: Bool = false
     @Published var didFinishDeleting: Bool = false
 
-    init(auth: QHAuth, questToEdit: Quest? = nil, firestore: FirestoreService) {
+    init(auth: QHAuth, questToEdit: Quest? = nil, questService: QuestService) {
         self.auth = auth
-        self.firestore = firestore
+        self.questService = questService
         if let quest = questToEdit {
             // Prefill fields for editing
             self.isEditing = true
@@ -85,7 +84,7 @@ final class CreateQuestViewModel: ObservableObject {
     }
     
     convenience init(auth: QHAuth, questToEdit: Quest? = nil) {
-        self.init(auth: auth, questToEdit: questToEdit, firestore: FirestoreService())
+        self.init(auth: auth, questToEdit: questToEdit, questService: QuestService.shared)
     }
 
     // MARK: - Challenge actions
@@ -157,10 +156,10 @@ final class CreateQuestViewModel: ObservableObject {
             questToSave.challenges = self.challenges
 
             do {
-                let savedID = try await firestore.saveQuest(questToSave)
+                let savedID = try await questService.saveQuest(questToSave)
                 self.editingQuestID = savedID
                 self.lastSavedQuest = questToSave
-                self.lastSavedQuest?.id = savedID
+                self.lastSavedQuest?.questCode = savedID
 
                 // Refresh user's quests via auth so UI can reflect changes
                 do {
@@ -181,7 +180,7 @@ final class CreateQuestViewModel: ObservableObject {
         Task { @MainActor in
             defer { isSaving = false }
             do {
-                try await firestore.deleteQuest(withID: questID)
+                try await questService.deleteQuest(withID: questID)
                 // Refresh user's quests via auth so UI can reflect changes
                 do { _ = await auth.fetchCreatedQuests() }
                 didFinishDeleting = true

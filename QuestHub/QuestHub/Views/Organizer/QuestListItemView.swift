@@ -33,7 +33,7 @@ struct QuestListItemView: View {
                             Text("Code:")
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
-                            Text(quest.id ?? "")
+                            Text(quest.questCode ?? "")
                                 .font(.subheadline)
                                 .fontWeight(.medium)
                         }

@@ -164,25 +164,20 @@ final class QHAuth: ObservableObject {
         } catch {
             self.lastError = error
             self.createdQuests = []
-            // isLoadingCreatedQuests is reset by defer
             return []
         }
     }
 
     func handleAppleCredential(_ credential: ASAuthorizationAppleIDCredential, nonce: String) async throws {
-        // First, let AuthService handle credential sign-in/linking
         try await AuthService.shared.handleAppleCredential(credential, nonce: nonce)
         
-        // Attempt to extract a display name from the credential on first authorization
         if let nameComponents = credential.fullName {
             let formatter = PersonNameComponentsFormatter()
             let formattedName = formatter.string(from: nameComponents).trimmingCharacters(in: .whitespacesAndNewlines)
             if !formattedName.isEmpty {
-                // Update Firebase Auth profile displayName via AuthService (if supported)
                 do {
                     try await AuthService.shared.updateDisplayName(formattedName)
                 } catch {
-                    // Non-fatal: surface error but continue updating local state
                     self.lastError = error
                 }
                 
