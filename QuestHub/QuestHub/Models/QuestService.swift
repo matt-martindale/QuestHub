@@ -126,5 +126,78 @@ final class QuestService {
             }
         }
     }
-}
 
+    // MARK: - Quest CRUD moved from FirestoreService
+    /// Saves a quest to Firestore. Returns the human-friendly short questCode stored on the quest document.
+    @discardableResult
+    func saveQuest(_ quest: Quest) async throws -> String {
+        let questsCollection = db.collection("quests")
+
+        // Helper to encode challenges
+        let encodedChallenges: [[String: Any]] = (quest.challenges ?? []).map { ch in
+            return [
+                "id": ch.id ?? "",
+                "title": ch.title ?? "",
+                "details": ch.details ?? "",
+                "points": ch.points ?? 0
+            ]
+        }
+
+        // Determine if this is an update by presence of a Firestore documentID
+        let isUpdating = (quest.id?.isEmpty == false)
+
+        // Short code we expose to users; still stored on the quest document, but we no longer maintain a separate index
+        let questCode = quest.questCode?.isEmpty == false ? quest.questCode! : IDGenerator.makeShortID()
+
+        if isUpdating {
+            // Update existing quest doc by Firestore documentID
+            let docID = quest.id!
+            let docRef = questsCollection.document(docID)
+
+            var updateData: [String: Any] = [
+                "title": quest.title ?? "",
+                "subtitle": quest.subtitle ?? "",
+                "description": quest.description ?? "",
+                "maxPlayers": quest.maxPlayers ?? 0,
+                "creatorID": quest.creatorID ?? "",
+                "creatorDisplayName": quest.creatorDisplayName ?? "",
+                "status": quest.status?.rawValue ?? "inactive",
+                "password": quest.password ?? "",
+                "requireSignIn": quest.requireSignIn ?? false,
+                "challenges": encodedChallenges,
+                "updatedAt": Date(),
+                "questCode": questCode
+            ]
+            if let createdAt = quest.createdAt { updateData["createdAt"] = createdAt }
+
+            try await docRef.setData(updateData, merge: true)
+            return questCode
+        } else {
+            // Create new quest document with an auto-generated ID
+            var data: [String: Any] = [
+                "title": quest.title ?? "",
+                "subtitle": quest.subtitle ?? "",
+                "description": quest.description ?? "",
+                "maxPlayers": quest.maxPlayers ?? 0,
+                "creatorID": quest.creatorID ?? "",
+                "creatorDisplayName": quest.creatorDisplayName ?? "",
+                "status": quest.status?.rawValue ?? "inactive",
+                "password": quest.password ?? "",
+                "requireSignIn": quest.requireSignIn ?? false,
+                "challenges": encodedChallenges,
+                "createdAt": Date(),
+                "questCode": questCode,
+            ]
+
+            let newDocRef = questsCollection.document()
+            try await newDocRef.setData(data)
+            return questCode
+        }
+    }
+
+    /// Deletes a quest document by its Firestore document ID.
+    func deleteQuest(withID id: String) async throws {
+        let questsCollection = db.collection("quests")
+        try await questsCollection.document(id).delete()
+    }
+}
