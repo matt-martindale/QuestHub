@@ -23,16 +23,10 @@ private final class PlayerHubViewModel: ObservableObject {
         listener?.remove()
     }
 
-    var currentUser: User? {
-        Auth.auth().currentUser
-    }
-
-    func startListeningForUserQuests() {
+    func startListeningForUserQuests(for uid: String) {
         listener?.remove()
         errorMessage = nil
         hasJoinedQuests = false
-
-        guard let uid = currentUser?.uid else { return }
 
         let db = Firestore.firestore()
         isLoading = true
@@ -54,6 +48,7 @@ private final class PlayerHubViewModel: ObservableObject {
 }
 
 struct PlayerHubView: View {
+    @EnvironmentObject private var auth: QHAuth
     @StateObject private var viewModel = PlayerHubViewModel()
     @State private var showSignIn = false
     @State private var path = NavigationPath()
@@ -79,7 +74,7 @@ struct PlayerHubView: View {
                                 .multilineTextAlignment(.center)
                         }
                         .padding()
-                    } else if viewModel.currentUser == nil {
+                    } else if auth.currentUser == nil {
                         VStack(spacing: 12) {
                             Image(systemName: "person.crop.circle.badge.questionmark")
                                 .font(.system(size: 56))
@@ -138,7 +133,7 @@ struct PlayerHubView: View {
             .navigationTitle("Player Hub")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    if viewModel.currentUser != nil {
+                    if auth.currentUser != nil {
                         Menu {
                             Button("Profile", systemImage: "person.crop.circle") {}
                             Button("Sign out", systemImage: "rectangle.portrait.and.arrow.right") {
@@ -155,13 +150,21 @@ struct PlayerHubView: View {
                 }
             }
             .onAppear {
-                if viewModel.currentUser != nil {
-                    viewModel.startListeningForUserQuests()
+                if let uid = auth.currentUser?.id {
+                    viewModel.startListeningForUserQuests(for: uid)
+                } else {
+                    // If the user signs out, stop listening
+                    viewModel.isLoading = false
+                    viewModel.hasJoinedQuests = false
                 }
             }
-            .onChange(of: viewModel.currentUser?.uid) { _, _ in
-                if viewModel.currentUser != nil {
-                    viewModel.startListeningForUserQuests()
+            .onChange(of: auth.currentUser) { _, newUser in
+                if let uid = newUser?.id {
+                    viewModel.startListeningForUserQuests(for: uid)
+                } else {
+                    // User signed out; stop listening and reset state
+                    viewModel.isLoading = false
+                    viewModel.hasJoinedQuests = false
                 }
             }
             .navigationDestination(for: String.self) { value in

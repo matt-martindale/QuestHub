@@ -15,6 +15,7 @@ struct HomeView: View {
     @EnvironmentObject var auth: QHAuth
 
     @State private var showOnboarding: Bool = false
+    @State private var showSignIn = false
 
     var body: some View {
         NavigationStack {
@@ -72,10 +73,14 @@ struct HomeView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color(.systemBackground))
             .toolbar {
-                if let user = auth.currentUser {
-                    ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .topBarTrailing) {
+                    if let user = auth.currentUser {
                         SignedInUserMenu(user: user) {
                             auth.signOut()
+                        }
+                    } else {
+                        Button("Sign in") {
+                            showSignIn = true
                         }
                     }
                 }
@@ -95,6 +100,10 @@ struct HomeView: View {
                     showOnboarding = true
                 }
             }
+        }
+        .sheet(isPresented: $showSignIn) {
+            // Present your sign-in flow
+            SignInView()
         }
     }
 

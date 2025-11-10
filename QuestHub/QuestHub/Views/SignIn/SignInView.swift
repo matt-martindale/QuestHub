@@ -12,6 +12,7 @@ import FirebaseAuth
 struct SignInView: View {
     @EnvironmentObject var auth: QHAuth
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.dismiss) private var dismiss
     @State private var isSigningInWithApple = false
     @State private var navigateToOrganizer = false
     @State private var signInError: String?
@@ -59,7 +60,7 @@ struct SignInView: View {
                             do {
                                 let (credential, nonce) = try appleSignInManager.extractCredential(from: authorization)
                                 try await auth.handleAppleCredential(credential, nonce: nonce)
-                                navigateToOrganizer = true
+                                dismiss()
                             } catch {
                                 signInError = error.localizedDescription
                             }
