@@ -178,7 +178,9 @@ struct PlayerHubView: View {
             }
             .sheet(isPresented: $showSignIn) {
                 // Present your sign-in flow
-                SignInView()
+                NavigationStack {
+                    SignInView()
+                }
             }
         }
     }

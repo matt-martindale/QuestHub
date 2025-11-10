@@ -102,8 +102,9 @@ struct HomeView: View {
             }
         }
         .sheet(isPresented: $showSignIn) {
-            // Present your sign-in flow
-            SignInView()
+            NavigationStack {
+                SignInView()
+            }
         }
     }
 

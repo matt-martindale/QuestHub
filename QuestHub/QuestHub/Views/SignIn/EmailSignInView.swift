@@ -10,6 +10,7 @@ import SwiftUI
 struct EmailSignInView: View {
     // If true, show Login (email + password). If false, show Sign Up (email + confirm email + password)
     var isLoginFlow: Bool = true
+    var onSuccess: (() -> Void)? = nil
 
     // External bindings so parent can observe values if desired
     @State private var email: String = ""
@@ -21,8 +22,7 @@ struct EmailSignInView: View {
     @State private var isSecureEntry: Bool = true
     @State private var errorMessage: String?
     @State private var isSubmitting: Bool = false
-    @State private var navigateToHub: Bool = false
-
+    
     @EnvironmentObject var auth: QHAuth
 
     var body: some View {
@@ -47,9 +47,6 @@ struct EmailSignInView: View {
                 secondaryHint
             }
             .padding()
-            .navigationDestination(isPresented: $navigateToHub) {
-                OrganizerHubView()
-            }
         }
         .animation(.default, value: isLoginFlow)
     }
@@ -193,7 +190,7 @@ private extension EmailSignInView {
 
             if success {
                 errorMessage = nil
-                navigateToHub = true
+                onSuccess?()
             } else {
                 errorMessage = auth.lastError?.localizedDescription ?? UIStrings.ssww
             }
@@ -211,9 +208,9 @@ private extension EmailSignInView {
 #Preview {
     NavigationStack {
         VStack {
-            EmailSignInView(isLoginFlow: true)
+            EmailSignInView(isLoginFlow: true, onSuccess: nil)
             Divider().padding()
-            EmailSignInView(isLoginFlow: false)
+            EmailSignInView(isLoginFlow: false, onSuccess: nil)
         }
         .padding()
         .environmentObject(QHAuth())

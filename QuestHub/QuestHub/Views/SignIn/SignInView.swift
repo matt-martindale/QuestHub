@@ -8,6 +8,7 @@
 import SwiftUI
 import AuthenticationServices
 import FirebaseAuth
+import Combine
 
 struct SignInView: View {
     @EnvironmentObject var auth: QHAuth
@@ -34,7 +35,7 @@ struct SignInView: View {
 
             VStack(spacing: 12) {
                 NavigationLink {
-                    EmailSignInView(isLoginFlow: false)
+                    EmailSignInView(isLoginFlow: false, onSuccess: { dismiss() })
                         .navigationTitle(UIStrings.signUp)
                         .navigationBarTitleDisplayMode(.inline)
                 } label: {
@@ -89,7 +90,7 @@ struct SignInView: View {
             Text(UIStrings.or)
 
             NavigationLink {
-                EmailSignInView(isLoginFlow: true)
+                EmailSignInView(isLoginFlow: true, onSuccess: { dismiss() })
                     .navigationTitle(UIStrings.login)
                     .navigationBarTitleDisplayMode(.inline)
             } label: {
