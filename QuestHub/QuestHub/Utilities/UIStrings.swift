@@ -16,7 +16,7 @@ struct UIStrings {
     // Home page
     static let welcomeToQuestHub = "Welcome to QuestHub"
     static let joinAsOrganizer = "Join as Organizer"
-    static let joinAsPlayer = "Join as Player"
+    static let joinAsPlayer = "👾 Join as Player 👾"
     static let signOut = "Sign Out"
     static let signedInAs = "Signed in as"
     

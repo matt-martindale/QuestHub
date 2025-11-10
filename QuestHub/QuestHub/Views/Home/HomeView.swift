@@ -47,7 +47,7 @@ struct HomeView: View {
                             .clipShape(.capsule)
                     }
 
-                    NavigationLink(destination: SearchQuestView()) {
+                    NavigationLink(destination: PlayerHubView()) {
                         Text(UIStrings.joinAsPlayer)
                             .font(.headline)
                             .frame(maxWidth: .infinity)
