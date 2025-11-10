@@ -143,7 +143,7 @@ struct CreateQuestView: View {
                             }
                         }
                     }
-                    .listRowSeparator(.hidden, edges: .bottom)
+//                    .listRowSeparator(.hidden, edges: .bottom)
                     .padding(.trailing, 12)
                     .toggleStyle(.switch)
                     
