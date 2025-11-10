@@ -99,16 +99,13 @@ struct OrganizerHubView: View {
                         Label(UIStrings.signOut, systemImage: "rectangle.portrait.and.arrow.right")
                     }
                 } label: {
-                    HStack(spacing: 8) {
+                    HStack() {
                         ZStack {
-                            Image(systemName: "person.fill")
+                            Image(systemName: "person.crop.circle")
                                 .font(.headline)
                                 .foregroundColor(.primary)
                         }
-                        .frame(width: 28, height: 28)
                     }
-                    .padding(.vertical, 2)
-                    .padding(.horizontal, 6)
                 }
             }
         }
@@ -155,7 +152,7 @@ struct OrganizerHubView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
                 .buttonStyle(.glass)
-                .shadow(color: Color.qhPrimaryBlue.opacity(0.25), radius: 8, x: 0, y: 4)
+                .shadow(color: Color.qhPrimaryBlue.opacity(0.25), radius: 8, x: 0, y: 0)
             }
         }
         .padding(.horizontal)

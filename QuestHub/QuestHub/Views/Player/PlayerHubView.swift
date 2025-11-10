@@ -10,51 +10,13 @@ import Combine
 import FirebaseAuth
 import FirebaseFirestore
 
-// Lightweight view model local to this file to keep changes scoped
-@MainActor
-private final class PlayerHubViewModel: ObservableObject {
-    @Published var isLoading: Bool = false
-    @Published var hasJoinedQuests: Bool = false
-    @Published var errorMessage: String?
-
-    private var listener: ListenerRegistration?
-
-    deinit {
-        listener?.remove()
-    }
-
-    func startListeningForUserQuests(for uid: String) {
-        listener?.remove()
-        errorMessage = nil
-        hasJoinedQuests = false
-
-        let db = Firestore.firestore()
-        isLoading = true
-        // Listen to userQuests where userID == uid
-        listener = db.collection("userQuests")
-            .whereField("userId", isEqualTo: uid)
-            .addSnapshotListener { [weak self] snapshot, error in
-                guard let self = self else { return }
-                self.isLoading = false
-                if let error = error {
-                    self.errorMessage = error.localizedDescription
-                    self.hasJoinedQuests = false
-                    return
-                }
-                let count = snapshot?.documents.count ?? 0
-                self.hasJoinedQuests = count > 0
-            }
-    }
-}
-
 struct PlayerHubView: View {
     @EnvironmentObject private var auth: QHAuth
     @StateObject private var viewModel = PlayerHubViewModel()
     @State private var showSignIn = false
-    @State private var path = NavigationPath()
 
     var body: some View {
-        NavigationStack(path: $path) {
+        NavigationStack {
             VStack {
                 // Content
                 Group {
@@ -118,26 +80,28 @@ struct PlayerHubView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
 
-                // Bottom CTA: Search Quest
-                NavigationLink(value: "searchQuest") {
-                    Text("Search Quest")
+                NavigationLink {
+                    SearchQuestView()
+                } label: {
+                    Label("Search Quest", systemImage: "wand.and.stars")
                         .frame(maxWidth: .infinity)
-                        .padding()
-                        .font(.headline)
-                        .background(Color.accentColor)
-                        .foregroundStyle(.white)
+                        .padding(.vertical, 12)
+                        .background(Color.clear)
                         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                        .padding([.horizontal, .bottom])
                 }
+                .buttonStyle(.glass)
+                .shadow(color: Color.qhPrimaryBlue.opacity(0.25), radius: 8, x: 0, y: 0)
             }
             .navigationTitle("Player Hub")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     if auth.currentUser != nil {
                         Menu {
-                            Button("Profile", systemImage: "person.crop.circle") {}
-                            Button("Sign out", systemImage: "rectangle.portrait.and.arrow.right") {
-                                try? Auth.auth().signOut()
+                            Button("Profile", systemImage: "person.fill") {}
+                            Button(role: .destructive) {
+                                auth.signOut()
+                            } label: {
+                                Label(UIStrings.signOut, systemImage: "rectangle.portrait.and.arrow.right")
                             }
                         } label: {
                             Image(systemName: "person.crop.circle")
@@ -153,27 +117,14 @@ struct PlayerHubView: View {
                 if let uid = auth.currentUser?.id {
                     viewModel.startListeningForUserQuests(for: uid)
                 } else {
-                    // If the user signs out, stop listening
-                    viewModel.isLoading = false
-                    viewModel.hasJoinedQuests = false
+                    viewModel.stopListening()
                 }
             }
-            .onChange(of: auth.currentUser) { _, newUser in
+            .onChange(of: auth.currentUser) { newUser in
                 if let uid = newUser?.id {
                     viewModel.startListeningForUserQuests(for: uid)
                 } else {
-                    // User signed out; stop listening and reset state
-                    viewModel.isLoading = false
-                    viewModel.hasJoinedQuests = false
-                }
-            }
-            .navigationDestination(for: String.self) { value in
-                switch value {
-                case "searchQuest":
-                    // Navigate to your SearchQuestView
-                    SearchQuestView()
-                default:
-                    EmptyView()
+                    viewModel.stopListening()
                 }
             }
             .sheet(isPresented: $showSignIn) {
@@ -188,4 +139,5 @@ struct PlayerHubView: View {
 
 #Preview {
     PlayerHubView()
+        .environmentObject(QHAuth())
 }
