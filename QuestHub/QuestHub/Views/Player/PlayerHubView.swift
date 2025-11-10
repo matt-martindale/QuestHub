@@ -97,7 +97,7 @@ struct PlayerHubView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     if auth.currentUser != nil {
                         Menu {
-                            Button("Profile", systemImage: "person.fill") {}
+                            Button("Account", systemImage: "person.fill") {}
                             Button(role: .destructive) {
                                 auth.signOut()
                             } label: {
