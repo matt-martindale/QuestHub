@@ -16,9 +16,104 @@ struct OrganizerHubView: View {
     @State private var showCreationSuccessAlert = false
     @State private var createdQuest: Quest?
     
-    // MARK: - Small helpers to reduce type-checking complexity
     private var isUserSignedIn: Bool { auth.currentUser != nil }
+    
+    var body: some View {
+        NavigationStack {
+            ZStack(alignment: .bottom) {
+                VStack(spacing: 16) {
+                    if auth.isLoadingCreatedQuests {
+                        loadingView
+                    }
 
+                    if let user = auth.currentUser {
+                        let display = (user.displayName?.isEmpty == false ? user.displayName! : (user.email ?? "anonymous"))
+                        if auth.createdQuests.isEmpty {
+                            if !auth.isLoadingCreatedQuests {
+                                emptyStateView(for: display)
+                            }
+                        } else {
+                            createdQuestsList
+                        }
+                    } else {
+                        Text(UIStrings.noUserSignedIn)
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+
+                createButtonArea
+            }
+            .onAppear {
+                Task {
+                    await refreshQuests()
+                }
+            }
+            .sheet(isPresented: $isShowingCreateQuestSheet) {
+                CreateQuestView(auth: auth, onCreateSuccess: { quest in
+                    createdQuest = quest
+                    Task { await refreshQuests() }
+                    showCreationSuccessAlert = true
+                })
+            }
+            .sheet(isPresented: $isShowingEditQuestSheet) {
+                if let quest = selectedQuest {
+                    CreateQuestView(auth: auth, questToEdit: quest)
+                }
+            }
+            .onChange(of: isShowingEditQuestSheet) { oldValue, newValue in
+                if oldValue == true && newValue == false {
+                    Task { await refreshQuests() }
+                }
+            }
+            .alert("Quest created!", isPresented: $showCreationSuccessAlert) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                let code: String = createdQuest?.questCode ?? "-"
+                let passwordText: String = createdQuest?.password?.isEmpty == true ? "" : " and\npassword: '\(createdQuest?.password ?? "-")'"
+                Text("Invite players to join by sharing the Quest code: '\(code)'\(passwordText).")
+            }
+            .navigationTitle(UIStrings.organizerHub)
+            .toolbar { organizerToolbar }
+        }
+    }
+    
+    @ToolbarContentBuilder
+    private var organizerToolbar: some ToolbarContent {
+        if isUserSignedIn {
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    Button() {
+                        // Go to Account page
+                    } label: {
+                        Label {
+                            Text(auth.currentUser?.id ?? UIStrings.account)
+                        } icon: {
+                            Image(systemName: "person.fill")
+                        }
+                    }
+                    Button(role: .destructive) {
+                        auth.signOut()
+                    } label: {
+                        Label(UIStrings.signOut, systemImage: "rectangle.portrait.and.arrow.right")
+                    }
+                } label: {
+                    HStack(spacing: 8) {
+                        ZStack {
+                            Image(systemName: "person.fill")
+                                .font(.headline)
+                                .foregroundColor(.primary)
+                        }
+                        .frame(width: 28, height: 28)
+                    }
+                    .padding(.vertical, 2)
+                    .padding(.horizontal, 6)
+                }
+            }
+        }
+    }
+    
     @ViewBuilder
     private var loadingView: some View {
         ProgressView("Loading quests…")
@@ -101,99 +196,6 @@ struct OrganizerHubView: View {
     
     private func refreshQuests() async {
         _ = await auth.fetchCreatedQuests()
-    }
-    
-    var body: some View {
-        NavigationStack {
-            ZStack(alignment: .bottom) {
-                VStack(spacing: 16) {
-                    if auth.isLoadingCreatedQuests {
-                        loadingView
-                    }
-
-                    if let user = auth.currentUser {
-                        let display = (user.displayName?.isEmpty == false ? user.displayName! : (user.email ?? "anonymous"))
-                        if auth.createdQuests.isEmpty {
-                            if !auth.isLoadingCreatedQuests {
-                                emptyStateView(for: display)
-                            }
-                        } else {
-                            createdQuestsList
-                        }
-                    } else {
-                        Text(UIStrings.noUserSignedIn)
-                            .foregroundStyle(.secondary)
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    }
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-
-                createButtonArea
-            }
-            .onAppear {
-                Task {
-                    await refreshQuests()
-                }
-            }
-            .sheet(isPresented: $isShowingCreateQuestSheet) {
-                CreateQuestView(auth: auth, onCreateSuccess: { quest in
-                    createdQuest = quest
-                    Task { await refreshQuests() }
-                    showCreationSuccessAlert = true
-                })
-            }
-            .sheet(isPresented: $isShowingEditQuestSheet) {
-                if let quest = selectedQuest {
-                    CreateQuestView(auth: auth, questToEdit: quest)
-                }
-            }
-            .onChange(of: isShowingEditQuestSheet) { oldValue, newValue in
-                if oldValue == true && newValue == false {
-                    Task { await refreshQuests() }
-                }
-            }
-            .alert("Quest created!", isPresented: $showCreationSuccessAlert) {
-                Button("OK", role: .cancel) { }
-            } message: {
-                let code: String = createdQuest?.questCode ?? "-"
-                let passwordText: String = createdQuest?.password?.isEmpty == true ? "" : " and\npassword: '\(createdQuest?.password ?? "-")'"
-                Text("Invite players to join by sharing the Quest code: '\(code)'\(passwordText).")
-            }
-            .navigationTitle(UIStrings.organizerHub)
-            .toolbar {
-                if let _ = auth.currentUser {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Menu {
-                            Button() {
-                                // Go to Account page
-                            } label: {
-                                Label {
-                                    Text(auth.currentUser?.id ?? UIStrings.account)
-                                } icon: {
-                                    Image(systemName: "person.fill")
-                                }
-                            }
-                            Button(role: .destructive) {
-                                auth.signOut()
-                            } label: {
-                                Label(UIStrings.signOut, systemImage: "rectangle.portrait.and.arrow.right")
-                            }
-                        } label: {
-                            HStack(spacing: 8) {
-                                ZStack {
-                                    Image(systemName: "person.fill")
-                                        .font(.headline)
-                                        .foregroundColor(.primary)
-                                }
-                                .frame(width: 28, height: 28)
-                            }
-                            .padding(.vertical, 2)
-                            .padding(.horizontal, 6)
-                        }
-                    }
-                }
-            }
-        }
     }
 }
 

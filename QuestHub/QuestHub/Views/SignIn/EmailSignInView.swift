@@ -26,28 +26,26 @@ struct EmailSignInView: View {
     @EnvironmentObject var auth: QHAuth
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 20) {
-                header
-
-                formFields
-
-                if let errorMessage {
-                    Text(errorMessage)
-                        .foregroundStyle(.red)
-                        .font(.footnote)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-                }
-
-                primaryActionButton
-                    .disabled(!isFormValid || isSubmitting)
-
-                // Optional secondary guidance
-                secondaryHint
+        VStack(spacing: 20) {
+            header
+            
+            formFields
+            
+            if let errorMessage {
+                Text(errorMessage)
+                    .foregroundStyle(.red)
+                    .font(.footnote)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
             }
-            .padding()
+            
+            primaryActionButton
+                .disabled(!isFormValid || isSubmitting)
+            
+            // Optional secondary guidance
+            secondaryHint
         }
+        .padding()
         .animation(.default, value: isLoginFlow)
     }
 }
