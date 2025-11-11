@@ -20,7 +20,6 @@ final class QHAuth: ObservableObject {
     @Published private(set) var lastError: Error?
     
     private var authListenerHandle: AuthStateDidChangeListenerHandle?
-    let firestore = FirestoreService()
     
     init() {
         startAuthStateListener()
@@ -118,6 +117,22 @@ final class QHAuth: ObservableObject {
             )
 
             self.currentUser = user
+            
+            // Create or update a user document in Firestore
+            do {
+                let data: [String: Any] = [
+                    "displayName": fbUser.displayName ?? "",
+                    "email": fbUser.email ?? "",
+                    "totalPoints": 0
+                ]
+                try await Firestore.firestore()
+                    .collection("users")
+                    .document(fbUser.uid)
+                    .setData(data, merge: true)
+            } catch {
+                // Don't fail sign-up if this write fails; surface the error for diagnostics
+                self.lastError = error
+            }
 
             // Listener will also keep currentUser in sync going forward
             return true
@@ -236,4 +251,3 @@ final class QHAuth: ObservableObject {
         }
     }
 }
-
