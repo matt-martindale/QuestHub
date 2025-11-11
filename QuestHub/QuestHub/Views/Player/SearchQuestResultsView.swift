@@ -25,8 +25,6 @@ struct SearchQuestResultsView: View {
                 Group {
                     if viewModel.isLoading {
                         loadingView
-                    } else if let message = viewModel.errorMessage {
-                        errorView(message: message)
                     } else if viewModel.foundQuest == nil {
                         emptyQuestsView
                     } else {
@@ -154,6 +152,14 @@ struct SearchQuestResultsView: View {
                     .padding()
             }
             
+            if let message = viewModel.errorMessage {
+                Text(message)
+                    .font(.footnote)
+                    .foregroundStyle(.red)
+                    .multilineTextAlignment(.center)
+                    .padding([.horizontal, .bottom])
+            }
+            
             if viewModel.requiresPassword() {
                 VStack(alignment: .leading, spacing: 8) {
                     TextField("Quest password", text: $viewModel.inputPassword)
@@ -181,7 +187,6 @@ struct SearchQuestResultsView: View {
             }
             .padding()
             .buttonStyle(.glass)
-            .disabled(viewModel.requiresPassword() && viewModel.inputPassword.isEmpty)
             .shadow(color: Color.qhPrimaryBlue.opacity(0.25), radius: 8, x: 0, y: 0)
         }
     }

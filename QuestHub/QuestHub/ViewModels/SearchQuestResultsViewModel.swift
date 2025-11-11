@@ -44,11 +44,9 @@ final class SearchQuestResultsViewModel: ObservableObject {
     // MARK: - Actions
     func joinQuest() {
         guard let quest = foundQuest else { return }
-
-        // Require sign-in if needed
+        errorMessage = nil
+        
         if quest.requireSignIn == true, auth.currentUser == nil {
-            // You can surface this via errorMessage if desired
-            print("Sign in required, please sign-in")
             errorMessage = "Sign in required to join this quest."
             return
         }
@@ -60,7 +58,7 @@ final class SearchQuestResultsViewModel: ObservableObject {
         }
         
         if let password = quest.password, requiresPassword(), !inputPassword.elementsEqual(password) {
-            print("Passwords must match")
+            errorMessage = "Passwords must match"
             return
         }
 
