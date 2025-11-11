@@ -57,6 +57,23 @@ final class QHAuth: ObservableObject {
 
     // MARK: - Public API
 
+    /// Returns true if there is a Firebase user and it is an anonymous session.
+    var isCurrentUserAnonymous: Bool {
+        return Auth.auth().currentUser?.isAnonymous == true
+    }
+
+    /// Signs out if the current Firebase user is anonymous. Ensures local state clears.
+    func signOutIfAnonymous() {
+        guard Auth.auth().currentUser?.isAnonymous == true else { return }
+        do {
+            try Auth.auth().signOut()
+        } catch {
+            // Surface sign-out errors but still clear local state
+            lastError = error
+        }
+        // Listener will clear currentUser when sign out completes
+    }
+
     /// Attempts to sign in with email and password.
     /// Replace the internals with your backend call.
     func signIn(email: String, password: String) async -> Bool {
@@ -210,6 +227,16 @@ final class QHAuth: ObservableObject {
         // Listener will clear currentUser when sign out completes
     }
 
+    /// Force clears any Firebase session and local state, regardless of user type.
+    func clearCurrentUser() {
+        do {
+            try Auth.auth().signOut()
+        } catch {
+            lastError = error
+        }
+        // Listener will set currentUser to nil
+    }
+
     // MARK: - Private helpers
 
     private func mapFirebaseError(_ error: Error) -> Error {
@@ -235,15 +262,20 @@ final class QHAuth: ObservableObject {
         authListenerHandle = Auth.auth().addStateDidChangeListener { [weak self] _, fbUser in
             guard let self = self else { return }
             if let fbUser {
-                Task { [weak self] in
-                    guard let self = self else { return }
-                    var user = QHUser(
-                        id: fbUser.uid,
-                        email: fbUser.email ?? "",
-                        displayName: fbUser.displayName,
-                        createdAt: Date()
-                    )
-                    self.currentUser = user
+                if fbUser.isAnonymous {
+                    // Keep Firebase anonymous session for Firestore, but treat as signed-out in app UI
+                    self.currentUser = nil
+                } else {
+                    Task { [weak self] in
+                        guard let self = self else { return }
+                        let user = QHUser(
+                            id: fbUser.uid,
+                            email: fbUser.email ?? "",
+                            displayName: fbUser.displayName,
+                            createdAt: Date()
+                        )
+                        self.currentUser = user
+                    }
                 }
             } else {
                 self.currentUser = nil

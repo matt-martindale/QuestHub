@@ -10,6 +10,7 @@ import FirebaseFirestore
 import FirebaseAuth
 
 struct SearchQuestView: View {
+    @EnvironmentObject private var auth: QHAuth
     @State private var questCode: String = ""
     @State private var isLoading: Bool = false
     private struct AlertMessage: Identifiable { let id = UUID(); let text: String }
@@ -51,8 +52,14 @@ struct SearchQuestView: View {
             Alert(title: Text("Error"), message: Text(msg.text), dismissButton: .default(Text("OK")))
         }
         .background(
-            NavigationLink(destination: SearchQuestResultsView(quest: foundQuest), isActive: $navigate) {
-                EmptyView()
+            Group {
+                if let quest = foundQuest {
+                    NavigationLink(destination: SearchQuestResultsView(auth: auth, quest: quest), isActive: $navigate) {
+                        EmptyView()
+                    }
+                } else {
+                    EmptyView()
+                }
             }
             .hidden()
         )

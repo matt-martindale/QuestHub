@@ -8,12 +8,15 @@
 import SwiftUI
 
 struct SearchQuestResultsView: View {
-    @EnvironmentObject private var auth: QHAuth
-    @StateObject private var viewModel = PlayerHubViewModel()
+    // Keep the view model as a StateObject so we own its lifecycle
+    @StateObject private var viewModel: SearchQuestResultsViewModel
     @State private var showSignIn = false
     @State private var showAccount = false
-    
-    let quest: Quest?
+
+    // Initialize with dependencies; the view model will expose needed state
+    init(auth: QHAuth, quest: Quest) {
+        _viewModel = StateObject(wrappedValue: SearchQuestResultsViewModel(auth: auth, quest: quest))
+    }
 
     var body: some View {
         NavigationStack {
@@ -24,7 +27,7 @@ struct SearchQuestResultsView: View {
                         loadingView
                     } else if let message = viewModel.errorMessage {
                         errorView(message: message)
-                    } else if self.quest ==  nil {
+                    } else if viewModel.foundQuest == nil {
                         emptyQuestsView
                     } else {
                         questsListView
@@ -35,13 +38,13 @@ struct SearchQuestResultsView: View {
             .navigationTitle("Found quest!")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    if auth.currentUser != nil {
+                    if viewModel.auth.currentUser != nil {
                         Menu {
                             Button("Account", systemImage: "person.fill") {
                                 showAccount = true
                             }
                             Button(role: .destructive) {
-                                auth.signOut()
+                                viewModel.auth.signOut()
                             } label: {
                                 Label(UIStrings.signOut, systemImage: "rectangle.portrait.and.arrow.right")
                             }
@@ -56,13 +59,13 @@ struct SearchQuestResultsView: View {
                 }
             }
             .onAppear {
-                if let uid = auth.currentUser?.id {
+                if let uid = viewModel.auth.currentUser?.id {
                     viewModel.startListeningForUserQuests(for: uid)
                 } else {
                     viewModel.stopListening()
                 }
             }
-            .onChange(of: auth.currentUser) { newUser in
+            .onChange(of: viewModel.auth.currentUser) { newUser in
                 if let uid = newUser?.id {
                     viewModel.startListeningForUserQuests(for: uid)
                 } else {
@@ -81,7 +84,7 @@ struct SearchQuestResultsView: View {
             }
         }
     }
-    
+
     // MARK: - Subviews to help the compiler
     @ViewBuilder
     private var loadingView: some View {
@@ -140,17 +143,19 @@ struct SearchQuestResultsView: View {
     @ViewBuilder
     private var questsListView: some View {
         VStack {
-            QuestListItemView(quest: quest!, isEditable: false)
-                .listRowSeparator(.hidden)
-                .listRowInsets(EdgeInsets())
-                .padding(.vertical, 16)
-                .padding(.horizontal, 12)
-                .glassEffect(in: .rect(cornerRadius: 20))
-                .listRowBackground(Color.clear)
-                .padding()
-            
+            if let quest = viewModel.foundQuest {
+                QuestListItemView(quest: quest, isEditable: false)
+                    .listRowSeparator(.hidden)
+                    .listRowInsets(EdgeInsets())
+                    .padding(.vertical, 16)
+                    .padding(.horizontal, 12)
+                    .glassEffect(in: .rect(cornerRadius: 20))
+                    .listRowBackground(Color.clear)
+                    .padding()
+            }
+
             Button {
-                joinQuest()
+                viewModel.joinQuest()
             } label: {
                 Label("Join", systemImage: "wand.and.stars")
                     .frame(maxWidth: .infinity)
@@ -163,22 +168,13 @@ struct SearchQuestResultsView: View {
             .shadow(color: Color.qhPrimaryBlue.opacity(0.25), radius: 8, x: 0, y: 0)
         }
     }
-    
-    private func joinQuest() {
-        if quest?.requireSignIn == true && auth.currentUser == nil {
-            print("Sign in required, please sign-in")
-            return
-        }
-        if !(quest?.password ?? "").isEmpty {
-            print("Please enter password")
-            return
-        }
-        print("Joining quest: \(quest?.questCode ?? "none")")
-    }
 }
 
+#if DEBUG
 #Preview {
-    SearchQuestResultsView(quest: Quest(id: "id", questCode: "ABC123", title: "Title", subtitle: "Subtitle", description: "Description", maxPlayers: 100, playersCount: 20, challenges: nil, createdAt: Date(), updatedAt: Date(), creatorID: "creatorID", creatorDisplayName: "Creator Displayname", status: .active, password: "password", requireSignIn: true))
-        .environmentObject(QHAuth())
+    let auth = QHAuth()
+    let quest = Quest(id: "id", questCode: "ABC123", title: "Title", subtitle: "Subtitle", description: "Description", maxPlayers: 100, playersCount: 20, challenges: nil, createdAt: Date(), updatedAt: Date(), creatorID: "creatorID", creatorDisplayName: "Creator Displayname", status: .active, password: "password", requireSignIn: true)
+    return SearchQuestResultsView(auth: auth, quest: quest)
+        .environmentObject(auth)
 }
-
+#endif
