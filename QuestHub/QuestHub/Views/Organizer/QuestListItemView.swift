@@ -109,6 +109,6 @@ struct QuestListItemView: View {
 }
 
 #Preview {
-    QuestListItemView(quest: Quest(id: "IDH4HD", title: "Thanksgiving scavenger hunt", subtitle: "subtitle", description: "description", maxPlayers: 50, challenges: [], createdAt: Date(), updatedAt: Date(), creatorID: "u1", creatorDisplayName: "Alice", status: .active, password: "password")){}
+    QuestListItemView(quest: Quest(id: "", questCode: "ABC12", title: "Thanksgiving scavenger hunt", subtitle: "subtitle", description: "description", maxPlayers: 50, challenges: [], createdAt: Date(), updatedAt: Date(), creatorID: "u1", creatorDisplayName: "Alice", status: .active, password: "password")){}
         .padding()
 }

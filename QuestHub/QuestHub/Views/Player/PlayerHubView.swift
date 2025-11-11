@@ -48,7 +48,7 @@ struct PlayerHubView: View {
                                 .foregroundStyle(.secondary)
                         }
                         .padding(.horizontal)
-                    } else if !viewModel.hasJoinedQuests {
+                    } else if viewModel.joinedQuests.isEmpty {
                         // Empty state when signed in but no quests joined
                         VStack(spacing: 12) {
                             Image(systemName: "magnifyingglass.circle")
@@ -64,18 +64,33 @@ struct PlayerHubView: View {
                         }
                         .padding(.top, 32)
                     } else {
-                        // Placeholder for when the user has joined quests. Replace with real content.
-                        VStack(spacing: 12) {
-                            Image(systemName: "checkmark.seal")
-                                .font(.system(size: 48))
-                                .foregroundStyle(.green)
-                            Text("You're in active quests")
-                                .font(.headline)
-                            Text("Open a quest from your list or search for more.")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
+                        List {
+                            ForEach(viewModel.joinedQuests) { quest in
+                                QuestListItemView(quest: quest) {
+//                                    selectedQuest = quest
+//                                    isShowingEditQuestSheet = true
+                                }
+                                .listRowSeparator(.hidden)
+                                .listRowInsets(EdgeInsets())
+                                .padding(.vertical, 16)
+                                .padding(.horizontal, 12)
+                                .glassEffect(in: .rect(cornerRadius: 20))
+                                .listRowBackground(Color.clear)
+                            }
                         }
-                        .padding(.top, 24)
+                        .listStyle(.plain)
+                        .contentMargins(.horizontal, 16)
+                        .listRowSpacing(16)
+                        .scrollContentBackground(.hidden)
+                        .overlay(alignment: .center) {
+                            if auth.isLoadingCreatedQuests {
+                                ZStack {
+                                    Color.clear
+                                    ProgressView("Loading quests…")
+                                }
+                            }
+                        }
+                        .contentMargins(.bottom, 150)
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -128,7 +143,6 @@ struct PlayerHubView: View {
                 }
             }
             .sheet(isPresented: $showSignIn) {
-                // Present your sign-in flow
                 NavigationStack {
                     SignInView()
                 }

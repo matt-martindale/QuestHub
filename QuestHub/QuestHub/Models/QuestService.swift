@@ -213,8 +213,8 @@ final class QuestService {
                     let userQuestsRootRef = self.db.collection("userQuests").document("\(userId)_\(questIdResult)")
                     userQuestsRootRef.setData([
                         "userId": userId,
-                        "QuestID": questIdResult,
-                        "QuestCode": questCodeResult,
+                        "questID": questIdResult,
+                        "questCode": questCodeResult,
                         "joinedAt": Timestamp(date: Date())
                     ], merge: true) { uqErr in
                         if let uqErr = uqErr {
