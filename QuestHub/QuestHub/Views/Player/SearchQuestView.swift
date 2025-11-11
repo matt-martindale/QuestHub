@@ -99,36 +99,6 @@ private extension SearchQuestView {
     }
 }
 
-struct QuestDetailPlaceholderView: View {
-    let quest: Quest?
-    var body: some View {
-        VStack(spacing: 12) {
-            Text(quest?.title ?? "Quest")
-                .font(.title)
-            Text("Quest ID: \(quest?.id ?? "-")")
-                .foregroundStyle(.secondary)
-            Text("Players: \(quest?.playersCount ?? 0)/\(quest?.maxPlayers ?? 0)")
-                .foregroundStyle(.secondary)
-            Text("Creator ID: \(quest?.creatorID ?? "-")")
-                .foregroundStyle(.secondary)
-            Text("Creator displayName: \(quest?.creatorDisplayName ?? "-")")
-                .foregroundStyle(.secondary)
-            Text("Description: \(quest?.description ?? "-")")
-                .foregroundStyle(.secondary)
-            Text("Status: \(quest?.status?.rawValue ?? "-")")
-                .foregroundStyle(.secondary)
-            Text("Password: \(quest?.password ?? "-")")
-                .foregroundStyle(.secondary)
-            Text("Require Sign-in: \(quest?.requireSignIn ?? false)")
-                .foregroundStyle(.secondary)
-            Text("Challenges: \(quest?.challenges?.count ?? 0)")
-                .foregroundStyle(.secondary)
-        }
-        .padding()
-        .navigationTitle("Quest")
-    }
-}
-
 #Preview {
     SearchQuestView()
 }
