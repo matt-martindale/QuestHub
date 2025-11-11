@@ -123,21 +123,24 @@ struct PlayerHubView: View {
 
     @ViewBuilder
     private var signedOutView: some View {
+        Spacer()
         VStack(spacing: 12) {
             Image(systemName: "person.crop.circle.badge.questionmark")
                 .font(.system(size: 56))
                 .foregroundStyle(.secondary)
             Text("You're not signed in")
                 .font(.headline)
-            Text("Sign in to view and manage your quests.")
+            Text("Sign in to view and save your quests.")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         }
         .padding(.horizontal)
+        Spacer()
     }
 
     @ViewBuilder
     private var emptyQuestsView: some View {
+        Spacer()
         VStack(spacing: 12) {
             Image(systemName: "magnifyingglass.circle")
                 .font(.system(size: 64))
@@ -151,6 +154,7 @@ struct PlayerHubView: View {
                 .padding(.horizontal)
         }
         .padding(.top, 32)
+        Spacer()
     }
 
     @ViewBuilder
