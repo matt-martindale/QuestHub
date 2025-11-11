@@ -14,6 +14,7 @@ struct OrganizerHubView: View {
     @State private var selectedQuest: Quest?
     @State private var isShowingEditQuestSheet = false
     @State private var showCreationSuccessAlert = false
+    @State private var showAccount = false
     @State private var createdQuest: Quest?
     
     private var isUserSignedIn: Bool { auth.currentUser != nil }
@@ -62,6 +63,11 @@ struct OrganizerHubView: View {
                     CreateQuestView(auth: auth, questToEdit: quest)
                 }
             }
+            .sheet(isPresented: $showAccount) {
+                NavigationStack {
+                    AccountView()
+                }
+            }
             .onChange(of: isShowingEditQuestSheet) { oldValue, newValue in
                 if oldValue == true && newValue == false {
                     Task { await refreshQuests() }
@@ -85,10 +91,10 @@ struct OrganizerHubView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     Button() {
-                        // Go to Account page
+                        showAccount = true
                     } label: {
                         Label {
-                            Text(auth.currentUser?.id ?? UIStrings.account)
+                            Text(UIStrings.account)
                         } icon: {
                             Image(systemName: "person.fill")
                         }
