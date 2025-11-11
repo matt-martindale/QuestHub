@@ -7,30 +7,18 @@
 
 import SwiftUI
 
-struct AccountSummary {
-    var accountID: String
-    var displayName: String
-    var email: String
-    var totalPoints: Int
-}
-
 struct AccountView: View {
-    // In a real app, this would come from your model/view model.
-    // Using a simple placeholder so the view previews nicely.
-    var account: AccountSummary = .init(
-        accountID: "A1B2-C3D4",
-        displayName: "Matt Martindale",
-        email: "matt@example.com",
-        totalPoints: 1240
-    )
+    @EnvironmentObject var auth: QHAuth
 
     var body: some View {
         List {
-            Section {
-                LabeledContent("Account ID", value: account.accountID)
-                LabeledContent("Display Name", value: account.displayName)
-                LabeledContent("Email", value: account.email)
-                LabeledContent("Total Points", value: NumberFormatter.localizedString(from: NSNumber(value: account.totalPoints), number: .decimal))
+            if let user = auth.currentUser {
+                Section {
+                    LabeledContent("Account ID", value: user.id)
+                    LabeledContent("Display Name", value: user.displayName ?? user.email ?? "anonymous")
+                    LabeledContent("Email", value: user.email ?? "anonymous")
+                    LabeledContent("Total Points", value: NumberFormatter.localizedString(from: NSNumber(value: user.totalPoints ?? 0), number: .none))
+                }
             }
         }
         .listStyle(.insetGrouped)

@@ -14,6 +14,7 @@ struct PlayerHubView: View {
     @EnvironmentObject private var auth: QHAuth
     @StateObject private var viewModel = PlayerHubViewModel()
     @State private var showSignIn = false
+    @State private var showAccount = false
 
     var body: some View {
         NavigationStack {
@@ -112,7 +113,9 @@ struct PlayerHubView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     if auth.currentUser != nil {
                         Menu {
-                            Button("Account", systemImage: "person.fill") {}
+                            Button("Account", systemImage: "person.fill") {
+                                showAccount = true
+                            }
                             Button(role: .destructive) {
                                 auth.signOut()
                             } label: {
@@ -145,6 +148,11 @@ struct PlayerHubView: View {
             .sheet(isPresented: $showSignIn) {
                 NavigationStack {
                     SignInView()
+                }
+            }
+            .sheet(isPresented: $showAccount) {
+                NavigationStack {
+                    AccountView()
                 }
             }
         }
