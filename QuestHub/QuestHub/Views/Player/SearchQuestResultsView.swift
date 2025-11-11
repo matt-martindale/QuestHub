@@ -65,7 +65,7 @@ struct SearchQuestResultsView: View {
                     viewModel.stopListening()
                 }
             }
-            .onChange(of: viewModel.auth.currentUser) { newUser in
+            .onChange(of: viewModel.auth.currentUser) { _, newUser in
                 if let uid = newUser?.id {
                     viewModel.startListeningForUserQuests(for: uid)
                 } else {

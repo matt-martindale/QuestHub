@@ -82,7 +82,7 @@ final class QuestService {
             // Create new quest document with an auto-generated ID
             let newQuestCode = quest.questCode?.isEmpty == false ? quest.questCode! : IDGenerator.makeShortID()
 
-            var data: [String: Any] = [
+            let data: [String: Any] = [
                 "title": quest.title ?? "",
                 "subtitle": quest.subtitle ?? "",
                 "description": quest.description ?? "",
@@ -126,7 +126,7 @@ final class QuestService {
 
         // Use the Firestore document ID to reference the quest, and validate the questCode matches.
         let qRef = questRef(questId)
-        let uRef = userRef(userId)
+//        let uRef = userRef(userId)
         let pRef = playerRef(questId: questId, userId: userId)
 
         guard let authUid = Auth.auth().currentUser?.uid, authUid == userId else {
@@ -143,7 +143,7 @@ final class QuestService {
                 return nil
             }
 
-            guard var data = snapshot.data() else {
+            guard let data = snapshot.data() else {
                 errorPointer?.pointee = NSError(domain: "QuestService", code: 404, userInfo: [NSLocalizedDescriptionKey: "Quest not found"])
                 return nil
             }

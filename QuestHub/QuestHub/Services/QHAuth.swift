@@ -68,10 +68,8 @@ final class QHAuth: ObservableObject {
         do {
             try Auth.auth().signOut()
         } catch {
-            // Surface sign-out errors but still clear local state
             lastError = error
         }
-        // Listener will clear currentUser when sign out completes
     }
 
     /// Attempts to sign in with email and password.
@@ -87,7 +85,7 @@ final class QHAuth: ObservableObject {
             _ = try await Auth.auth().signIn(withEmail: email, password: password)
             if let fbUser = Auth.auth().currentUser {
                 // Build a local user first
-                var user = QHUser(
+                let user = QHUser(
                     id: fbUser.uid,
                     email: fbUser.email ?? "",
                     displayName: fbUser.displayName,
@@ -126,7 +124,7 @@ final class QHAuth: ObservableObject {
 
             // Update local currentUser immediately so UI reflects the name right away
             let fbUser = result.user
-            var user = QHUser(
+            let user = QHUser(
                 id: fbUser.uid,
                 email: fbUser.email ?? "",
                 displayName: fbUser.displayName,

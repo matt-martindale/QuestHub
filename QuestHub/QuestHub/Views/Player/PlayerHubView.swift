@@ -78,8 +78,8 @@ struct PlayerHubView: View {
                     viewModel.stopListening()
                 }
             }
-            .onChange(of: auth.currentUser) { newUser in
-                if let uid = newUser?.id {
+            .onChange(of: auth.currentUser) { oldValue, newValue in
+                if let uid = newValue?.id {
                     viewModel.startListeningForUserQuests(for: uid)
                 } else {
                     viewModel.stopListening()

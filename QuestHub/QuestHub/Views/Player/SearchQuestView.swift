@@ -51,18 +51,14 @@ struct SearchQuestView: View {
         .alert(item: $errorMessage) { msg in
             Alert(title: Text("Error"), message: Text(msg.text), dismissButton: .default(Text("OK")))
         }
-        .background(
-            Group {
-                if let quest = foundQuest {
-                    NavigationLink(destination: SearchQuestResultsView(auth: auth, quest: quest), isActive: $navigate) {
-                        EmptyView()
-                    }
-                } else {
-                    EmptyView()
-                }
+        .navigationDestination(isPresented: $navigate) {
+            if let quest = foundQuest {
+                SearchQuestResultsView(auth: auth, quest: quest)
+            } else {
+                // Fallback in case state becomes inconsistent
+                EmptyView()
             }
-            .hidden()
-        )
+        }
     }
 }
 
