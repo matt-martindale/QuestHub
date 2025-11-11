@@ -239,13 +239,12 @@ final class QuestService {
         }
     }
     
-    /// Searches for a quest by code (using document ID equality) and attempts to join it.
-    /// Returns the loaded Quest on success.
-    func searchAndJoin(questCode: String,
-                       userId: String,
-                       userDisplayName: String,
-                       maxPlayersEnforced: Bool = true,
-                       completion: @escaping (Result<Quest, Error>) -> Void) {
+    /// Searches for a quest by code and returns the loaded Quest without joining.
+    /// - Parameters:
+    ///   - questCode: The human-readable quest code stored on the quest document
+    ///   - completion: Result callback with the loaded Quest
+    func searchQuest(byCode questCode: String,
+                     completion: @escaping (Result<Quest, Error>) -> Void) {
         let trimmed = questCode.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else {
             completion(.failure(NSError(domain: "QuestService", code: 400, userInfo: [NSLocalizedDescriptionKey: "Quest code is empty"])) )
@@ -253,12 +252,12 @@ final class QuestService {
         }
 
         let query = db.collection("quests").whereField("questCode", isEqualTo: trimmed).limit(to: 1)
-        query.getDocuments { [weak self] snapshot, error in
+        query.getDocuments { snapshot, error in
             if let error = error {
                 completion(.failure(error))
                 return
             }
-            guard let self = self, let snapshot = snapshot, let doc = snapshot.documents.first else {
+            guard let snapshot = snapshot, let doc = snapshot.documents.first else {
                 completion(.failure(NSError(domain: "QuestService", code: 404, userInfo: [NSLocalizedDescriptionKey: "No quest found for code \(trimmed)"])) )
                 return
             }
@@ -266,8 +265,9 @@ final class QuestService {
             let data = doc.data()
 
             // Map Firestore data to Quest model
-            var quest = Quest()
+            let quest = Quest()
             quest.id = doc.documentID
+            quest.questCode = data["questCode"] as? String ?? trimmed
             quest.title = data["title"] as? String
             quest.subtitle = data["subtitle"] as? String
             quest.description = data["description"] as? String
@@ -278,19 +278,39 @@ final class QuestService {
             if let statusRaw = data["status"] as? String { quest.status = QuestStatus(rawValue: statusRaw) }
             if let createdTs = data["createdAt"] as? Timestamp { quest.createdAt = createdTs.dateValue() }
             if let updatedTs = data["updatedAt"] as? Timestamp { quest.updatedAt = updatedTs.dateValue() }
-            quest.questCode = data["questCode"] as? String ?? trimmed
 
-            // Join using quest document ID and questCode validation
-            self.joinQuest(questId: doc.documentID,
-                           questCode: quest.questCode ?? trimmed,
-                           userId: userId,
-                           userDisplayName: userDisplayName,
-                           maxPlayersEnforced: maxPlayersEnforced) { joinResult in
-                switch joinResult {
-                case .success:
-                    completion(.success(quest))
-                case .failure(let err):
-                    completion(.failure(err))
+            completion(.success(quest))
+        }
+    }
+    
+    /// Searches for a quest by code (using document ID equality) and attempts to join it.
+    /// Returns the loaded Quest on success.
+    func searchAndJoin(questCode: String,
+                       userId: String,
+                       userDisplayName: String,
+                       maxPlayersEnforced: Bool = true,
+                       completion: @escaping (Result<Quest, Error>) -> Void) {
+        let trimmed = questCode.trimmingCharacters(in: .whitespacesAndNewlines)
+        searchQuest(byCode: trimmed) { [weak self] searchResult in
+            switch searchResult {
+            case .failure(let error):
+                completion(.failure(error))
+            case .success(let quest):
+                guard let self = self, let questId = quest.id, let code = quest.questCode else {
+                    completion(.failure(NSError(domain: "QuestService", code: 500, userInfo: [NSLocalizedDescriptionKey: "Invalid quest data"])) )
+                    return
+                }
+                self.joinQuest(questId: questId,
+                               questCode: code,
+                               userId: userId,
+                               userDisplayName: userDisplayName,
+                               maxPlayersEnforced: maxPlayersEnforced) { joinResult in
+                    switch joinResult {
+                    case .success:
+                        completion(.success(quest))
+                    case .failure(let err):
+                        completion(.failure(err))
+                    }
                 }
             }
         }

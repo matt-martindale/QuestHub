@@ -51,7 +51,7 @@ struct SearchQuestView: View {
             Alert(title: Text("Error"), message: Text(msg.text), dismissButton: .default(Text("OK")))
         }
         .background(
-            NavigationLink(destination: QuestDetailPlaceholderView(quest: foundQuest), isActive: $navigate) {
+            NavigationLink(destination: SearchQuestResultsView(quest: foundQuest), isActive: $navigate) {
                 EmptyView()
             }
             .hidden()
@@ -60,12 +60,10 @@ struct SearchQuestView: View {
 }
 
 private extension SearchQuestView {
-    func performSearchAndJoin(with code: String) {
+    func performSearch(with code: String) {
         isLoading = true
-        QuestService.shared.searchAndJoin(
-            questCode: code,
-            userId: Auth.auth().currentUser?.uid ?? "",
-            userDisplayName: Auth.auth().currentUser?.displayName ?? "Player"
+        QuestService.shared.searchQuest(
+            byCode: code
         ) { result in
             isLoading = false
             switch result {
@@ -93,10 +91,10 @@ private extension SearchQuestView {
                     errorMessage = AlertMessage(text: error.localizedDescription)
                     return
                 }
-                performSearchAndJoin(with: code)
+                performSearch(with: code)
             }
         } else {
-            performSearchAndJoin(with: code)
+            performSearch(with: code)
         }
     }
 }
