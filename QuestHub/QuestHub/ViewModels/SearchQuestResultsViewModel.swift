@@ -10,15 +10,11 @@ import Combine
 
 @MainActor
 final class SearchQuestResultsViewModel: ObservableObject {
-    // Dependencies
     let auth: QHAuth
-
-    // Input quest from search; expose as optional to allow "empty" state in the view
     @Published var foundQuest: Quest?
-
-    // UI state
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
+    @Published var inputPassword: String = ""
 
     // Any listeners/cancellables can be tracked here if needed
     private var cancellables = Set<AnyCancellable>()
@@ -40,6 +36,10 @@ final class SearchQuestResultsViewModel: ObservableObject {
         // Cancel any active subscriptions or listeners
         cancellables.removeAll()
     }
+    
+    func requiresPassword() -> Bool {
+        return !(foundQuest?.password ?? "").isEmpty
+    }
 
     // MARK: - Actions
     func joinQuest() {
@@ -54,10 +54,13 @@ final class SearchQuestResultsViewModel: ObservableObject {
         }
 
         // Password-protected quest
-        if let password = quest.password, !password.isEmpty {
-            print("Please enter password")
-            // In a real flow you'd prompt for password; for now, just message.
+        if requiresPassword() && inputPassword.isEmpty {
             errorMessage = "This quest requires a password."
+            return
+        }
+        
+        if let password = quest.password, requiresPassword(), !inputPassword.elementsEqual(password) {
+            print("Passwords must match")
             return
         }
 

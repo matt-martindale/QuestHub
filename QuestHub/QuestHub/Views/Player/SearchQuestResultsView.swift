@@ -144,7 +144,7 @@ struct SearchQuestResultsView: View {
     private var questsListView: some View {
         VStack {
             if let quest = viewModel.foundQuest {
-                QuestListItemView(quest: quest, isEditable: false)
+                QuestListItemView(quest: quest, isEditable: false, hidePassword: true)
                     .listRowSeparator(.hidden)
                     .listRowInsets(EdgeInsets())
                     .padding(.vertical, 16)
@@ -152,6 +152,22 @@ struct SearchQuestResultsView: View {
                     .glassEffect(in: .rect(cornerRadius: 20))
                     .listRowBackground(Color.clear)
                     .padding()
+            }
+            
+            if viewModel.requiresPassword() {
+                VStack(alignment: .leading, spacing: 8) {
+                    TextField("Quest password", text: $viewModel.inputPassword)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled(true)
+                        .padding(12)
+                        .background(Color(.secondarySystemBackground))
+                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+
+                    Text("Enter the quest password to enable Join.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.horizontal)
             }
 
             Button {
@@ -165,6 +181,7 @@ struct SearchQuestResultsView: View {
             }
             .padding()
             .buttonStyle(.glass)
+            .disabled(viewModel.requiresPassword() && viewModel.inputPassword.isEmpty)
             .shadow(color: Color.qhPrimaryBlue.opacity(0.25), radius: 8, x: 0, y: 0)
         }
     }
@@ -178,3 +195,4 @@ struct SearchQuestResultsView: View {
         .environmentObject(auth)
 }
 #endif
+

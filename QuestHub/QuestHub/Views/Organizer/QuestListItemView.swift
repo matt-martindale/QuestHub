@@ -3,6 +3,7 @@ import SwiftUI
 struct QuestListItemView: View {
     let quest: Quest
     var isEditable: Bool = true
+    var hidePassword: Bool = false
     var onEdit: () -> Void = {}
 
     var body: some View {
@@ -50,13 +51,20 @@ struct QuestListItemView: View {
                                 .foregroundStyle(.secondary)
                         }
                         Spacer()
-                        if let password = quest.password, !password.isEmpty {
+                        if let password = quest.password, !password.isEmpty, !hidePassword {
                             Text("Password:")
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                             Text(password)
                                 .font(.subheadline)
                                 .fontWeight(.medium)
+                        } else if hidePassword && !(quest.password ?? "").isEmpty {
+                            Text("Password required")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                            Image(systemName: "lock.fill")
+                                .font(.subheadline)
+                                .foregroundStyle(Color.qhPrimaryRed)
                         }
                     }
                     
@@ -98,12 +106,13 @@ struct QuestListItemView: View {
                     if isEditable {
                         Button(action: onEdit) {
                             Text("Edit")
-                                .padding(8)
+                                .padding(.horizontal, 8)
                         }
                         .buttonStyle(.borderless)
                         .accessibilityLabel("Edit quest")
                     }
                 }
+                .padding(.vertical, 8)
             }
             Spacer()
         }
