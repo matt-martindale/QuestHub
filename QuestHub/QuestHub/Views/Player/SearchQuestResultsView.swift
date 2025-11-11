@@ -8,12 +8,13 @@
 import SwiftUI
 
 struct SearchQuestResultsView: View {
-    @EnvironmentObject private var auth: QHAuth
-    @StateObject private var viewModel = PlayerHubViewModel()
+    @StateObject private var viewModel: SearchQuestResultsViewModel
     @State private var showSignIn = false
     @State private var showAccount = false
     
-    let quest: Quest?
+    init(auth: QHAuth, quest: Quest) {
+        _viewModel = StateObject(wrappedValue: SearchQuestResultsViewModel(auth: auth, quest: quest))
+    }
 
     var body: some View {
         NavigationStack {
@@ -35,13 +36,13 @@ struct SearchQuestResultsView: View {
             .navigationTitle("Found quest!")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    if auth.currentUser != nil {
+                    if viewModel.auth.currentUser != nil {
                         Menu {
                             Button("Account", systemImage: "person.fill") {
                                 showAccount = true
                             }
                             Button(role: .destructive) {
-                                auth.signOut()
+                                viewModel.auth.signOut()
                             } label: {
                                 Label(UIStrings.signOut, systemImage: "rectangle.portrait.and.arrow.right")
                             }
@@ -56,13 +57,13 @@ struct SearchQuestResultsView: View {
                 }
             }
             .onAppear {
-                if let uid = auth.currentUser?.id {
+                if let uid = viewModel.auth.currentUser?.id {
                     viewModel.startListeningForUserQuests(for: uid)
                 } else {
                     viewModel.stopListening()
                 }
             }
-            .onChange(of: auth.currentUser) { newUser in
+            .onChange(of: viewModel.auth.currentUser) { newUser in
                 if let uid = newUser?.id {
                     viewModel.startListeningForUserQuests(for: uid)
                 } else {
