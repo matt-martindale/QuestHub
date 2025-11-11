@@ -275,6 +275,8 @@ final class QuestService {
             quest.playersCount = data["playersCount"] as? Int
             quest.creatorID = data["creatorID"] as? String
             quest.creatorDisplayName = data["creatorDisplayName"] as? String
+            quest.requireSignIn = data["requireSignIn"] as? Bool
+            quest.password = data["password"] as? String
             if let statusRaw = data["status"] as? String { quest.status = QuestStatus(rawValue: statusRaw) }
             if let createdTs = data["createdAt"] as? Timestamp { quest.createdAt = createdTs.dateValue() }
             if let updatedTs = data["updatedAt"] as? Timestamp { quest.updatedAt = updatedTs.dateValue() }

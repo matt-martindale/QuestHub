@@ -165,6 +165,14 @@ struct SearchQuestResultsView: View {
     }
     
     private func joinQuest() {
+        if quest?.requireSignIn == true && auth.currentUser == nil {
+            print("Sign in required, please sign-in")
+            return
+        }
+        if !(quest?.password ?? "").isEmpty {
+            print("Please enter password")
+            return
+        }
         print("Joining quest: \(quest?.questCode ?? "none")")
     }
 }
