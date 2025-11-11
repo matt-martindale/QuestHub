@@ -2,7 +2,8 @@ import SwiftUI
 
 struct QuestListItemView: View {
     let quest: Quest
-    let onEdit: () -> Void
+    var isEditable: Bool = true
+    var onEdit: () -> Void = {}
 
     var body: some View {
         HStack {
@@ -94,12 +95,14 @@ struct QuestListItemView: View {
                         EmptyView()
                     }
                     Spacer()
-                    Button(action: onEdit) {
-                        Text("Edit")
-                            .padding(8)
+                    if isEditable {
+                        Button(action: onEdit) {
+                            Text("Edit")
+                                .padding(8)
+                        }
+                        .buttonStyle(.borderless)
+                        .accessibilityLabel("Edit quest")
                     }
-                    .buttonStyle(.borderless)
-                    .accessibilityLabel("Edit quest")
                 }
             }
             Spacer()
@@ -112,3 +115,4 @@ struct QuestListItemView: View {
     QuestListItemView(quest: Quest(id: "", questCode: "ABC12", title: "Thanksgiving scavenger hunt", subtitle: "subtitle", description: "description", maxPlayers: 50, challenges: [], createdAt: Date(), updatedAt: Date(), creatorID: "u1", creatorDisplayName: "Alice", status: .active, password: "password")){}
         .padding()
 }
+

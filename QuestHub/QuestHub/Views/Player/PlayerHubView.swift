@@ -22,76 +22,15 @@ struct PlayerHubView: View {
                 // Content
                 Group {
                     if viewModel.isLoading {
-                        ProgressView("Loading your quests…")
-                            .padding()
+                        loadingView
                     } else if let message = viewModel.errorMessage {
-                        VStack(spacing: 8) {
-                            Image(systemName: "exclamationmark.triangle")
-                                .font(.system(size: 44))
-                                .foregroundStyle(.orange)
-                            Text("Couldn't load your quests")
-                                .font(.headline)
-                            Text(message)
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
-                                .multilineTextAlignment(.center)
-                        }
-                        .padding()
+                        errorView(message: message)
                     } else if auth.currentUser == nil {
-                        VStack(spacing: 12) {
-                            Image(systemName: "person.crop.circle.badge.questionmark")
-                                .font(.system(size: 56))
-                                .foregroundStyle(.secondary)
-                            Text("You're not signed in")
-                                .font(.headline)
-                            Text("Sign in to view and manage your quests.")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                        }
-                        .padding(.horizontal)
+                        signedOutView
                     } else if viewModel.joinedQuests.isEmpty {
-                        // Empty state when signed in but no quests joined
-                        VStack(spacing: 12) {
-                            Image(systemName: "magnifyingglass.circle")
-                                .font(.system(size: 64))
-                                .foregroundStyle(.secondary)
-                            Text("No quests yet")
-                                .font(.title3).bold()
-                            Text("Tap ‘Search Quest’ below to find and join a game.")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal)
-                        }
-                        .padding(.top, 32)
+                        emptyQuestsView
                     } else {
-                        List {
-                            ForEach(viewModel.joinedQuests) { quest in
-                                QuestListItemView(quest: quest) {
-//                                    selectedQuest = quest
-//                                    isShowingEditQuestSheet = true
-                                }
-                                .listRowSeparator(.hidden)
-                                .listRowInsets(EdgeInsets())
-                                .padding(.vertical, 16)
-                                .padding(.horizontal, 12)
-                                .glassEffect(in: .rect(cornerRadius: 20))
-                                .listRowBackground(Color.clear)
-                            }
-                        }
-                        .listStyle(.plain)
-                        .contentMargins(.horizontal, 16)
-                        .listRowSpacing(16)
-                        .scrollContentBackground(.hidden)
-                        .overlay(alignment: .center) {
-                            if auth.isLoadingCreatedQuests {
-                                ZStack {
-                                    Color.clear
-                                    ProgressView("Loading quests…")
-                                }
-                            }
-                        }
-                        .contentMargins(.bottom, 150)
+                        questsListView
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -156,6 +95,89 @@ struct PlayerHubView: View {
                 }
             }
         }
+    }
+    
+    // MARK: - Subviews to help the compiler
+    @ViewBuilder
+    private var loadingView: some View {
+        ProgressView("Loading your quests…")
+            .padding()
+    }
+
+    @ViewBuilder
+    private func errorView(message: String) -> some View {
+        VStack(spacing: 8) {
+            Image(systemName: "exclamationmark.triangle")
+                .font(.system(size: 44))
+                .foregroundStyle(.orange)
+            Text("Couldn't load your quests")
+                .font(.headline)
+            Text(message)
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .padding()
+    }
+
+    @ViewBuilder
+    private var signedOutView: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "person.crop.circle.badge.questionmark")
+                .font(.system(size: 56))
+                .foregroundStyle(.secondary)
+            Text("You're not signed in")
+                .font(.headline)
+            Text("Sign in to view and manage your quests.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        }
+        .padding(.horizontal)
+    }
+
+    @ViewBuilder
+    private var emptyQuestsView: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "magnifyingglass.circle")
+                .font(.system(size: 64))
+                .foregroundStyle(.secondary)
+            Text("No quests yet")
+                .font(.title3).bold()
+            Text("Tap ‘Search Quest’ below to find and join a game.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+        }
+        .padding(.top, 32)
+    }
+
+    @ViewBuilder
+    private var questsListView: some View {
+        List {
+            ForEach(viewModel.joinedQuests) { quest in
+                QuestListItemView(quest: quest, isEditable: false)
+                .listRowSeparator(.hidden)
+                .listRowInsets(EdgeInsets())
+                .padding(.vertical, 16)
+                .padding(.horizontal, 12)
+                .glassEffect(in: .rect(cornerRadius: 20))
+                .listRowBackground(Color.clear)
+            }
+        }
+        .listStyle(.plain)
+        .contentMargins(.horizontal, 16)
+        .listRowSpacing(16)
+        .scrollContentBackground(.hidden)
+        .overlay(alignment: .center) {
+            if auth.isLoadingCreatedQuests {
+                ZStack {
+                    Color.clear
+                    ProgressView("Loading quests…")
+                }
+            }
+        }
+        .contentMargins(.bottom, 150)
     }
 }
 
