@@ -45,13 +45,20 @@ final class QuestService {
         // Determine if this is an update by presence of a Firestore documentID
         let isUpdating = (quest.id?.isEmpty == false)
 
-        // Short code we expose to users; still stored on the quest document, but we no longer maintain a separate index
-        let questCode = quest.questCode?.isEmpty == false ? quest.questCode! : IDGenerator.makeShortID()
-
         if isUpdating {
             // Update existing quest doc by Firestore documentID
             let docID = quest.id!
             let docRef = questsCollection.document(docID)
+
+            // Preserve existing questCode on update; only use provided non-empty value
+            var resolvedQuestCode: String = quest.questCode ?? ""
+            if resolvedQuestCode.isEmpty {
+                // Attempt to fetch existing code from Firestore to avoid overwriting
+                let existing = try await docRef.getDocument()
+                if let existingData = existing.data(), let storedCode = existingData["questCode"] as? String, !storedCode.isEmpty {
+                    resolvedQuestCode = storedCode
+                }
+            }
 
             var updateData: [String: Any] = [
                 "title": quest.title ?? "",
@@ -65,14 +72,16 @@ final class QuestService {
                 "requireSignIn": quest.requireSignIn ?? false,
                 "challenges": encodedChallenges,
                 "updatedAt": Date(),
-                "questCode": questCode
+                "questCode": resolvedQuestCode
             ]
             if let createdAt = quest.createdAt { updateData["createdAt"] = createdAt }
 
             try await docRef.setData(updateData, merge: true)
-            return questCode
+            return resolvedQuestCode
         } else {
             // Create new quest document with an auto-generated ID
+            let newQuestCode = quest.questCode?.isEmpty == false ? quest.questCode! : IDGenerator.makeShortID()
+
             var data: [String: Any] = [
                 "title": quest.title ?? "",
                 "subtitle": quest.subtitle ?? "",
@@ -85,12 +94,12 @@ final class QuestService {
                 "requireSignIn": quest.requireSignIn ?? false,
                 "challenges": encodedChallenges,
                 "createdAt": Date(),
-                "questCode": questCode,
+                "questCode": newQuestCode,
             ]
 
             let newDocRef = questsCollection.document()
             try await newDocRef.setData(data)
-            return questCode
+            return newQuestCode
         }
     }
 
@@ -287,3 +296,4 @@ final class QuestService {
         }
     }
 }
+

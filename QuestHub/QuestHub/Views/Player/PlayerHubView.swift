@@ -44,6 +44,7 @@ struct PlayerHubView: View {
                         .background(Color.clear)
                         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
+                .padding()
                 .buttonStyle(.glass)
                 .shadow(color: Color.qhPrimaryBlue.opacity(0.25), radius: 8, x: 0, y: 0)
             }
@@ -169,6 +170,7 @@ struct PlayerHubView: View {
         .contentMargins(.horizontal, 16)
         .listRowSpacing(16)
         .scrollContentBackground(.hidden)
+        .scrollIndicators(.hidden)
         .overlay(alignment: .center) {
             if auth.isLoadingCreatedQuests {
                 ZStack {

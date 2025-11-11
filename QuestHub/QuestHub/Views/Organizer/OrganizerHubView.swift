@@ -185,6 +185,7 @@ struct OrganizerHubView: View {
         .contentMargins(.horizontal, 16)
         .listRowSpacing(16)
         .scrollContentBackground(.hidden)
+        .scrollIndicators(.hidden)
         .overlay(alignment: .center) {
             if auth.isLoadingCreatedQuests {
                 ZStack {
