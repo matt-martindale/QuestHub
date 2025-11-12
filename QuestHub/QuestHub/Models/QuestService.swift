@@ -81,7 +81,27 @@ final class QuestService {
             return resolvedQuestCode
         } else {
             // Create new quest document with an auto-generated ID
-            let newQuestCode = quest.questCode?.isEmpty == false ? quest.questCode! : IDGenerator.makeShortID()
+            // Ensure the questCode is unique across the `quests` collection.
+            let providedCode = (quest.questCode?.isEmpty == false) ? quest.questCode! : ""
+
+            func generateCandidate() -> String { providedCode.isEmpty ? IDGenerator.makeShortID() : providedCode }
+
+            var uniqueCode = generateCandidate()
+            var attempts = 0
+            let maxAttempts = 5
+            while attempts < maxAttempts {
+                // Check for existing quest with this code
+                let snapshot = try await questsCollection.whereField("questCode", isEqualTo: uniqueCode).limit(to: 1).getDocuments()
+                if snapshot.documents.isEmpty {
+                    break
+                }
+                // If a provided code collides, only regenerate with random codes after the first failure
+                uniqueCode = IDGenerator.makeShortID()
+                attempts += 1
+            }
+
+            // If we somehow exhausted attempts and still collided, we still proceed with the last generated code; the chance of further collision is extremely low.
+            let newQuestCode = uniqueCode
 
             let data: [String: Any] = [
                 "title": quest.title ?? "",
