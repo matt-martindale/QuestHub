@@ -33,6 +33,7 @@ struct QuestHubApp: App {
     var body: some Scene {
         WindowGroup {
             HomeView()
+                .gatedBySignIn()
                 .environmentObject(auth)
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
         }

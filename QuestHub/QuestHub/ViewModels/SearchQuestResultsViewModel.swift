@@ -51,8 +51,8 @@ final class SearchQuestResultsViewModel: ObservableObject {
         let questCode = quest.questCode else { return }
         errorMessage = nil
         
-        if quest.requireSignIn == true, auth.currentUser == nil {
-            errorMessage = "Sign in required to join this quest."
+        if auth.currentUser == nil {
+            self.alertMessage = AlertMessage(text: "Please sign in or create an account to join a quest.")
             return
         }
 

@@ -130,7 +130,7 @@ struct PlayerHubView: View {
                 .foregroundStyle(.secondary)
             Text("You're not signed in")
                 .font(.headline)
-            Text("Sign in to view and save your quests.")
+            Text("Sign in to play and view your joined quests.")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         }
