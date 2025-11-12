@@ -32,40 +32,58 @@ struct CreateQuestView: View {
                 Section {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Cover Image")
-                        HStack(alignment: .center, spacing: 12) {
+                        VStack(spacing: 12) {
                             ZStack {
+                                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                    .fill(Color.secondary.opacity(0.08))
+                                
                                 if let data = selectedImageData, let uiImage = UIImage(data: data) {
                                     Image(uiImage: uiImage)
                                         .resizable()
                                         .scaledToFill()
-                                        .frame(width: 72, height: 72)
-                                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                                        .clipped()
                                 } else {
-                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                        .fill(Color.secondary.opacity(0.12))
-                                        .overlay(
-                                            Image(systemName: "photo")
-                                                .font(.system(size: 24))
-                                                .foregroundStyle(.secondary)
-                                        )
-                                        .frame(width: 72, height: 72)
+                                    VStack(spacing: 8) {
+                                        Image(systemName: "photo")
+                                            .font(.system(size: 36))
+                                            .foregroundStyle(.secondary)
+                                        Text("Add a cover image")
+                                            .font(.footnote)
+                                            .foregroundStyle(.secondary)
+                                    }
                                 }
                             }
-
-                            PhotosPicker(selection: $selectedPhotoItem, matching: .images, photoLibrary: .shared()) {
-                                Label(selectedImageData == nil ? "Add photo" : "Change photo", systemImage: "plus.circle.fill")
+                            .frame(maxWidth: .infinity)
+                            .aspectRatio(16/9, contentMode: .fit)
+                            .padding(.horizontal)
+                            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                            .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                            
+                            HStack() {
+                                PhotosPicker(selection: $selectedPhotoItem, matching: .images, photoLibrary: .shared()) {
+                                    HStack(spacing: 4) {
+                                        Image(systemName: "plus.circle.fill")
+                                        Text(selectedImageData == nil ? "Add photo" : "Change photo")
+                                    }
                                     .foregroundStyle(Color.qhPrimaryBlue)
-                            }
-                            .buttonStyle(.plain)
-
-                            if selectedImageData != nil {
-                                Button(role: .destructive) {
-                                    selectedImageData = nil
-                                    selectedPhotoItem = nil
-                                } label: {
-                                    Label("Remove", systemImage: "trash")
                                 }
-                                .buttonStyle(.borderless)
+                                .buttonStyle(.plain)
+                                
+                                Spacer(maxlength: 30)
+                                
+                                if selectedImageData != nil {
+                                    Button(role: .destructive) {
+                                        selectedImageData = nil
+                                        selectedPhotoItem = nil
+                                    } label: {
+                                        HStack {
+                                            Image(systemName: "trash")
+                                            Text("Remove")
+                                        }
+                                        .foregroundStyle(Color.qhPrimaryRed)
+                                    }
+                                    .buttonStyle(.borderless)
+                                }
                             }
 
                             Spacer()
