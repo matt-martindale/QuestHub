@@ -7,10 +7,13 @@
 
 import SwiftUI
 import Combine
+import PhotosUI
 
 struct CreateQuestView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel: CreateQuestViewModel
+    @State private var selectedPhotoItem: PhotosPickerItem? = nil
+    @State private var selectedImageData: Data? = nil
     @State private var showMaxPlayersInfo: Bool = false
     @State private var showPasswordInfo: Bool = false
     @State private var showRequireSignInInfo: Bool = false
@@ -27,6 +30,64 @@ struct CreateQuestView: View {
             List {
                 // Section 1 — Quest info
                 Section {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Cover Image")
+                        HStack(alignment: .center, spacing: 12) {
+                            ZStack {
+                                if let data = selectedImageData, let uiImage = UIImage(data: data) {
+                                    Image(uiImage: uiImage)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: 72, height: 72)
+                                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                                } else {
+                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                        .fill(Color.secondary.opacity(0.12))
+                                        .overlay(
+                                            Image(systemName: "photo")
+                                                .font(.system(size: 24))
+                                                .foregroundStyle(.secondary)
+                                        )
+                                        .frame(width: 72, height: 72)
+                                }
+                            }
+
+                            PhotosPicker(selection: $selectedPhotoItem, matching: .images, photoLibrary: .shared()) {
+                                Label(selectedImageData == nil ? "Add photo" : "Change photo", systemImage: "plus.circle.fill")
+                                    .foregroundStyle(Color.qhPrimaryBlue)
+                            }
+                            .buttonStyle(.plain)
+
+                            if selectedImageData != nil {
+                                Button(role: .destructive) {
+                                    selectedImageData = nil
+                                    selectedPhotoItem = nil
+                                } label: {
+                                    Label("Remove", systemImage: "trash")
+                                }
+                                .buttonStyle(.borderless)
+                            }
+
+                            Spacer()
+                        }
+                        .padding(.vertical, 4)
+                        Text("This image will represent your quest to players.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                    .onChange(of: selectedPhotoItem) { _, newItem in
+                        guard let newItem else { return }
+                        Task {
+                            if let data = try? await newItem.loadTransferable(type: Data.self) {
+                                await MainActor.run {
+                                    self.selectedImageData = data
+                                    // Store on the view model for deferred upload during save
+                                    self.viewModel.pendingCoverImageData = data
+                                }
+                            }
+                        }
+                    }
+                    
                     VStack(alignment: .leading) {
                         Text("Title")
                         TextField("Ex: Thanksgiving scavenger hunt", text: $viewModel.title)

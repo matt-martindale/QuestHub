@@ -1,6 +1,8 @@
 import Foundation
 import SwiftUI
 import Combine
+import FirebaseStorage
+import FirebaseFirestore
 
 @MainActor
 final class CreateQuestViewModel: ObservableObject {
@@ -17,6 +19,9 @@ final class CreateQuestViewModel: ObservableObject {
     @Published var editingChallengeIndex: Int? = nil
     @Published var isEditing: Bool = false
     @Published var lastSavedQuest: Quest?
+    // Image handling
+    @Published var pendingCoverImageData: Data? = nil
+    @Published var coverImageURL: URL? = nil
 
     var maxPlayers: Int {
         switch maxPlayersSelection {
@@ -87,6 +92,13 @@ final class CreateQuestViewModel: ObservableObject {
         self.init(auth: auth, questToEdit: questToEdit, questService: QuestService.shared)
     }
 
+    // MARK: - Image Upload (Deferred)
+    /// Call this if you ever want to trigger an upload outside of save; currently we defer until save.
+    func uploadQuestImage(data: Data) async {
+        await MainActor.run { self.pendingCoverImageData = data }
+        // Intentionally no immediate upload; will upload during saveQuest().
+    }
+
     // MARK: - Challenge actions
     func beginAddChallenge() {
         editingChallengeIndex = nil
@@ -155,11 +167,26 @@ final class CreateQuestViewModel: ObservableObject {
             questToSave.requireSignIn = self.requireSignIn
             questToSave.challenges = self.challenges
 
+            // Upload cover image if present
+            if let imageData = self.pendingCoverImageData {
+                do {
+                    let url = try await self.uploadCoverImageToStorage(imageData: imageData, userID: user.id)
+                    self.coverImageURL = url
+                    // Assign to quest model if it has a field for image URL
+                    questToSave.imageURL = url.absoluteString
+                } catch {
+                    print("Failed to upload cover image: \(error)")
+                }
+            }
+
             do {
                 let savedID = try await questService.saveQuest(questToSave)
                 self.editingQuestID = savedID
                 self.lastSavedQuest = questToSave
                 self.lastSavedQuest?.questCode = savedID
+
+                // Clear pending image data after successful save
+                self.pendingCoverImageData = nil
 
                 // Refresh user's quests via auth so UI can reflect changes
                 do {
@@ -188,5 +215,14 @@ final class CreateQuestViewModel: ObservableObject {
                 print("Failed to delete quest: \(error)")
             }
         }
+    }
+
+    // MARK: - Private Helpers
+    private func uploadCoverImageToStorage(imageData: Data, userID: String) async throws -> URL {
+        // TODO: Implement Firebase Storage upload. Example path: "quests/\(userID)/\(UUID().uuidString).jpg"
+        // You can compress/convert as needed before upload.
+        // Throwing a notImplemented error for now to indicate stub.
+        enum UploadError: Error { case notImplemented }
+        throw UploadError.notImplemented
     }
 }

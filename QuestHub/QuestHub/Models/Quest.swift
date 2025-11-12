@@ -20,6 +20,7 @@ class Quest: Identifiable, Codable, Equatable {
     var questCode: String? // Short format code for players to join
 
     // Basic metadata
+    var imageURL: String?
     var title: String?
     var subtitle: String?
     var description: String?
@@ -41,6 +42,7 @@ class Quest: Identifiable, Codable, Equatable {
     enum CodingKeys: String, CodingKey {
         case id
         case questCode
+        case imageURL
         case title
         case subtitle
         case description
@@ -59,6 +61,7 @@ class Quest: Identifiable, Codable, Equatable {
     init(
         id: String? = nil,
         questCode: String? = nil,
+        imageURL: String? = nil,
         title: String? = nil,
         subtitle: String? = nil,
         description: String? = nil,
@@ -75,6 +78,7 @@ class Quest: Identifiable, Codable, Equatable {
     ) {
         self.id = id
         self.questCode = questCode
+        self.imageURL = imageURL
         self.title = title
         self.subtitle = subtitle
         self.description = description
@@ -93,6 +97,7 @@ class Quest: Identifiable, Codable, Equatable {
     static func == (lhs: Quest, rhs: Quest) -> Bool {
         return lhs.id == rhs.id &&
         lhs.questCode == rhs.questCode &&
+        lhs.imageURL == rhs.imageURL &&
         lhs.title == rhs.title &&
         lhs.subtitle == rhs.subtitle &&
         lhs.description == rhs.description &&

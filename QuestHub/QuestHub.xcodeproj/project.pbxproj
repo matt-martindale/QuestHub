@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C848661F2EC515C200513E5A /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = C848661E2EC515C200513E5A /* FirebaseStorage */; };
 		C86CDB962EBBF5F200884768 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = C86CDB952EBBF5F200884768 /* FirebaseCore */; };
 		C86CDB982EBBF5F200884768 /* FirebaseFirestoreCombine-Community in Frameworks */ = {isa = PBXBuildFile; productRef = C86CDB972EBBF5F200884768 /* FirebaseFirestoreCombine-Community */; };
 		C895D4B82EB9A76B001CF35B /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = C895D4B72EB9A76B001CF35B /* GoogleService-Info.plist */; };
@@ -40,6 +41,7 @@
 				C895D4C32EB9A7FE001CF35B /* FirebaseFunctions in Frameworks */,
 				C895D4BF2EB9A7FE001CF35B /* FirebaseAuth in Frameworks */,
 				C86CDB962EBBF5F200884768 /* FirebaseCore in Frameworks */,
+				C848661F2EC515C200513E5A /* FirebaseStorage in Frameworks */,
 				C895D4BB2EB9A7FE001CF35B /* FirebaseAnalytics in Frameworks */,
 				C86CDB982EBBF5F200884768 /* FirebaseFirestoreCombine-Community in Frameworks */,
 			);
@@ -92,6 +94,7 @@
 				C895D4C22EB9A7FE001CF35B /* FirebaseFunctions */,
 				C86CDB952EBBF5F200884768 /* FirebaseCore */,
 				C86CDB972EBBF5F200884768 /* FirebaseFirestoreCombine-Community */,
+				C848661E2EC515C200513E5A /* FirebaseStorage */,
 			);
 			productName = QuestHub;
 			productReference = C895D4A42EB99FC3001CF35B /* QuestHub.app */;
@@ -378,6 +381,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		C848661E2EC515C200513E5A /* FirebaseStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C895D4B92EB9A7FE001CF35B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseStorage;
+		};
 		C86CDB952EBBF5F200884768 /* FirebaseCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = C895D4B92EB9A7FE001CF35B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
