@@ -213,7 +213,7 @@ final class QuestService {
                 let maxPlayers = data["maxPlayers"] as? Int ?? Int.max
 
                 if maxPlayersEnforced && playersCount >= maxPlayers {
-                    errorPointer?.pointee = NSError(domain: "QuestService", code: 409, userInfo: [NSLocalizedDescriptionKey: "Maximum number of players has been reached for this Quest."])
+                    errorPointer?.pointee = NSError(domain: "QuestService", code: 409, userInfo: [NSLocalizedDescriptionKey: "Maximum number of players has been reached."])
                     return nil
                 }
 
