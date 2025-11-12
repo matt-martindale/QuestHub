@@ -107,6 +107,24 @@ final class QuestService {
     /// Deletes a quest document by its Firestore document ID.
     func deleteQuest(withID id: String) async throws {
         let questsCollection = db.collection("quests")
+        let playersCollection = questsCollection.document(id).collection("players")
+
+        // Fetch players docs
+        let playersSnapshot = try await playersCollection.getDocuments()
+        let playersDocs = playersSnapshot.documents
+
+        // Delete in batches (max 500 operations per batch)
+        let chunkSize = 450
+        for chunkStart in stride(from: 0, to: playersDocs.count, by: chunkSize) {
+            let chunk = playersDocs[chunkStart..<min(chunkStart + chunkSize, playersDocs.count)]
+            let batch = db.batch()
+            for doc in chunk {
+                batch.deleteDocument(doc.reference)
+            }
+            try await batch.commit()
+        }
+
+        // Delete the quest doc
         try await questsCollection.document(id).delete()
     }
     
