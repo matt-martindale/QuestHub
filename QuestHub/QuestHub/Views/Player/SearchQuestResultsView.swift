@@ -81,6 +81,9 @@ struct SearchQuestResultsView: View {
                 }
             }
         }
+        .alert(item: $viewModel.alertMessage) { msg in
+            Alert(title: Text("Failed to join Quest"), message: Text(msg.text), dismissButton: .default(Text("OK")))
+        }
     }
 
     // MARK: - Subviews to help the compiler

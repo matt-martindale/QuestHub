@@ -8,12 +8,15 @@
 import Foundation
 import Combine
 
+struct AlertMessage: Identifiable { let id = UUID(); let text: String }
+
 @MainActor
 final class SearchQuestResultsViewModel: ObservableObject {
     let auth: QHAuth
     @Published var foundQuest: Quest?
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
+    @Published var alertMessage: AlertMessage?
     @Published var inputPassword: String = ""
 
     // Any listeners/cancellables can be tracked here if needed
@@ -66,7 +69,12 @@ final class SearchQuestResultsViewModel: ObservableObject {
         
         // Join Quest after passing validations
         QuestService.shared.joinQuest(questId: questID, questCode: questCode, userId: auth.currentUser?.id, userDisplayName: auth.currentUser?.displayName ?? auth.currentUser?.email ?? "anonymous", maxPlayersEnforced: true) { result in
-            print(result)
+            switch result {
+            case .success():
+                print("Joined quest \(questCode)")
+            case .failure(let error):
+                self.alertMessage = AlertMessage(text: error.localizedDescription)
+            }
         }
     }
 }
