@@ -30,81 +30,7 @@ struct CreateQuestView: View {
             List {
                 // Section 1 — Quest info
                 Section {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Cover Image")
-                        VStack(spacing: 12) {
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                    .fill(Color.secondary.opacity(0.08))
-                                
-                                if let data = selectedImageData, let uiImage = UIImage(data: data) {
-                                    Image(uiImage: uiImage)
-                                        .resizable()
-                                        .scaledToFill()
-                                        .clipped()
-                                } else {
-                                    VStack(spacing: 8) {
-                                        Image(systemName: "photo")
-                                            .font(.system(size: 36))
-                                            .foregroundStyle(.secondary)
-                                        Text("Add a cover image")
-                                            .font(.footnote)
-                                            .foregroundStyle(.secondary)
-                                    }
-                                }
-                            }
-                            .frame(maxWidth: .infinity)
-                            .aspectRatio(16/9, contentMode: .fit)
-                            .padding(.horizontal)
-                            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                            .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                            
-                            HStack() {
-                                PhotosPicker(selection: $selectedPhotoItem, matching: .images, photoLibrary: .shared()) {
-                                    HStack(spacing: 4) {
-                                        Image(systemName: "plus.circle.fill")
-                                        Text(selectedImageData == nil ? "Add photo" : "Change photo")
-                                    }
-                                    .foregroundStyle(Color.qhPrimaryBlue)
-                                }
-                                .buttonStyle(.plain)
-                                
-                                Spacer(maxlength: 30)
-                                
-                                if selectedImageData != nil {
-                                    Button(role: .destructive) {
-                                        selectedImageData = nil
-                                        selectedPhotoItem = nil
-                                    } label: {
-                                        HStack {
-                                            Image(systemName: "trash")
-                                            Text("Remove")
-                                        }
-                                        .foregroundStyle(Color.qhPrimaryRed)
-                                    }
-                                    .buttonStyle(.borderless)
-                                }
-                            }
-
-                            Spacer()
-                        }
-                        .padding(.vertical, 4)
-                        Text("This image will represent your quest to players.")
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                    }
-                    .onChange(of: selectedPhotoItem) { _, newItem in
-                        guard let newItem else { return }
-                        Task {
-                            if let data = try? await newItem.loadTransferable(type: Data.self) {
-                                await MainActor.run {
-                                    self.selectedImageData = data
-                                    // Store on the view model for deferred upload during save
-                                    self.viewModel.pendingCoverImageData = data
-                                }
-                            }
-                        }
-                    }
+                    CoverImagePicker(selectedPhotoItem: $selectedPhotoItem, selectedImageData: $selectedImageData, viewModel: viewModel)
                     
                     VStack(alignment: .leading) {
                         Text("Title")
@@ -215,16 +141,15 @@ struct CreateQuestView: View {
                             }
                             .buttonStyle(.plain)
                             .help("When enabled, players must be signed in to join your quest.")
-                            .sheet(isPresented: $showRequireSignInInfo) {
-                                InfoSheetView(viewModel: InfoSheetViewModel(flow: .requireSignIn)) { showRequireSignInInfo = false }
-                                    .presentationDetents([.medium])
-                                    .presentationDragIndicator(.visible)
-                            }
                         }
                     }
-//                    .listRowSeparator(.hidden, edges: .bottom)
                     .padding(.trailing, 12)
                     .toggleStyle(.switch)
+                    .sheet(isPresented: $showRequireSignInInfo) {
+                        InfoSheetView(viewModel: InfoSheetViewModel(flow: .requireSignIn)) { showRequireSignInInfo = false }
+                            .presentationDetents([.medium])
+                            .presentationDragIndicator(.visible)
+                    }
                     
                     Toggle(isOn: $viewModel.isPasswordProtected) {
                         HStack(spacing: 6) {
@@ -237,16 +162,16 @@ struct CreateQuestView: View {
                             }
                             .buttonStyle(.plain)
                             .help("When enabled, players must enter this password to join your quest.")
-                            .sheet(isPresented: $showPasswordInfo) {
-                                InfoSheetView(viewModel: InfoSheetViewModel(flow: .password)) { showPasswordInfo = false }
-                                    .presentationDetents([.medium])
-                                    .presentationDragIndicator(.visible)
-                            }
                         }
                     }
                     .listRowSeparator(.hidden, edges: .bottom)
                     .padding(.trailing, 12)
                     .toggleStyle(.switch)
+                    .sheet(isPresented: $showPasswordInfo) {
+                        InfoSheetView(viewModel: InfoSheetViewModel(flow: .password)) { showPasswordInfo = false }
+                            .presentationDetents([.medium])
+                            .presentationDragIndicator(.visible)
+                    }
 
                     if viewModel.isPasswordProtected {
                         TextField("Enter a password", text: $viewModel.password)
@@ -353,6 +278,89 @@ struct CreateQuestView: View {
         }
         .interactiveDismissDisabled(true)
     }
+    
+    private struct CoverImagePicker: View {
+        @Binding var selectedPhotoItem: PhotosPickerItem?
+        @Binding var selectedImageData: Data?
+        @ObservedObject var viewModel: CreateQuestViewModel
+
+        var body: some View {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Cover Image")
+                VStack(spacing: 12) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .fill(Color.secondary.opacity(0.08))
+
+                        if let data = selectedImageData, let uiImage = UIImage(data: data) {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .scaledToFill()
+                                .clipped()
+                        } else {
+                            VStack(spacing: 8) {
+                                Image(systemName: "photo")
+                                    .font(.system(size: 36))
+                                    .foregroundStyle(.secondary)
+                                Text("Add a cover image")
+                                    .font(.footnote)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .aspectRatio(16/9, contentMode: .fit)
+                    .padding(.horizontal)
+                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+
+                    HStack(spacing: 30) {
+                        PhotosPicker(selection: $selectedPhotoItem, matching: .images, photoLibrary: .shared()) {
+                            HStack(spacing: 4) {
+                                Image(systemName: "plus.circle.fill")
+                                Text(selectedImageData == nil ? "Add photo" : "Change photo")
+                            }
+                            .foregroundStyle(Color.qhPrimaryBlue)
+                        }
+                        .buttonStyle(.plain)
+
+                        if selectedImageData != nil {
+                            Button(role: .destructive) {
+                                selectedImageData = nil
+                                selectedPhotoItem = nil
+                                // Also clear on the view model to avoid stale data
+                                viewModel.pendingCoverImageData = nil
+                            } label: {
+                                HStack {
+                                    Image(systemName: "trash")
+                                    Text("Remove")
+                                }
+                                .foregroundStyle(Color.qhPrimaryRed)
+                            }
+                            .buttonStyle(.borderless)
+                        }
+                    }
+
+                    Spacer()
+                }
+                .padding(.vertical, 4)
+                Text("This image will represent your quest to players.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+            .onChange(of: selectedPhotoItem) { _, newItem in
+                guard let newItem else { return }
+                Task {
+                    if let data = try? await newItem.loadTransferable(type: Data.self) {
+                        await MainActor.run {
+                            self.selectedImageData = data
+                            self.viewModel.pendingCoverImageData = data
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 #Preview {
@@ -360,3 +368,4 @@ struct CreateQuestView: View {
     return CreateQuestView(auth: auth)
         .environmentObject(auth)
 }
+
