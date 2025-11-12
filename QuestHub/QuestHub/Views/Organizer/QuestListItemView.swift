@@ -46,7 +46,7 @@ struct QuestListItemView: View {
                             Image(systemName: "person.2.fill")
                                 .font(.footnote)
                                 .foregroundStyle(.secondary)
-                            Text("0/\(quest.maxPlayers ?? 1) players")
+                            Text("\(quest.playersCount ?? 0)/\(quest.maxPlayers ?? 1) players")
                                 .font(.footnote)
                                 .foregroundStyle(.secondary)
                         }
