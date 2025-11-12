@@ -47,8 +47,8 @@ final class PlayerHubViewModel: ObservableObject {
 
                 // Extract quest IDs (support both "questId" and "questID")
                 let questIds: [String] = documents.compactMap { doc in
-                    if let qid = doc.data()["questId"] as? String { return qid }
                     if let qid = doc.data()["questID"] as? String { return qid }
+                    if let qid = doc.data()["QuestID"] as? String { return qid }
                     return nil
                 }
 

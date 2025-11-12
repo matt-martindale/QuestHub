@@ -119,122 +119,145 @@ final class QuestService {
     ///   - completion: Result callback
     func joinQuest(questId: String,
                    questCode: String,
-                   userId: String,
+                   userId: String?,
                    userDisplayName: String,
                    maxPlayersEnforced: Bool = true,
                    completion: @escaping (Result<Void, Error>) -> Void) {
+        // Ensure we have an authenticated user ID. If not provided or not signed in, sign in anonymously first.
+        let proceedWithJoin: (_ resolvedUserId: String) -> Void = { resolvedUserId in
+            // Use the Firestore document ID to reference the quest, and validate the questCode matches.
+            let qRef = self.questRef(questId)
+            let pRef = self.playerRef(questId: questId, userId: resolvedUserId)
 
-        // Use the Firestore document ID to reference the quest, and validate the questCode matches.
-        let qRef = questRef(questId)
-//        let uRef = userRef(userId)
-        let pRef = playerRef(questId: questId, userId: userId)
-
-        guard let authUid = Auth.auth().currentUser?.uid, authUid == userId else {
-            completion(.failure(NSError(domain: "QuestService", code: 401, userInfo: [NSLocalizedDescriptionKey: "Not authenticated as provided userId"])))
-            return
-        }
-
-        db.runTransaction({ (transaction, errorPointer) -> Any? in
-            let snapshot: DocumentSnapshot
-            do {
-                snapshot = try transaction.getDocument(qRef)
-            } catch let error as NSError {
-                errorPointer?.pointee = error
-                return nil
-            }
-
-            guard let data = snapshot.data() else {
-                errorPointer?.pointee = NSError(domain: "QuestService", code: 404, userInfo: [NSLocalizedDescriptionKey: "Quest not found"])
-                return nil
-            }
-
-            // Validate that the provided questCode matches what's on the document
-            if let storedCode = data["questCode"] as? String, !storedCode.isEmpty {
-                if storedCode != questCode {
-                    errorPointer?.pointee = NSError(domain: "QuestService", code: 403, userInfo: [NSLocalizedDescriptionKey: "Quest code does not match this quest ID"])
-                    return nil
-                }
-            }
-
-            let playerSnapshot: DocumentSnapshot
-            do {
-                playerSnapshot = try transaction.getDocument(pRef)
-            } catch let error as NSError {
-                errorPointer?.pointee = error
-                return nil
-            }
-
-            // If the player doc already exists, do not increment count (no-op)
-            if playerSnapshot.exists {
-                return ["joined": false, "questId": questId, "questCode": questCode]
-            }
-
-            let playersCount = data["playersCount"] as? Int ?? 0
-            let maxPlayers = data["maxPlayers"] as? Int ?? Int.max
-
-            if maxPlayersEnforced && playersCount >= maxPlayers {
-                errorPointer?.pointee = NSError(domain: "QuestService", code: 409, userInfo: [NSLocalizedDescriptionKey: "Quest is full"])
-                return nil
-            }
-
-            // Update quest doc
-            transaction.updateData([
-                "playersCount": FieldValue.increment(Int64(1))
-            ], forDocument: qRef)
-
-            return ["joined": true, "questId": questId, "questCode": questCode]
-        }) { (result, error) in
-            if let error = error {
-                completion(.failure(error))
+            // Verify current auth matches resolvedUserId
+            guard let authUid = Auth.auth().currentUser?.uid, authUid == resolvedUserId else {
+                completion(.failure(NSError(domain: "QuestService", code: 401, userInfo: [NSLocalizedDescriptionKey: "Not authenticated as resolved userId"])) )
                 return
             }
 
-            let joined: Bool
-            let questIdResult: String
-            let questCodeResult: String
-            if let dict = result as? [String: Any],
-               let j = dict["joined"] as? Bool,
-               let qid = dict["questId"] as? String,
-               let qcode = dict["questCode"] as? String {
-                joined = j
-                questIdResult = qid
-                questCodeResult = qcode
-            } else {
-                joined = true
-                questIdResult = questId
-                questCodeResult = questCode
-            }
+            self.db.runTransaction({ (transaction, errorPointer) -> Any? in
+                let snapshot: DocumentSnapshot
+                do {
+                    snapshot = try transaction.getDocument(qRef)
+                } catch let error as NSError {
+                    errorPointer?.pointee = error
+                    return nil
+                }
 
-            // After transaction, if we actually joined, create the player doc and userQuests entry; otherwise, succeed without changes
-            if joined {
-                // Create/update player doc under quest
-                pRef.setData([
-                    "userId": userId,
-                    "displayName": userDisplayName,
-                    "points": 0
-                ], merge: false) { err in
-                    if let err = err {
-                        completion(.failure(err))
-                        return
-                    }
+                guard let data = snapshot.data() else {
+                    errorPointer?.pointee = NSError(domain: "QuestService", code: 404, userInfo: [NSLocalizedDescriptionKey: "Quest not found"]) 
+                    return nil
+                }
 
-                    // Populate userQuests ROOT collection with QuestID (documentID) and QuestCode (questCode)
-                    let userQuestsRootRef = self.db.collection("userQuests").document("\(userId)_\(questIdResult)")
-                    userQuestsRootRef.setData([
-                        "userId": userId,
-                        "questID": questIdResult,
-                        "questCode": questCodeResult,
-                        "joinedAt": Timestamp(date: Date())
-                    ], merge: true) { uqErr in
-                        if let uqErr = uqErr {
-                            completion(.failure(uqErr))
-                        } else {
-                            completion(.success(()))
-                        }
+                // Validate that the provided questCode matches what's on the document
+                if let storedCode = data["questCode"] as? String, !storedCode.isEmpty {
+                    if storedCode != questCode {
+                        errorPointer?.pointee = NSError(domain: "QuestService", code: 403, userInfo: [NSLocalizedDescriptionKey: "Quest code does not match this quest ID"]) 
+                        return nil
                     }
                 }
-            } else {
-                completion(.success(()))
+
+                let playerSnapshot: DocumentSnapshot
+                do {
+                    playerSnapshot = try transaction.getDocument(pRef)
+                } catch let error as NSError {
+                    errorPointer?.pointee = error
+                    return nil
+                }
+
+                // If the player doc already exists, do not increment count (no-op)
+                if playerSnapshot.exists {
+                    return ["joined": false, "questId": questId, "questCode": questCode]
+                }
+
+                let playersCount = data["playersCount"] as? Int ?? 0
+                let maxPlayers = data["maxPlayers"] as? Int ?? Int.max
+
+                if maxPlayersEnforced && playersCount >= maxPlayers {
+                    errorPointer?.pointee = NSError(domain: "QuestService", code: 409, userInfo: [NSLocalizedDescriptionKey: "Quest is full"]) 
+                    return nil
+                }
+
+                // Update quest doc
+                transaction.updateData([
+                    "playersCount": FieldValue.increment(Int64(1))
+                ], forDocument: qRef)
+
+                return ["joined": true, "questId": questId, "questCode": questCode]
+            }) { (result, error) in
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+
+                let joined: Bool
+                let questIdResult: String
+                let questCodeResult: String
+                if let dict = result as? [String: Any],
+                   let j = dict["joined"] as? Bool,
+                   let qid = dict["questId"] as? String,
+                   let qcode = dict["questCode"] as? String {
+                    joined = j
+                    questIdResult = qid
+                    questCodeResult = qcode
+                } else {
+                    joined = true
+                    questIdResult = questId
+                    questCodeResult = questCode
+                }
+
+                // After transaction, if we actually joined, create the player doc and userQuests entry; otherwise, succeed without changes
+                if joined {
+                    // Create/update player doc under quest
+                    pRef.setData([
+                        "userId": resolvedUserId,
+                        "displayName": userDisplayName,
+                        "points": 0
+                    ], merge: false) { err in
+                        if let err = err {
+                            completion(.failure(err))
+                            return
+                        }
+
+                        // Populate userQuests ROOT collection with QuestID (documentID) and QuestCode (questCode)
+                        let userQuestsRootRef = self.db.collection("userQuests").document("\(resolvedUserId)_\(questIdResult)")
+                        userQuestsRootRef.setData([
+                            "userId": resolvedUserId,
+                            "questID": questIdResult,
+                            "questCode": questCodeResult,
+                            "joinedAt": Timestamp(date: Date())
+                        ], merge: true) { uqErr in
+                            if let uqErr = uqErr {
+                                completion(.failure(uqErr))
+                            } else {
+                                completion(.success(()))
+                            }
+                        }
+                    }
+                } else {
+                    completion(.success(()))
+                }
+            }
+        }
+
+        // If userId is provided and matches current auth, proceed. Otherwise sign in anonymously first.
+        if let providedUserId = userId, let currentUid = Auth.auth().currentUser?.uid, currentUid == providedUserId {
+            proceedWithJoin(providedUserId)
+        } else if let currentUid = Auth.auth().currentUser?.uid {
+            // If already signed in (e.g., anonymous or otherwise), use that uid
+            proceedWithJoin(currentUid)
+        } else {
+            // Sign in anonymously, then proceed
+            Auth.auth().signInAnonymously { authResult, error in
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+                guard let uid = authResult?.user.uid else {
+                    completion(.failure(NSError(domain: "QuestService", code: 500, userInfo: [NSLocalizedDescriptionKey: "Failed to obtain anonymous user ID"])) )
+                    return
+                }
+                proceedWithJoin(uid)
             }
         }
     }
@@ -318,4 +341,3 @@ final class QuestService {
         }
     }
 }
-

@@ -43,7 +43,9 @@ final class SearchQuestResultsViewModel: ObservableObject {
 
     // MARK: - Actions
     func joinQuest() {
-        guard let quest = foundQuest else { return }
+        guard let quest = foundQuest,
+        let questID = quest.id,
+        let questCode = quest.questCode else { return }
         errorMessage = nil
         
         if quest.requireSignIn == true, auth.currentUser == nil {
@@ -61,10 +63,11 @@ final class SearchQuestResultsViewModel: ObservableObject {
             errorMessage = "Passwords must match"
             return
         }
-
-        // Proceed to join
-        print("Joining quest: \(quest.questCode)")
-        // Implement the actual join logic here (network/database call)
+        
+        // Join Quest after passing validations
+        QuestService.shared.joinQuest(questId: questID, questCode: questCode, userId: auth.currentUser?.id, userDisplayName: auth.currentUser?.displayName ?? auth.currentUser?.email ?? "anonymous", maxPlayersEnforced: true) { result in
+            print(result)
+        }
     }
 }
 
