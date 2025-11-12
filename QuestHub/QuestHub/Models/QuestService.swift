@@ -13,6 +13,7 @@ final class QuestService {
     private init() {}
 
     private let db = Firestore.firestore()
+    private var joinedListener: ListenerRegistration?
 
     // Paths helpers
     private func questRef(_ questId: String) -> DocumentReference {
@@ -339,5 +340,110 @@ final class QuestService {
                 }
             }
         }
+    }
+
+    deinit {
+        joinedListener?.remove()
+    }
+
+    /// Starts listening to the joined quests for a given user id.
+    /// - Parameters:
+    ///   - uid: The user's uid to query against `userQuests`.
+    ///   - onChange: Called on the main queue with the latest quests or an error message.
+    func startListeningForJoinedQuests(uid: String, onChange: @escaping (_ quests: [Quest], _ errorMessage: String?) -> Void) {
+        // Remove any existing listener before starting a new one
+        joinedListener?.remove()
+
+        let db = self.db
+        joinedListener = db.collection("userQuests")
+            .whereField("userId", isEqualTo: uid)
+            .addSnapshotListener { snapshot, error in
+                if let error = error {
+                    DispatchQueue.main.async {
+                        onChange([], error.localizedDescription)
+                    }
+                    return
+                }
+
+                guard let documents = snapshot?.documents else {
+                    DispatchQueue.main.async {
+                        onChange([], nil)
+                    }
+                    return
+                }
+
+                // Extract quest IDs (support both "questID" and "QuestID")
+                let questIds: [String] = documents.compactMap { doc in
+                    let data = doc.data()
+                    if let qid = data["questID"] as? String { return qid }
+                    if let qid = data["QuestID"] as? String { return qid }
+                    return nil
+                }
+
+                guard !questIds.isEmpty else {
+                    DispatchQueue.main.async {
+                        onChange([], nil)
+                    }
+                    return
+                }
+
+                // Firestore `in` queries support max 10 items; chunk IDs accordingly
+                let chunkSize = 10
+                let chunks: [[String]] = stride(from: 0, to: questIds.count, by: chunkSize).map { start in
+                    Array(questIds[start..<min(start + chunkSize, questIds.count)])
+                }
+
+                var fetchedQuests: [Quest] = []
+                var encounteredError: String?
+                let group = DispatchGroup()
+
+                for chunk in chunks {
+                    group.enter()
+                    db.collection("quests")
+                        .whereField(FieldPath.documentID(), in: chunk)
+                        .getDocuments { snap, err in
+                            defer { group.leave() }
+
+                            if let err = err {
+                                let msg = err.localizedDescription
+                                if let existing = encounteredError {
+                                    encounteredError = existing + "\n" + msg
+                                } else {
+                                    encounteredError = msg
+                                }
+                                return
+                            }
+
+                            guard let docs = snap?.documents else { return }
+
+                            let quests: [Quest] = docs.compactMap { doc in
+                                do {
+                                    return try doc.data(as: Quest.self)
+                                } catch {
+                                    print("Failed to decode Quest: \(error)")
+                                    return nil
+                                }
+                            }
+
+                            fetchedQuests.append(contentsOf: quests)
+                        }
+                }
+
+                group.notify(queue: .main) {
+                    let fetchedById: [String: Quest] = Dictionary(uniqueKeysWithValues: fetchedQuests.compactMap { q in
+                        guard let qid = q.id, !qid.isEmpty else { return nil }
+                        return (qid, q)
+                    })
+
+                    let ordered = questIds.compactMap { fetchedById[$0] }
+                    onChange(ordered, encounteredError)
+                }
+            }
+    }
+
+    /// Stops listening to any active joined quests query.
+    func stopListeningForJoinedQuests() {
+        joinedListener?.remove()
+        joinedListener = nil
     }
 }
