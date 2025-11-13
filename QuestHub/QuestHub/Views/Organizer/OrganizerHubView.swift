@@ -35,7 +35,7 @@ struct OrganizerHubView: View {
                                 emptyStateView(for: display)
                             }
                         } else {
-                            createdQuestsList
+                            createdQuestsCards
                         }
                     } else {
                         Text(UIStrings.noUserSignedIn)
@@ -84,6 +84,9 @@ struct OrganizerHubView: View {
             }
             .navigationTitle(UIStrings.organizerHub)
             .toolbar { organizerToolbar }
+            .navigationDestination(for: Quest.self) { quest in
+                PlayQuestView(quest: quest)
+            }
         }
     }
     
@@ -168,42 +171,40 @@ struct OrganizerHubView: View {
     }
 
     @ViewBuilder
-    private var createdQuestsList: some View {
-        List {
-            ForEach(auth.createdQuests) { quest in
-                NavigationLink {
-                    PlayQuestView(quest: quest)
-                } label: {
-                    QuestListItemView(quest: quest) {
-                        selectedQuest = quest
-                        initialCoverImageData = nil
-                        Task {
-                            if let urlString = quest.imageURL, let url = URL(string: urlString) {
-                                do {
-                                    let (data, _) = try await URLSession.shared.data(from: url)
-                                    await MainActor.run { initialCoverImageData = data }
-                                } catch {
-                                    // Ignore download errors; proceed without initial image data
+    private var createdQuestsCards: some View {
+        ScrollView {
+            LazyVStack(spacing: 16) {
+                ForEach(auth.createdQuests) { quest in
+                    NavigationLink(value: quest) {
+                        QuestListItemView(quest: quest) {
+                            selectedQuest = quest
+                            initialCoverImageData = nil
+                            Task {
+                                if let urlString = quest.imageURL, let url = URL(string: urlString) {
+                                    do {
+                                        let (data, _) = try await URLSession.shared.data(from: url)
+                                        await MainActor.run { initialCoverImageData = data }
+                                    } catch {
+                                        // Ignore download errors; proceed without initial image data
+                                    }
                                 }
+                                await MainActor.run { isShowingEditQuestSheet = true }
                             }
-                            await MainActor.run { isShowingEditQuestSheet = true }
                         }
+                        .contentShape(Rectangle())
+                        .padding(16)
+                        .background(.thinMaterial)
+                        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                        .shadow(color: Color.black.opacity(0.08), radius: 10, x: 0, y: 4)
+                        .glassEffect(in: .rect(cornerRadius: 20))
                     }
-                    .contentShape(Rectangle())
+                    .buttonStyle(.plain)
                 }
-                .listRowSeparator(.hidden)
-                .listRowInsets(EdgeInsets())
-                .padding(.vertical, 16)
-                .padding(.horizontal, 12)
-                .glassEffect(in: .rect(cornerRadius: 20))
-                .listRowBackground(Color.clear)
-                .buttonStyle(.plain)
             }
+            .padding(.horizontal, 16)
+            .padding(.top, 8)
+            .padding(.bottom, 150)
         }
-        .listStyle(.plain)
-        .contentMargins(.horizontal, 16)
-        .listRowSpacing(16)
-        .scrollContentBackground(.hidden)
         .scrollIndicators(.hidden)
         .overlay(alignment: .center) {
             if auth.isLoadingCreatedQuests {
@@ -213,7 +214,6 @@ struct OrganizerHubView: View {
                 }
             }
         }
-        .contentMargins(.bottom, 150)
         .refreshable { await refreshQuests() }
     }
     
@@ -226,3 +226,4 @@ struct OrganizerHubView: View {
     OrganizerHubView()
         .environmentObject(QHAuth())
 }
+

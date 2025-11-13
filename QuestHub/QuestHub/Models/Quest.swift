@@ -14,7 +14,7 @@ enum QuestStatus: String, Codable {
     case locked
 }
 
-class Quest: Identifiable, Codable, Equatable {
+class Quest: Identifiable, Codable, Equatable, Hashable {
     // Stable identity for SwiftUI and persistence
     @DocumentID var id: String?
     var questCode: String? // Short format code for players to join
@@ -95,22 +95,10 @@ class Quest: Identifiable, Codable, Equatable {
     }
 
     static func == (lhs: Quest, rhs: Quest) -> Bool {
-        return lhs.id == rhs.id &&
-        lhs.questCode == rhs.questCode &&
-        lhs.imageURL == rhs.imageURL &&
-        lhs.title == rhs.title &&
-        lhs.subtitle == rhs.subtitle &&
-        lhs.description == rhs.description &&
-        lhs.maxPlayers == rhs.maxPlayers &&
-        lhs.playersCount == rhs.playersCount &&
-        lhs.challenges == rhs.challenges &&
-        lhs.createdAt == rhs.createdAt &&
-        lhs.updatedAt == rhs.updatedAt &&
-        lhs.creatorID == rhs.creatorID &&
-        lhs.creatorDisplayName == rhs.creatorDisplayName &&
-        lhs.status == rhs.status &&
-        lhs.password == rhs.password &&
-        lhs.requireSignIn == rhs.requireSignIn
+        return lhs.id == rhs.id
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
     }
 }
-
