@@ -19,21 +19,33 @@ struct QuestListItemView: View {
                                     .fill(Color.secondary.opacity(0.1))
                                 ProgressView()
                             }
+                            .frame(maxWidth: .infinity)
+                            .aspectRatio(16/9, contentMode: .fit)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+
                         case .success(let image):
                             image
                                 .resizable()
                                 .scaledToFill()
+                                .frame(maxWidth: .infinity)
+                                .aspectRatio(16/9, contentMode: .fit) // maintain ratio within width
                                 .clipped()
                                 .clipShape(RoundedRectangle(cornerRadius: 8))
+
                         case .failure:
-                            EmptyView()
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color.secondary.opacity(0.1))
+                                .overlay(
+                                    Image(systemName: "photo")
+                                        .foregroundStyle(.secondary)
+                                )
+                                .frame(maxWidth: .infinity)
+                                .aspectRatio(16/9, contentMode: .fit)
+
                         @unknown default:
                             EmptyView()
                         }
                     }
-                    .aspectRatio(16/9, contentMode: .fill)
-                    .frame(maxWidth: .infinity)
-                    .clipped()
                     .padding(.bottom)
                 }
                 Text(quest.title ?? "")
