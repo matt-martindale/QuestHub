@@ -16,6 +16,7 @@ struct OrganizerHubView: View {
     @State private var showCreationSuccessAlert = false
     @State private var showAccount = false
     @State private var createdQuest: Quest?
+    @State private var initialCoverImageData: Data?
     
     private var isUserSignedIn: Bool { auth.currentUser != nil }
     
@@ -51,16 +52,16 @@ struct OrganizerHubView: View {
                     await refreshQuests()
                 }
             }
-            .sheet(isPresented: $isShowingCreateQuestSheet) {
+            .fullScreenCover(isPresented: $isShowingCreateQuestSheet) {
                 CreateQuestView(auth: auth, onCreateSuccess: { quest in
                     createdQuest = quest
                     Task { await refreshQuests() }
                     showCreationSuccessAlert = true
                 })
             }
-            .sheet(isPresented: $isShowingEditQuestSheet) {
+            .fullScreenCover(isPresented: $isShowingEditQuestSheet) {
                 if let quest = selectedQuest {
-                    CreateQuestView(auth: auth, questToEdit: quest)
+                    CreateQuestView(auth: auth, questToEdit: quest, initialCoverImageData: initialCoverImageData)
                 }
             }
             .sheet(isPresented: $showAccount) {
@@ -70,6 +71,7 @@ struct OrganizerHubView: View {
             }
             .onChange(of: isShowingEditQuestSheet) { oldValue, newValue in
                 if oldValue == true && newValue == false {
+                    initialCoverImageData = nil
                     Task { await refreshQuests() }
                 }
             }
@@ -171,7 +173,18 @@ struct OrganizerHubView: View {
             ForEach(auth.createdQuests) { quest in
                 QuestListItemView(quest: quest) {
                     selectedQuest = quest
-                    isShowingEditQuestSheet = true
+                    initialCoverImageData = nil
+                    Task {
+                        if let urlString = quest.imageURL, let url = URL(string: urlString) {
+                            do {
+                                let (data, _) = try await URLSession.shared.data(from: url)
+                                await MainActor.run { initialCoverImageData = data }
+                            } catch {
+                                // Ignore download errors; proceed without initial image data
+                            }
+                        }
+                        await MainActor.run { isShowingEditQuestSheet = true }
+                    }
                 }
                 .listRowSeparator(.hidden)
                 .listRowInsets(EdgeInsets())
@@ -207,4 +220,3 @@ struct OrganizerHubView: View {
     OrganizerHubView()
         .environmentObject(QHAuth())
 }
-

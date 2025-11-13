@@ -19,6 +19,7 @@ struct CreateQuestView: View {
     @StateObject private var viewModel: CreateQuestViewModel
     @State private var selectedPhotoItem: PhotosPickerItem? = nil
     @State private var selectedImageData: Data? = nil
+    private let initialCoverImageData: Data?
     @State private var showMaxPlayersInfo: Bool = false
     @State private var showPasswordInfo: Bool = false
     @State private var showRequireSignInInfo: Bool = false
@@ -26,8 +27,9 @@ struct CreateQuestView: View {
     @State private var croppingImage: CroppingImage? = nil
     private let onCreateSuccess: ((Quest) -> Void)?
 
-    init(auth: QHAuth, questToEdit: Quest? = nil, onCreateSuccess: ((Quest) -> Void)? = nil) {
+    init(auth: QHAuth, questToEdit: Quest? = nil, initialCoverImageData: Data? = nil, onCreateSuccess: ((Quest) -> Void)? = nil) {
         self.onCreateSuccess = onCreateSuccess
+        self.initialCoverImageData = initialCoverImageData
         _viewModel = StateObject(wrappedValue: CreateQuestViewModel(auth: auth, questToEdit: questToEdit))
     }
 
@@ -48,7 +50,8 @@ struct CreateQuestView: View {
                                 }
                             }
                         ),
-                        viewModel: viewModel
+                        viewModel: viewModel,
+                        initialImageData: initialCoverImageData
                     )
                     
                     VStack(alignment: .leading) {
@@ -264,6 +267,12 @@ struct CreateQuestView: View {
             }
             
         }
+        .onAppear {
+            if viewModel.isEditing, selectedImageData == nil, let data = initialCoverImageData {
+                self.selectedImageData = data
+                self.viewModel.pendingCoverImageData = data
+            }
+        }
         .onChange(of: viewModel.didFinishSaving) { _, newValue in
             if newValue {
                 if viewModel.isEditing == false, let quest = viewModel.lastSavedQuest {
@@ -312,7 +321,7 @@ struct CreateQuestView: View {
 
 #Preview {
     let auth = QHAuth()
-    return CreateQuestView(auth: auth)
+    return CreateQuestView(auth: auth, initialCoverImageData: nil)
         .environmentObject(auth)
 }
 

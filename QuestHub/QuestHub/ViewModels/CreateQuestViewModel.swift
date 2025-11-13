@@ -54,6 +54,19 @@ final class CreateQuestViewModel: ObservableObject {
             self.isPasswordProtected = !(quest.password ?? "").isEmpty ? true : false
             self.password = quest.password ?? ""
             self.requireSignIn = quest.requireSignIn ?? false
+            
+            // Prefetch existing cover image data if available
+            if let urlString = quest.imageURL, let url = URL(string: urlString) {
+                Task { @MainActor in
+                    do {
+                        let (data, _) = try await URLSession.shared.data(from: url)
+                        self.pendingCoverImageData = data
+                    } catch {
+                        // Ignore failures; UI will show placeholder
+                    }
+                }
+            }
+            
             // Map quest challenges to local Challenge model if available
             if let questChallenges = quest.challenges {
                 self.challenges = questChallenges.map { qc in

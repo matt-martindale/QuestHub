@@ -14,6 +14,7 @@ struct QHImagePicker: View {
     @Binding var isCroppingImage: Bool
     @Binding var imageForCropping: UIImage?
     @ObservedObject var viewModel: CreateQuestViewModel
+    var initialImageData: Data? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -23,7 +24,7 @@ struct QHImagePicker: View {
                     RoundedRectangle(cornerRadius: 16, style: .continuous)
                         .fill(Color.secondary.opacity(0.08))
 
-                    if let data = selectedImageData, let uiImage = UIImage(data: data) {
+                    if let data = selectedImageData ?? initialImageData, let uiImage = UIImage(data: data) {
                         Image(uiImage: uiImage)
                             .resizable()
                             .scaledToFill()
