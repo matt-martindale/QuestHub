@@ -26,6 +26,7 @@ struct CreateQuestView: View {
     @State private var showRequireSignInInfo: Bool = false
     @State private var showDeleteConfirmation: Bool = false
     @State private var croppingImage: CroppingImage? = nil
+    @State private var isSaving: Bool = false
     private let onCreateSuccess: ((Quest) -> Void)?
 
     init(auth: QHAuth, questToEdit: Quest? = nil, initialCoverImageData: Data? = nil, onCreateSuccess: ((Quest) -> Void)? = nil) {
@@ -210,6 +211,7 @@ struct CreateQuestView: View {
                 Section {
                     VStack(spacing: 0) {
                         Button {
+                            isSaving = true
                             viewModel.saveQuest()
                         } label: {
                             Text("Save Quest")
@@ -266,7 +268,21 @@ struct CreateQuestView: View {
                     }
                 }
             }
-            
+            .overlay {
+                if isSaving {
+                    ZStack {
+                        Color.black.opacity(0.1)
+                            .ignoresSafeArea()
+                        VStack(spacing: 12) {
+                            ProgressView("Saving…")
+                                .progressViewStyle(.circular)
+                        }
+                        .padding(24)
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    }
+                }
+            }
+            .disabled(isSaving)
         }
         .onAppear {
             if viewModel.isEditing, didDiscardInitialImage == false, selectedImageData == nil, let data = initialCoverImageData {
@@ -283,6 +299,7 @@ struct CreateQuestView: View {
         }
         .onChange(of: viewModel.didFinishSaving) { _, newValue in
             if newValue {
+                isSaving = false
                 if viewModel.isEditing == false, let quest = viewModel.lastSavedQuest {
                     onCreateSuccess?(quest)
                 }
