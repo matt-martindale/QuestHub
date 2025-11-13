@@ -9,6 +9,11 @@ import SwiftUI
 import Combine
 import PhotosUI
 
+struct CroppingImage: Identifiable {
+    let id = UUID()
+    let image: UIImage
+}
+
 struct CreateQuestView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel: CreateQuestViewModel
@@ -20,6 +25,7 @@ struct CreateQuestView: View {
     @State private var showDeleteConfirmation: Bool = false
     @State private var isCroppingImage: Bool = false
     @State private var imageForCropping: UIImage? = nil
+    @State private var croppingImage: CroppingImage? = nil
     private let onCreateSuccess: ((Quest) -> Void)?
 
     init(auth: QHAuth, questToEdit: Quest? = nil, onCreateSuccess: ((Quest) -> Void)? = nil) {
@@ -270,6 +276,14 @@ struct CreateQuestView: View {
                 viewModel.password = ""
             }
         }
+        .onChange(of: imageForCropping) { _, newImage in
+            if let img = newImage {
+                // Drive presentation from the presence of an image
+                self.croppingImage = CroppingImage(image: img)
+                // Clear the old handoff to avoid stale state
+                self.imageForCropping = nil
+            }
+        }
         .alert("Delete this quest?", isPresented: $showDeleteConfirmation) {
             Button("Delete", role: .destructive) {
                 viewModel.deleteQuest()
@@ -279,17 +293,15 @@ struct CreateQuestView: View {
             Text("This action cannot be undone.")
         }
         .interactiveDismissDisabled(true)
-        .fullScreenCover(isPresented: $isCroppingImage) {
-            if let image = imageForCropping {
-                ImageCropperView(image: image, aspectRatio: 16.0/9.0) { cropped in
-                    if let data = cropped.jpegData(compressionQuality: 0.9) {
-                        self.selectedImageData = data
-                        self.viewModel.pendingCoverImageData = data
-                    }
-                    self.imageForCropping = nil
-                } onCancel: {
-                    self.imageForCropping = nil
+        .fullScreenCover(item: $croppingImage) { item in
+            ImageCropperView(image: item.image, aspectRatio: 16.0/9.0) { cropped in
+                if let data = cropped.jpegData(compressionQuality: 0.9) {
+                    self.selectedImageData = data
+                    self.viewModel.pendingCoverImageData = data
                 }
+                self.croppingImage = nil
+            } onCancel: {
+                self.croppingImage = nil
             }
         }
     }
