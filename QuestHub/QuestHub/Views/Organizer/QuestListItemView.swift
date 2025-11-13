@@ -10,6 +10,32 @@ struct QuestListItemView: View {
         HStack {
             // Title stack
             VStack(alignment: .leading, spacing: 4) {
+                if let urlString = quest.imageURL, let url = URL(string: urlString), !urlString.isEmpty {
+                    AsyncImage(url: url) { phase in
+                        switch phase {
+                        case .empty:
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(Color.secondary.opacity(0.1))
+                                ProgressView()
+                            }
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .scaledToFill()
+                                .clipped()
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                        case .failure:
+                            EmptyView()
+                        @unknown default:
+                            EmptyView()
+                        }
+                    }
+                    .aspectRatio(16/9, contentMode: .fill)
+                    .frame(maxWidth: .infinity)
+                    .clipped()
+                    .padding(.bottom)
+                }
                 Text(quest.title ?? "")
                     .font(.title3)
                 if let subtitle = quest.subtitle, !subtitle.isEmpty {
