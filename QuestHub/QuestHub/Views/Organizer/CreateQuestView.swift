@@ -23,8 +23,6 @@ struct CreateQuestView: View {
     @State private var showPasswordInfo: Bool = false
     @State private var showRequireSignInInfo: Bool = false
     @State private var showDeleteConfirmation: Bool = false
-    @State private var isCroppingImage: Bool = false
-    @State private var imageForCropping: UIImage? = nil
     @State private var croppingImage: CroppingImage? = nil
     private let onCreateSuccess: ((Quest) -> Void)?
 
@@ -38,7 +36,20 @@ struct CreateQuestView: View {
             List {
                 // Section 1 — Quest info
                 Section {
-                    QHImagePicker(selectedPhotoItem: $selectedPhotoItem, selectedImageData: $selectedImageData, isCroppingImage: $isCroppingImage, imageForCropping: $imageForCropping, viewModel: viewModel)
+                    QHImagePicker(
+                        selectedPhotoItem: $selectedPhotoItem,
+                        selectedImageData: $selectedImageData,
+                        isCroppingImage: .constant(false),
+                        imageForCropping: Binding<UIImage?>(
+                            get: { nil },
+                            set: { newValue in
+                                if let img = newValue {
+                                    self.croppingImage = CroppingImage(image: img)
+                                }
+                            }
+                        ),
+                        viewModel: viewModel
+                    )
                     
                     VStack(alignment: .leading) {
                         Text("Title")
@@ -276,14 +287,6 @@ struct CreateQuestView: View {
                 viewModel.password = ""
             }
         }
-        .onChange(of: imageForCropping) { _, newImage in
-            if let img = newImage {
-                // Drive presentation from the presence of an image
-                self.croppingImage = CroppingImage(image: img)
-                // Clear the old handoff to avoid stale state
-                self.imageForCropping = nil
-            }
-        }
         .alert("Delete this quest?", isPresented: $showDeleteConfirmation) {
             Button("Delete", role: .destructive) {
                 viewModel.deleteQuest()
@@ -312,3 +315,4 @@ struct CreateQuestView: View {
     return CreateQuestView(auth: auth)
         .environmentObject(auth)
 }
+
