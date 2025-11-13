@@ -8,11 +8,12 @@
 import SwiftUI
 
 struct PlayQuestView: View {
+    let quest: Quest
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        Text(quest.questCode ?? "")
     }
 }
 
 #Preview {
-    PlayQuestView()
+//    PlayQuestView()
 }

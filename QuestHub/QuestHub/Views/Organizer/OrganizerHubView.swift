@@ -171,20 +171,25 @@ struct OrganizerHubView: View {
     private var createdQuestsList: some View {
         List {
             ForEach(auth.createdQuests) { quest in
-                QuestListItemView(quest: quest) {
-                    selectedQuest = quest
-                    initialCoverImageData = nil
-                    Task {
-                        if let urlString = quest.imageURL, let url = URL(string: urlString) {
-                            do {
-                                let (data, _) = try await URLSession.shared.data(from: url)
-                                await MainActor.run { initialCoverImageData = data }
-                            } catch {
-                                // Ignore download errors; proceed without initial image data
+                NavigationLink {
+                    PlayQuestView(quest: quest)
+                } label: {
+                    QuestListItemView(quest: quest) {
+                        selectedQuest = quest
+                        initialCoverImageData = nil
+                        Task {
+                            if let urlString = quest.imageURL, let url = URL(string: urlString) {
+                                do {
+                                    let (data, _) = try await URLSession.shared.data(from: url)
+                                    await MainActor.run { initialCoverImageData = data }
+                                } catch {
+                                    // Ignore download errors; proceed without initial image data
+                                }
                             }
+                            await MainActor.run { isShowingEditQuestSheet = true }
                         }
-                        await MainActor.run { isShowingEditQuestSheet = true }
                     }
+                    .contentShape(Rectangle())
                 }
                 .listRowSeparator(.hidden)
                 .listRowInsets(EdgeInsets())
@@ -192,6 +197,7 @@ struct OrganizerHubView: View {
                 .padding(.horizontal, 12)
                 .glassEffect(in: .rect(cornerRadius: 20))
                 .listRowBackground(Color.clear)
+                .buttonStyle(.plain)
             }
         }
         .listStyle(.plain)
