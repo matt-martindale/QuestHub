@@ -19,6 +19,7 @@ struct CreateQuestView: View {
     @StateObject private var viewModel: CreateQuestViewModel
     @State private var selectedPhotoItem: PhotosPickerItem? = nil
     @State private var selectedImageData: Data? = nil
+    @State private var didDiscardInitialImage: Bool = false
     private let initialCoverImageData: Data?
     @State private var showMaxPlayersInfo: Bool = false
     @State private var showPasswordInfo: Bool = false
@@ -51,7 +52,7 @@ struct CreateQuestView: View {
                             }
                         ),
                         viewModel: viewModel,
-                        initialImageData: initialCoverImageData
+                        initialImageData: didDiscardInitialImage ? nil : initialCoverImageData
                     )
                     
                     VStack(alignment: .leading) {
@@ -268,9 +269,16 @@ struct CreateQuestView: View {
             
         }
         .onAppear {
-            if viewModel.isEditing, selectedImageData == nil, let data = initialCoverImageData {
+            if viewModel.isEditing, didDiscardInitialImage == false, selectedImageData == nil, let data = initialCoverImageData {
                 self.selectedImageData = data
                 self.viewModel.pendingCoverImageData = data
+            }
+        }
+        .onChange(of: selectedImageData) { _, newValue in
+            // If the picker cleared the selected image and we had an initial one, stop supplying it
+            if newValue == nil, initialCoverImageData != nil {
+                didDiscardInitialImage = true
+                viewModel.pendingCoverImageData = nil
             }
         }
         .onChange(of: viewModel.didFinishSaving) { _, newValue in
