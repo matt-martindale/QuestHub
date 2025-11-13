@@ -219,10 +219,23 @@ final class CreateQuestViewModel: ObservableObject {
 
     // MARK: - Private Helpers
     private func uploadCoverImageToStorage(imageData: Data, userID: String) async throws -> URL {
-        // TODO: Implement Firebase Storage upload. Example path: "quests/\(userID)/\(UUID().uuidString).jpg"
-        // You can compress/convert as needed before upload.
-        // Throwing a notImplemented error for now to indicate stub.
-        enum UploadError: Error { case notImplemented }
-        throw UploadError.notImplemented
+        // Use existing quest ID if editing; otherwise, generate a provisional one for the filename
+        let questIDForFilename = UUID().uuidString
+        let fileName = questIDForFilename + ".jpg"
+        let path = "quests/\(userID)/\(fileName)"
+
+        // Reference the default app's storage bucket
+        let storageRef = Storage.storage().reference().child(path)
+
+        // Set metadata
+        let metadata = StorageMetadata()
+        metadata.contentType = "image/jpeg"
+
+        // Upload data asynchronously
+        _ = try await storageRef.putDataAsync(imageData, metadata: metadata)
+
+        // Retrieve a public download URL
+        let url = try await storageRef.downloadURL()
+        return url
     }
 }

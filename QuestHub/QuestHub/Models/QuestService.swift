@@ -73,7 +73,8 @@ final class QuestService {
                 "requireSignIn": quest.requireSignIn ?? false,
                 "challenges": encodedChallenges,
                 "updatedAt": Date(),
-                "questCode": resolvedQuestCode
+                "questCode": resolvedQuestCode,
+                "imageURL": quest.imageURL ?? ""
             ]
             if let createdAt = quest.createdAt { updateData["createdAt"] = createdAt }
 
@@ -116,6 +117,7 @@ final class QuestService {
                 "challenges": encodedChallenges,
                 "createdAt": Date(),
                 "questCode": newQuestCode,
+                "imageURL": quest.imageURL ?? ""
             ]
 
             let newDocRef = questsCollection.document()
@@ -339,6 +341,7 @@ final class QuestService {
             quest.creatorDisplayName = data["creatorDisplayName"] as? String
             quest.requireSignIn = data["requireSignIn"] as? Bool
             quest.password = data["password"] as? String
+            quest.imageURL = data["imageURL"] as? String
             if let statusRaw = data["status"] as? String { quest.status = QuestStatus(rawValue: statusRaw) }
             if let createdTs = data["createdAt"] as? Timestamp { quest.createdAt = createdTs.dateValue() }
             if let updatedTs = data["updatedAt"] as? Timestamp { quest.updatedAt = updatedTs.dateValue() }
