@@ -32,7 +32,7 @@ struct HomeView: View {
                     .frame(height: 20)
 
                 VStack(spacing: 12) {
-                    NavigationLink(destination: destinationForOrganizer()) {
+                    NavigationLink(destination: OrganizerDestination()) {
                         Text(UIStrings.joinAsOrganizer)
                             .font(.headline)
                             .frame(maxWidth: .infinity)

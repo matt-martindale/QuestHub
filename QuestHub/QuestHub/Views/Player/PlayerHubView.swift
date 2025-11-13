@@ -159,21 +159,25 @@ struct PlayerHubView: View {
 
     @ViewBuilder
     private var questsListView: some View {
-        List {
-            ForEach(viewModel.joinedQuests) { quest in
-                QuestListItemView(quest: quest, isEditable: false)
-                .listRowSeparator(.hidden)
-                .listRowInsets(EdgeInsets())
-                .padding(.vertical, 16)
-                .padding(.horizontal, 12)
-                .glassEffect(in: .rect(cornerRadius: 20))
-                .listRowBackground(Color.clear)
+        ScrollView {
+            LazyVStack(spacing: 16) {
+                ForEach(viewModel.joinedQuests) { quest in
+                    NavigationLink(destination: PlayQuestView(quest: quest)) {
+                        QuestListItemView(quest: quest, isEditable: false)
+                            .contentShape(Rectangle())
+                            .padding(16)
+                            .background(.thinMaterial)
+                            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                            .shadow(color: Color.black.opacity(0.08), radius: 10, x: 0, y: 4)
+                            .glassEffect(in: .rect(cornerRadius: 20))
+                    }
+                    .buttonStyle(.plain)
+                }
             }
+            .padding(.horizontal, 16)
+            .padding(.top, 8)
+            .padding(.bottom, 150)
         }
-        .listStyle(.plain)
-        .contentMargins(.horizontal, 16)
-        .listRowSpacing(16)
-        .scrollContentBackground(.hidden)
         .scrollIndicators(.hidden)
         .overlay(alignment: .center) {
             if auth.isLoadingCreatedQuests {
@@ -183,7 +187,6 @@ struct PlayerHubView: View {
                 }
             }
         }
-        .contentMargins(.bottom, 150)
     }
 }
 
