@@ -11,7 +11,7 @@ import FirebaseFirestore
 enum QuestStatus: String, Codable {
     case active
     case paused
-    case locked
+    case closed
 }
 
 class Quest: Identifiable, Codable, Equatable, Hashable {

@@ -128,16 +128,19 @@ struct PlayQuestView: View {
 
     private var metadataCard: some View {
         VStack(alignment: .leading) {
+            HStack(spacing: 0) {
                 if let questCode = viewModel.quest.questCode {
-                    Text("Code: \(questCode)")
+                    Text("\(questCode)")
                         .font(.subheadline)
                         .foregroundStyle(.primary)
                 }
                 if let password = viewModel.quest.password, !password.isEmpty {
-                    Text("Password: \(password)")
+                    Text(" / \(password)")
                         .font(.subheadline)
                         .foregroundStyle(.primary)
                 }
+            }
+            .padding(.vertical, 4)
             HStack {
                 VStack(alignment: .leading) {
                     if let creator = viewModel.quest.creatorDisplayName {
@@ -164,12 +167,56 @@ struct PlayQuestView: View {
                     Spacer()
                 }
             }
+            VStack(alignment: .leading, spacing: 4) {
+                questStatus
+                if let password = viewModel.quest.password, !password.isEmpty {
+                    HStack {
+                        Text("Password protected")
+                            .font(.subheadline)
+                        Image(systemName: "lock.fill")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
         }
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(.thinMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         .glassEffect(in: .rect(cornerRadius: 20))
+    }
+    
+    @ViewBuilder
+    private var questStatus: some View {
+        switch viewModel.quest.status {
+        case .some(.paused):
+            HStack(spacing: 8) {
+                Text("Paused")
+                    .font(.subheadline)
+                Image(systemName: "pause.circle.fill")
+                    .font(.subheadline)
+                    .foregroundStyle(.yellow)
+            }
+        case .some(.active):
+            HStack(spacing: 8) {
+                Text("Active")
+                    .font(.subheadline)
+                Image(systemName: "bolt.circle.fill")
+                    .font(.subheadline)
+                    .foregroundStyle(.green)
+            }
+        case .some(.closed):
+            HStack(spacing: 8) {
+                Text("Closed")
+                    .font(.subheadline)
+                Image(systemName: "lock.fill")
+                    .font(.subheadline)
+                    .foregroundStyle(Color.qhPrimaryRed)
+            }
+        case .none:
+            EmptyView()
+        }
     }
 
     @ViewBuilder
@@ -192,7 +239,7 @@ struct PlayQuestView: View {
                 .foregroundStyle(.primary)
             Spacer(minLength: 0)
         }
-        .padding(1)
+        .padding(0)
     }
 
     private var descriptionCard: some View {

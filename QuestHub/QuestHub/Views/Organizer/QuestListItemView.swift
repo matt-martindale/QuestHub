@@ -132,8 +132,8 @@ struct QuestListItemView: View {
                             .font(.callout)
                         Image(systemName: "bolt.circle.fill")
                             .foregroundStyle(.green)
-                    case .some(.locked):
-                        Text("Quest is locked")
+                    case .some(.closed):
+                        Text("Quest is closed")
                             .font(.callout)
                         Image(systemName: "lock.fill")
                             .foregroundStyle(Color.qhPrimaryRed)
