@@ -49,18 +49,62 @@ struct PlayQuestView: View {
     }
 
     private var headerBackground: some View {
-        Rectangle()
-            .fill(LinearGradient(colors: [.blue.opacity(0.35), .purple.opacity(0.35)], startPoint: .top, endPoint: .bottom))
-            .frame(height: 240)
-            .overlay(
-                Image(systemName: "map")
-                    .resizable()
-                    .scaledToFit()
-                    .foregroundStyle(.white.opacity(0.25))
-                    .padding(40)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-            .glassEffect(in: .rect(cornerRadius: 24))
+        ZStack {
+            if viewModel.headerImageURL == nil {
+                ZStack {
+                    Rectangle()
+                        .fill(LinearGradient(colors: [.blue.opacity(0.35), .purple.opacity(0.35)], startPoint: .top, endPoint: .bottom))
+                    Image(systemName: "map")
+                        .resizable()
+                        .scaledToFit()
+                        .foregroundStyle(.white.opacity(0.25))
+                        .padding(40)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                }
+                .frame(maxWidth: .infinity)
+                .aspectRatio(16/9, contentMode: .fit)
+                .clipped()
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+            } else {
+                AsyncImage(url: viewModel.headerImageURL) { phase in
+                    switch phase {
+                    case .empty:
+                        ZStack {
+                            Color.clear
+                            ProgressView()
+                                .tint(.gray)
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .scaledToFill()
+                            .frame(maxWidth: .infinity)
+                            .aspectRatio(16/9, contentMode: .fit)
+                            .clipped()
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                    case .failure:
+                        ZStack {
+                            Rectangle()
+                                .fill(LinearGradient(colors: [.blue.opacity(0.35), .purple.opacity(0.35)], startPoint: .top, endPoint: .bottom))
+                            Image(systemName: "map")
+                                .resizable()
+                                .scaledToFit()
+                                .foregroundStyle(.white.opacity(0.25))
+                                .padding(40)
+                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                        }
+                    @unknown default:
+                        EmptyView()
+                    }
+                }
+            }
+        }
+//        .frame(height: 240) // Hard cap the header height
+//        .contentShape(Rectangle())
+//        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+//        .clipped() // Ensure anything inside doesn't overflow after shape clipping
+//        .glassEffect(in: .rect(cornerRadius: 24))
     }
 
     private var headerTitles: some View {
