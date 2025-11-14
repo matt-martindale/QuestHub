@@ -127,55 +127,63 @@ struct PlayQuestView: View {
     }
 
     private var metadataCard: some View {
-        VStack(alignment: .leading) {
-            HStack(spacing: 0) {
-                if let questCode = viewModel.quest.questCode {
-                    Text("\(questCode)")
-                        .font(.subheadline)
-                        .foregroundStyle(.primary)
+        VStack(alignment: .leading, spacing: 16) {
+            // Top row: code + password badge + status chip aligned right
+            HStack(alignment: .center, spacing: 8) {
+                if let questCode = viewModel.quest.questCode, !questCode.isEmpty {
+                    Text(questCode)
+                        .font(.title3)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
                 }
+
+                Spacer(minLength: 12)
+                
                 if let password = viewModel.quest.password, !password.isEmpty {
-                    Text(" / \(password)")
-                        .font(.subheadline)
-                        .foregroundStyle(.primary)
+                    HStack(spacing: 6) {
+                        Text("Password")
+                        Image(systemName: "lock.fill")
+                            .foregroundStyle(.secondary)
+                    }
+                    .font(.subheadline)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(.ultraThinMaterial)
+                    .clipShape(Capsule())
+                    .glassEffect(in: .capsule)
                 }
+
+                // Status chip
+                questStatus
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(.ultraThinMaterial)
+                    .clipShape(Capsule())
+                    .glassEffect(in: .capsule)
             }
-            .padding(.vertical, 4)
-            HStack {
-                VStack(alignment: .leading) {
-                    if let creator = viewModel.quest.creatorDisplayName {
-                        metadataRow(icon: "person.circle",value: creator)
+
+            Divider().opacity(0.25)
+
+            // Middle rows: creator + players on left, created/updated on right
+            HStack(alignment: .top, spacing: 4) {
+                VStack(alignment: .leading, spacing: 10) {
+                    if let creator = viewModel.quest.creatorDisplayName, !creator.isEmpty {
+                        metadataRow(icon: "person.circle.fill", value: creator)
                     }
                     if let maxPlayers = viewModel.quest.maxPlayers {
-                        metadataRow(icon: "person.2.fill", value: "\(viewModel.quest.playersCount ?? 0)/\(maxPlayers) players")
+                        let current = viewModel.quest.playersCount ?? 0
+                        metadataRow(icon: "person.2.fill", value: "\(current)/\(maxPlayers) players")
                     }
-                    Spacer()
-                    //                if let status = viewModel.quest.status {
-                    //                    metadataRow(label: "Status", value: String(describing: status).capitalized)
-                    //                }
-                    //                if let password = viewModel.quest.password, !password.isEmpty {
-                    //                    metadataRow(label: "Password required", value: "")
-                    //                }
                 }
-                VStack(alignment: .trailing) {
+
+                Spacer(minLength: 12)
+
+                VStack(alignment: .trailing, spacing: 10) {
                     if let created = viewModel.quest.createdAt {
-                        metadataRow(label: "Created:", value: created.formatted(date: .abbreviated, time: .omitted))
+                        metadataRow(label: "Created", value: created.formatted(date: .abbreviated, time: .omitted))
                     }
                     if let updated = viewModel.quest.updatedAt {
-                        metadataRow(label: "Updated:", value: updated.formatted(date: .abbreviated, time: .omitted))
-                    }
-                    Spacer()
-                }
-            }
-            VStack(alignment: .leading, spacing: 4) {
-                questStatus
-                if let password = viewModel.quest.password, !password.isEmpty {
-                    HStack {
-                        Text("Password protected")
-                            .font(.subheadline)
-                        Image(systemName: "lock.fill")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                        metadataRow(label: "Updated", value: updated.formatted(date: .abbreviated, time: .omitted))
                     }
                 }
             }
@@ -320,4 +328,3 @@ struct PlayQuestView: View {
 #Preview {
     PlayQuestView(quest: Quest(id: "ID", questCode: "ABC", imageURL: "gs://questhubapp2025-db58e.firebasestorage.app/quests/3k4sTKiFi7XK37npGBxPb2FhoKA2/75845EC7-2828-42AA-BC87-50EE561D488C.jpg", title: "Title", subtitle: "Embark on an adventure", description: nil, maxPlayers: 20, playersCount: 5, challenges: nil, createdAt: Date(), updatedAt: Date(), creatorID: "creatorID", creatorDisplayName: "creatorDisplayName", status: .active, password: "Password", requireSignIn: true))
 }
-
