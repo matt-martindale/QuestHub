@@ -127,28 +127,41 @@ struct PlayQuestView: View {
     }
 
     private var metadataCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            VStack(spacing: 10) {
-                metadataRow(label: "Code", value: viewModel.quest.questCode ?? "")
-                if let creator = viewModel.quest.creatorDisplayName {
-                    metadataRow(label: "Creator", value: creator)
-                }
-                if let maxPlayers = viewModel.quest.maxPlayers, let players = viewModel.quest.playersCount {
-                    metadataRow(label: "Players", value: "\(players)/\(maxPlayers)")
-                } else if let players = viewModel.quest.playersCount {
-                    metadataRow(label: "Players", value: "\(players)")
-                }
-                if let status = viewModel.quest.status {
-                    metadataRow(label: "Status", value: String(describing: status).capitalized)
-                }
-                if let created = viewModel.quest.createdAt {
-                    metadataRow(label: "Created", value: created.formatted(date: .abbreviated, time: .shortened))
-                }
-                if let updated = viewModel.quest.updatedAt {
-                    metadataRow(label: "Updated", value: updated.formatted(date: .abbreviated, time: .shortened))
+        VStack(alignment: .leading) {
+                if let questCode = viewModel.quest.questCode {
+                    Text("Code: \(questCode)")
+                        .font(.subheadline)
+                        .foregroundStyle(.primary)
                 }
                 if let password = viewModel.quest.password, !password.isEmpty {
-                    metadataRow(label: "Password required", value: "")
+                    Text("Password: \(password)")
+                        .font(.subheadline)
+                        .foregroundStyle(.primary)
+                }
+            HStack {
+                VStack(alignment: .leading) {
+                    if let creator = viewModel.quest.creatorDisplayName {
+                        metadataRow(icon: "person.circle",value: creator)
+                    }
+                    if let maxPlayers = viewModel.quest.maxPlayers {
+                        metadataRow(icon: "person.2.fill", value: "\(viewModel.quest.playersCount ?? 0)/\(maxPlayers) players")
+                    }
+                    Spacer()
+                    //                if let status = viewModel.quest.status {
+                    //                    metadataRow(label: "Status", value: String(describing: status).capitalized)
+                    //                }
+                    //                if let password = viewModel.quest.password, !password.isEmpty {
+                    //                    metadataRow(label: "Password required", value: "")
+                    //                }
+                }
+                VStack(alignment: .trailing) {
+                    if let created = viewModel.quest.createdAt {
+                        metadataRow(label: "Created:", value: created.formatted(date: .abbreviated, time: .omitted))
+                    }
+                    if let updated = viewModel.quest.updatedAt {
+                        metadataRow(label: "Updated:", value: updated.formatted(date: .abbreviated, time: .omitted))
+                    }
+                    Spacer()
                 }
             }
         }
@@ -160,17 +173,26 @@ struct PlayQuestView: View {
     }
 
     @ViewBuilder
-    private func metadataRow(label: String, value: String) -> some View {
+    private func metadataRow(label: String? = nil, icon: String? = nil, value: String) -> some View {
         HStack(alignment: .firstTextBaseline) {
-            Text(label)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .frame(width: 120, alignment: .leading)
+            if let label, !label.isEmpty {
+                Text(label)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+//                    .frame(width: 120, alignment: .leading)
+            } else if let icon, !icon.isEmpty {
+                Image(systemName: icon)
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
+                    .frame(width: 20)
+            }
+                
             Text(value)
-                .font(.subheadline)
+                .font(.footnote)
                 .foregroundStyle(.primary)
             Spacer(minLength: 0)
         }
+        .padding(1)
     }
 
     private var descriptionCard: some View {
