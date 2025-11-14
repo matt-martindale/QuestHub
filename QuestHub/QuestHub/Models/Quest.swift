@@ -21,6 +21,7 @@ class Quest: Identifiable, Codable, Equatable, Hashable {
 
     // Basic metadata
     var imageURL: String?
+    var imageData: Data?
     var title: String?
     var subtitle: String?
     var description: String?
@@ -43,6 +44,7 @@ class Quest: Identifiable, Codable, Equatable, Hashable {
         case id
         case questCode
         case imageURL
+        case imageData
         case title
         case subtitle
         case description
@@ -62,6 +64,7 @@ class Quest: Identifiable, Codable, Equatable, Hashable {
         id: String? = nil,
         questCode: String? = nil,
         imageURL: String? = nil,
+        imageData: Data? = nil,
         title: String? = nil,
         subtitle: String? = nil,
         description: String? = nil,
@@ -79,6 +82,7 @@ class Quest: Identifiable, Codable, Equatable, Hashable {
         self.id = id
         self.questCode = questCode
         self.imageURL = imageURL
+        self.imageData = imageData
         self.title = title
         self.subtitle = subtitle
         self.description = description
