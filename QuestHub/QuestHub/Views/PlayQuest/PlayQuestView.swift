@@ -165,7 +165,7 @@ struct PlayQuestView: View {
             Divider().opacity(0.25)
 
             // Middle rows: creator + players on left, created/updated on right
-            HStack(alignment: .top, spacing: 4) {
+            HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 10) {
                     if let creator = viewModel.quest.creatorDisplayName, !creator.isEmpty {
                         metadataRow(icon: "person.circle.fill", value: creator)
@@ -180,10 +180,24 @@ struct PlayQuestView: View {
 
                 VStack(alignment: .trailing, spacing: 10) {
                     if let created = viewModel.quest.createdAt {
-                        metadataRow(label: "Created", value: created.formatted(date: .abbreviated, time: .omitted))
+                        HStack(spacing: 6) {
+                            Image(systemName: "calendar")
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                            Text(created.formatted(date: .abbreviated, time: .omitted))
+                                .font(.footnote)
+                                .foregroundStyle(.primary)
+                        }
                     }
                     if let updated = viewModel.quest.updatedAt {
-                        metadataRow(label: "Updated", value: updated.formatted(date: .abbreviated, time: .omitted))
+                        HStack(spacing: 6) {
+                            Text("Last updated")
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                            Text(updated, style: .relative)
+                                .font(.footnote)
+                                .foregroundStyle(.primary)
+                        }
                     }
                 }
             }
