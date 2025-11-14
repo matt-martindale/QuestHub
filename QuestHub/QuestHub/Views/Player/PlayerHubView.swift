@@ -15,6 +15,7 @@ struct PlayerHubView: View {
     @StateObject private var viewModel = PlayerHubViewModel()
     @State private var showSignIn = false
     @State private var showAccount = false
+    @State private var lastListenedUID: String? = nil
 
     var body: some View {
         NavigationStack {
@@ -71,18 +72,20 @@ struct PlayerHubView: View {
                     }
                 }
             }
-            .onAppear {
-                if let uid = auth.currentUser?.id {
-                    viewModel.startListeningForUserQuests(for: uid)
+            .task(id: auth.currentUser?.id) {
+                let currentUID = auth.currentUser?.id
+                // Only start listening when the UID actually changes
+                if let uid = currentUID {
+                    if lastListenedUID != uid {
+                        viewModel.startListeningForUserQuests(for: uid)
+                        lastListenedUID = uid
+                    }
                 } else {
-                    viewModel.stopListening()
-                }
-            }
-            .onChange(of: auth.currentUser) { oldValue, newValue in
-                if let uid = newValue?.id {
-                    viewModel.startListeningForUserQuests(for: uid)
-                } else {
-                    viewModel.stopListening()
+                    // User signed out; stop listening and clear cache of last UID
+                    if lastListenedUID != nil {
+                        viewModel.stopListening()
+                        lastListenedUID = nil
+                    }
                 }
             }
             .sheet(isPresented: $showSignIn) {
