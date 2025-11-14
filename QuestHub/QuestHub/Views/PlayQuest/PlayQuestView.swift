@@ -21,6 +21,10 @@ struct PlayQuestView: View {
                     .padding(.horizontal)
                     .padding(.top)
 
+                metadataCard
+                    .padding(.horizontal)
+                    .padding(.top, 16)
+
                 descriptionCard
                     .padding(.horizontal)
                     .padding(.top, 16)
@@ -122,6 +126,53 @@ struct PlayQuestView: View {
         }
     }
 
+    private var metadataCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            VStack(spacing: 10) {
+                metadataRow(label: "Code", value: viewModel.quest.questCode ?? "")
+                if let creator = viewModel.quest.creatorDisplayName {
+                    metadataRow(label: "Creator", value: creator)
+                }
+                if let maxPlayers = viewModel.quest.maxPlayers, let players = viewModel.quest.playersCount {
+                    metadataRow(label: "Players", value: "\(players)/\(maxPlayers)")
+                } else if let players = viewModel.quest.playersCount {
+                    metadataRow(label: "Players", value: "\(players)")
+                }
+                if let status = viewModel.quest.status {
+                    metadataRow(label: "Status", value: String(describing: status).capitalized)
+                }
+                if let created = viewModel.quest.createdAt {
+                    metadataRow(label: "Created", value: created.formatted(date: .abbreviated, time: .shortened))
+                }
+                if let updated = viewModel.quest.updatedAt {
+                    metadataRow(label: "Updated", value: updated.formatted(date: .abbreviated, time: .shortened))
+                }
+                if let password = viewModel.quest.password, !password.isEmpty {
+                    metadataRow(label: "Password required", value: "")
+                }
+            }
+        }
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.thinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .glassEffect(in: .rect(cornerRadius: 20))
+    }
+
+    @ViewBuilder
+    private func metadataRow(label: String, value: String) -> some View {
+        HStack(alignment: .firstTextBaseline) {
+            Text(label)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .frame(width: 120, alignment: .leading)
+            Text(value)
+                .font(.subheadline)
+                .foregroundStyle(.primary)
+            Spacer(minLength: 0)
+        }
+    }
+
     private var descriptionCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("About this quest")
@@ -200,3 +251,4 @@ struct PlayQuestView: View {
 #Preview {
     PlayQuestView(quest: Quest(id: "ID", questCode: "ABC", imageURL: "gs://questhubapp2025-db58e.firebasestorage.app/quests/3k4sTKiFi7XK37npGBxPb2FhoKA2/75845EC7-2828-42AA-BC87-50EE561D488C.jpg", title: "Title", subtitle: "Embark on an adventure", description: nil, maxPlayers: 20, playersCount: 5, challenges: nil, createdAt: Date(), updatedAt: Date(), creatorID: "creatorID", creatorDisplayName: "creatorDisplayName", status: .active, password: "Password", requireSignIn: true))
 }
+
