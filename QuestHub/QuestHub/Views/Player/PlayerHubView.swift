@@ -181,6 +181,15 @@ struct PlayerHubView: View {
             .padding(.top, 8)
             .padding(.bottom, 150)
         }
+        .refreshable {
+            if let uid = auth.currentUser?.id {
+                // Re-start listening to force a refresh of the joined quests
+                viewModel.startListeningForUserQuests(for: uid)
+            } else {
+                // If signed out, ensure we stop any listeners
+                viewModel.stopListening()
+            }
+        }
         .scrollIndicators(.hidden)
         .overlay(alignment: .center) {
             if auth.isLoadingCreatedQuests {
