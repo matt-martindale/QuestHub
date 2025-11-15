@@ -53,7 +53,7 @@ struct SearchQuestView: View {
         }
         .navigationDestination(isPresented: $navigate) {
             if let quest = foundQuest {
-                SearchQuestResultsView(auth: auth, quest: quest)
+                PlayQuestView(quest: quest)
             } else {
                 // Fallback in case state becomes inconsistent
                 EmptyView()
