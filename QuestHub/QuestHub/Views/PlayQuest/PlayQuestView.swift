@@ -10,8 +10,8 @@ import SwiftUI
 struct PlayQuestView: View {
     @StateObject private var viewModel: PlayQuestViewModel
     
-    init(quest: Quest) {
-        _viewModel = StateObject(wrappedValue: PlayQuestViewModel(quest: quest))
+    init(auth: QHAuth, quest: Quest) {
+        _viewModel = StateObject(wrappedValue: PlayQuestViewModel(auth: auth, quest: quest))
     }
 
     var body: some View {
@@ -43,6 +43,9 @@ struct PlayQuestView: View {
         .navigationTitle("Play Quest")
         .navigationBarTitleDisplayMode(.inline)
         .background(Color(.systemBackground))
+        .alert(item: $viewModel.alertMessage) { msg in
+            Alert(title: Text("Unable to join Quest"), message: Text(msg.text), dismissButton: .default(Text("OK")))
+        }
     }
 
     // MARK: - Subviews
@@ -307,7 +310,7 @@ struct PlayQuestView: View {
     private var actions: some View {
         HStack(spacing: 12) {
             Button {
-                // Start or continue quest action
+                viewModel.joinQuest()
             } label: {
                 Label("Join Quest", systemImage: "play.fill")
                     .frame(maxWidth: .infinity)
@@ -365,6 +368,7 @@ struct PlayQuestView: View {
 }
 
 #Preview {
-    PlayQuestView(quest: Quest(id: "ID", questCode: "ABC", imageURL: "gs://questhubapp2025-db58e.firebasestorage.app/quests/3k4sTKiFi7XK37npGBxPb2FhoKA2/75845EC7-2828-42AA-BC87-50EE561D488C.jpg", title: "Title", subtitle: "Embark on an adventure", description: nil, maxPlayers: 20, playersCount: 5, challenges: nil, createdAt: Date(), updatedAt: Date(), creatorID: "creatorID", creatorDisplayName: "creatorDisplayName", status: .active, password: "Password", requireSignIn: true))
+    let auth = QHAuth()
+    PlayQuestView(auth: auth, quest: Quest(id: "ID", questCode: "ABC", imageURL: "gs://questhubapp2025-db58e.firebasestorage.app/quests/3k4sTKiFi7XK37npGBxPb2FhoKA2/75845EC7-2828-42AA-BC87-50EE561D488C.jpg", title: "Title", subtitle: "Embark on an adventure", description: nil, maxPlayers: 20, playersCount: 5, challenges: nil, createdAt: Date(), updatedAt: Date(), creatorID: "creatorID", creatorDisplayName: "creatorDisplayName", status: .active, password: "Password", requireSignIn: true))
 }
 

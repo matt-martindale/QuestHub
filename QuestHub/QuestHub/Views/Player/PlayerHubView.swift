@@ -165,7 +165,7 @@ struct PlayerHubView: View {
         ScrollView {
             LazyVStack(spacing: 16) {
                 ForEach(viewModel.joinedQuests) { quest in
-                    NavigationLink(destination: PlayQuestView(quest: quest)) {
+                    NavigationLink(destination: PlayQuestView(auth: auth, quest: quest)) {
                         QuestListItemView(quest: quest, isEditable: false)
                             .contentShape(Rectangle())
                             .padding(16)
