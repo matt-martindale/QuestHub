@@ -168,37 +168,52 @@ struct PlayQuestView: View {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 10) {
                     if let creator = viewModel.quest.creatorDisplayName, !creator.isEmpty {
-                        metadataRow(icon: "person.circle.fill", value: creator)
+                        HStack {
+                            Image(systemName: "person.circle.fill")
+                                .font(.title)
+                                .foregroundStyle(.secondary)
+                            VStack(alignment: .leading) {
+                                Text(creator)
+                                    .font(.subheadline)
+                                if let created = viewModel.quest.createdAt {
+                                    Text(created.formatted(date: .abbreviated, time: .omitted))
+                                        .font(.footnote)
+                                        .foregroundStyle(.primary)
+                                }
+                            }
+                        }
                     }
-                    if let maxPlayers = viewModel.quest.maxPlayers {
-                        let current = viewModel.quest.playersCount ?? 0
-                        metadataRow(icon: "person.2.fill", value: "\(current)/\(maxPlayers) players")
+                    HStack {
+                        if let maxPlayers = viewModel.quest.maxPlayers {
+                            let current = viewModel.quest.playersCount ?? 0
+                            metadataRow(icon: "person.2.fill", value: "\(current)/\(maxPlayers) players")
+                        }
+                        if let updated = viewModel.quest.updatedAt {
+                            HStack(spacing: 6) {
+                                Text("Last updated")
+                                    .font(.footnote)
+                                    .foregroundStyle(.secondary)
+                                Text(updated, style: .relative)
+                                    .font(.footnote)
+                                    .foregroundStyle(.primary)
+                            }
+                        }
                     }
                 }
 
                 Spacer(minLength: 12)
 
                 VStack(alignment: .trailing, spacing: 10) {
-                    if let created = viewModel.quest.createdAt {
-                        HStack(spacing: 6) {
-                            Image(systemName: "calendar")
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
-                            Text(created.formatted(date: .abbreviated, time: .omitted))
-                                .font(.footnote)
-                                .foregroundStyle(.primary)
-                        }
-                    }
-                    if let updated = viewModel.quest.updatedAt {
-                        HStack(spacing: 6) {
-                            Text("Last updated")
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
-                            Text(updated, style: .relative)
-                                .font(.footnote)
-                                .foregroundStyle(.primary)
-                        }
-                    }
+//                    if let updated = viewModel.quest.updatedAt {
+//                        HStack(spacing: 6) {
+//                            Text("Last updated")
+//                                .font(.footnote)
+//                                .foregroundStyle(.secondary)
+//                            Text(updated, style: .relative)
+//                                .font(.footnote)
+//                                .foregroundStyle(.primary)
+//                        }
+//                    }
                 }
             }
         }
