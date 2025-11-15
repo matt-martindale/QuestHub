@@ -25,11 +25,13 @@ struct PlayQuestView: View {
                     .padding(.horizontal)
                     .padding(.top, 16)
 
-                actions
+                
+                
+                descriptionCard
                     .padding(.horizontal)
                     .padding(.top, 16)
                 
-                descriptionCard
+                actions
                     .padding(.horizontal)
                     .padding(.top, 16)
 
@@ -180,6 +182,7 @@ struct PlayQuestView: View {
                                     Text(created.formatted(date: .abbreviated, time: .omitted))
                                         .font(.footnote)
                                         .foregroundStyle(.primary)
+                                        .lineLimit(1)
                                 }
                             }
                         }
@@ -195,7 +198,7 @@ struct PlayQuestView: View {
                                 Text("Last updated")
                                     .font(.footnote)
                                     .foregroundStyle(.secondary)
-                                Text(updated, style: .relative)
+                                Text(compactRelativeTime(from: updated))
                                     .font(.footnote)
                                     .foregroundStyle(.primary)
                             }
@@ -267,6 +270,24 @@ struct PlayQuestView: View {
         }
         .padding(0)
     }
+    
+    private func compactRelativeTime(from date: Date, reference: Date = Date()) -> String {
+        let seconds = max(0, Int(reference.timeIntervalSince(date)))
+        let minute = 60
+        let hour = 60 * minute
+        let day = 24 * hour
+
+        if seconds < hour {
+            let m = max(1, seconds / minute)
+            return "\(m)m ago"
+        } else if seconds < day {
+            let h = max(1, seconds / hour)
+            return "\(h)h ago"
+        } else {
+            let d = max(1, seconds / day)
+            return "\(d)d ago"
+        }
+    }
 
     private var descriptionCard: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -288,7 +309,7 @@ struct PlayQuestView: View {
             Button {
                 // Start or continue quest action
             } label: {
-                Label("Start Quest", systemImage: "play.fill")
+                Label("Join Quest", systemImage: "play.fill")
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.glass)
@@ -346,3 +367,4 @@ struct PlayQuestView: View {
 #Preview {
     PlayQuestView(quest: Quest(id: "ID", questCode: "ABC", imageURL: "gs://questhubapp2025-db58e.firebasestorage.app/quests/3k4sTKiFi7XK37npGBxPb2FhoKA2/75845EC7-2828-42AA-BC87-50EE561D488C.jpg", title: "Title", subtitle: "Embark on an adventure", description: nil, maxPlayers: 20, playersCount: 5, challenges: nil, createdAt: Date(), updatedAt: Date(), creatorID: "creatorID", creatorDisplayName: "creatorDisplayName", status: .active, password: "Password", requireSignIn: true))
 }
+
