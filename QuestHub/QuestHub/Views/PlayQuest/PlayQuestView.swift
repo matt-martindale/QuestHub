@@ -25,11 +25,11 @@ struct PlayQuestView: View {
                     .padding(.horizontal)
                     .padding(.top, 16)
 
-                descriptionCard
+                actions
                     .padding(.horizontal)
                     .padding(.top, 16)
-
-                actions
+                
+                descriptionCard
                     .padding(.horizontal)
                     .padding(.top, 16)
 
@@ -161,8 +161,9 @@ struct PlayQuestView: View {
                     .clipShape(Capsule())
                     .glassEffect(in: .capsule)
             }
+            .padding(.vertical, -6)
 
-            Divider().opacity(0.25)
+            Divider().opacity(0.75)
 
             // Middle rows: creator + players on left, created/updated on right
             HStack(alignment: .top) {
@@ -170,11 +171,11 @@ struct PlayQuestView: View {
                     if let creator = viewModel.quest.creatorDisplayName, !creator.isEmpty {
                         HStack {
                             Image(systemName: "person.circle.fill")
-                                .font(.title)
+                                .font(.system(size: 30))
                                 .foregroundStyle(.secondary)
                             VStack(alignment: .leading) {
                                 Text(creator)
-                                    .font(.subheadline)
+                                    .font(.headline)
                                 if let created = viewModel.quest.createdAt {
                                     Text(created.formatted(date: .abbreviated, time: .omitted))
                                         .font(.footnote)
@@ -187,6 +188,7 @@ struct PlayQuestView: View {
                         if let maxPlayers = viewModel.quest.maxPlayers {
                             let current = viewModel.quest.playersCount ?? 0
                             metadataRow(icon: "person.2.fill", value: "\(current)/\(maxPlayers) players")
+                                .padding(.leading, 8)
                         }
                         if let updated = viewModel.quest.updatedAt {
                             HStack(spacing: 6) {
@@ -201,20 +203,7 @@ struct PlayQuestView: View {
                     }
                 }
 
-                Spacer(minLength: 12)
-
-                VStack(alignment: .trailing, spacing: 10) {
-//                    if let updated = viewModel.quest.updatedAt {
-//                        HStack(spacing: 6) {
-//                            Text("Last updated")
-//                                .font(.footnote)
-//                                .foregroundStyle(.secondary)
-//                            Text(updated, style: .relative)
-//                                .font(.footnote)
-//                                .foregroundStyle(.primary)
-//                        }
-//                    }
-                }
+//                Spacer(minLength: 12)
             }
         }
         .padding(20)
