@@ -15,7 +15,7 @@ struct PlayQuestView: View {
     }
 
     var body: some View {
-        ScrollView {
+        ScrollView(showsIndicators: false) {
             VStack(spacing: 0) {
                 header
                     .padding(.horizontal)
