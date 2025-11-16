@@ -19,6 +19,7 @@ final class PlayQuestViewModel: ObservableObject {
     @Published var showingPasswordSheet: Bool = false
     @Published var passwordError: String? = nil
     @Published var isJoining: Bool = false
+    @Published var showingLeaveConfirmation: Bool = false
     
     init(auth: QHAuth, quest: Quest) {
         self.auth = auth
@@ -112,5 +113,10 @@ final class PlayQuestViewModel: ObservableObject {
             }
         }
     }
+    
+    func leaveQuest() {
+        print("Leaving quest")
+    }
+    
 }
 

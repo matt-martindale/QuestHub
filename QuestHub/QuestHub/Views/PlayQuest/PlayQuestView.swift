@@ -35,6 +35,10 @@ struct PlayQuestView: View {
 
                 challengesSection
                     .padding(.horizontal)
+                    .padding(.top, 20)
+                
+                leaveQuest
+                    .padding(.horizontal)
                     .padding(.vertical, 20)
             }
         }
@@ -43,6 +47,14 @@ struct PlayQuestView: View {
         .background(Color(.systemBackground))
         .alert(item: $viewModel.alertMessage) { msg in
             Alert(title: Text("Unable to join Quest"), message: Text(msg.text), dismissButton: .default(Text("OK")))
+        }
+        .alert("Leave this quest?", isPresented: $viewModel.showingLeaveConfirmation) {
+            Button("Leave Quest", role: .destructive) {
+                viewModel.leaveQuest()
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("You’ll lose access to challenges and progress.")
         }
         .sheet(isPresented: $viewModel.showingPasswordSheet) {
             VStack(spacing: 16) {
@@ -414,10 +426,33 @@ struct PlayQuestView: View {
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         .glassEffect(in: .rect(cornerRadius: 14))
     }
+    
+    private var leaveQuest: some View {
+        HStack {
+            if viewModel.isJoined {
+                Button {
+                    // Trigger confirmation before leaving
+                    viewModel.showingLeaveConfirmation = true
+                } label: {
+                    HStack(spacing: 10) {
+                        Image(systemName: "rectangle.portrait.and.arrow.right")
+                            .symbolRenderingMode(.hierarchical)
+                        Text("Leave Quest")
+                            .fontWeight(.semibold)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                }
+                .tint(.red)
+                .buttonStyle(.glass)
+                .accessibilityLabel("Leave this quest")
+                .accessibilityHint("Double tap to confirm and leave the quest")
+            }
+        }
+    }
 }
 
 #Preview {
     let auth = QHAuth()
     PlayQuestView(auth: auth, quest: Quest(id: "ID", questCode: "ABC", imageURL: "gs://questhubapp2025-db58e.firebasestorage.app/quests/3k4sTKiFi7XK37npGBxPb2FhoKA2/75845EC7-2828-42AA-BC87-50EE561D488C.jpg", title: "Title", subtitle: "Embark on an adventure", description: nil, maxPlayers: 20, playersCount: 5, challenges: nil, createdAt: Date(), updatedAt: Date(), creatorID: "creatorID", creatorDisplayName: "creatorDisplayName", status: .active, password: "Password", requireSignIn: true))
 }
-
