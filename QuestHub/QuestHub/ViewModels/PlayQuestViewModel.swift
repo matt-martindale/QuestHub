@@ -107,6 +107,11 @@ final class PlayQuestViewModel: ObservableObject {
                 self.isJoining = false
                 print("Joined quest \(questCode)")
                 self.isJoined = true
+                if let current = self.quest.playersCount {
+                    self.quest.playersCount = current + 1
+                } else {
+                    self.quest.playersCount = 1
+                }
             case .failure(let error):
                 self.isJoining = false
                 self.alertMessage = AlertMessage(text: error.localizedDescription)
@@ -123,6 +128,11 @@ final class PlayQuestViewModel: ObservableObject {
             case .success():
                 print("Successfully left quest")
                 self?.isJoined = false
+                if let current = self?.quest.playersCount {
+                    self?.quest.playersCount = max(current - 1, 0)
+                } else {
+                    self?.quest.playersCount = 0
+                }
             case .failure(let error):
                 self?.alertMessage = AlertMessage(text: error.localizedDescription)
             }
