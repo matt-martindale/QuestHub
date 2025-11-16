@@ -9,6 +9,7 @@ import SwiftUI
 
 struct PlayQuestView: View {
     @StateObject private var viewModel: PlayQuestViewModel
+    @State private var showSignIn = false
     
     init(auth: QHAuth, quest: Quest) {
         _viewModel = StateObject(wrappedValue: PlayQuestViewModel(auth: auth, quest: quest))
@@ -49,6 +50,19 @@ struct PlayQuestView: View {
         .navigationTitle("Play Quest")
         .navigationBarTitleDisplayMode(.inline)
         .background(Color(.systemBackground))
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                if let user = viewModel.auth.currentUser {
+                    SignedInUserMenu(user: user) {
+                        viewModel.auth.signOut()
+                    }
+                } else {
+                    Button("Sign in") {
+                        showSignIn = true
+                    }
+                }
+            }
+        }
         .alert(item: $viewModel.alertMessage) { msg in
             Alert(title: Text("Unable to join Quest"), message: Text(msg.text), dismissButton: .default(Text("OK")))
         }
@@ -59,6 +73,11 @@ struct PlayQuestView: View {
             Button("Cancel", role: .cancel) { }
         } message: {
             Text("You’ll lose access to challenges and progress.")
+        }
+        .sheet(isPresented: $showSignIn) {
+            NavigationStack {
+                SignInView()
+            }
         }
         .sheet(isPresented: $viewModel.showingPasswordSheet) {
             VStack(spacing: 16) {

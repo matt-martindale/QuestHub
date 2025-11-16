@@ -68,6 +68,11 @@ final class PlayQuestViewModel: ObservableObject {
     /// Call from the View when the user taps Join. This defers to a sheet if a password is required and not yet provided.
     func beginJoinFlow() {
         alertMessage = nil
+        if auth.currentUser == nil {
+            self.alertMessage = AlertMessage(text: "Please sign in or create an account to join a quest.")
+            isJoining = false
+            return
+        }
         if requiresPassword() && inputPassword.isEmpty {
             showingPasswordSheet = true
             return

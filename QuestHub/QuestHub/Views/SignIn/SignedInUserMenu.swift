@@ -9,6 +9,8 @@ import SwiftUI
 import Foundation
 
 struct SignedInUserMenu: View {
+    @State private var showingAccount = false
+
     let user: QHUser
     var allowSignOut: Bool = true
     var signOut: (() -> Void)?
@@ -21,6 +23,12 @@ struct SignedInUserMenu: View {
 
     public var body: some View {
         Menu {
+            Button {
+                showingAccount = true
+            } label: {
+                Label("Account", systemImage: "person.circle")
+            }
+            
             if allowSignOut {
                 Button(role: .destructive) {
                     signOut?()
@@ -53,6 +61,11 @@ struct SignedInUserMenu: View {
             }
             .padding(.vertical, 2)
             .padding(.horizontal, 6)
+        }
+        .sheet(isPresented: $showingAccount) {
+            NavigationStack {
+                AccountView()
+            }
         }
     }
 
@@ -89,3 +102,4 @@ struct SignedInUserMenu: View {
     }
     .padding()
 }
+
