@@ -24,14 +24,18 @@ struct PlayQuestView: View {
                 metadataCard
                     .padding(.horizontal)
                     .padding(.top, 16)
+                
+                actions
+                    .padding(.horizontal)
+                    .padding(.top, 16)
 
                 descriptionCard
                     .padding(.horizontal)
                     .padding(.top, 16)
                 
-                actions
-                    .padding(.horizontal)
-                    .padding(.top, 16)
+//                actions
+//                    .padding(.horizontal)
+//                    .padding(.top, 16)
 
                 challengesSection
                     .padding(.horizontal)
@@ -372,17 +376,26 @@ struct PlayQuestView: View {
                 Button {
                     viewModel.beginJoinFlow()
                 } label: {
-                    Label("Join Quest", systemImage: "play.fill")
-                        .frame(maxWidth: .infinity)
+                    HStack(spacing: 10) {
+                        Image(systemName: "play.fill")
+                        Text("Join Quest")
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 6)
                 }
+                .tint(.green)
                 .buttonStyle(.glass)
             }
-
+            
             Button {
-                // Share action
+                viewModel.beginJoinFlow()
             } label: {
-                Label("Share", systemImage: "square.and.arrow.up")
-                    .frame(maxWidth: .infinity)
+                HStack(spacing: 10) {
+                    Image(systemName: "square.and.arrow.up")
+                    Text("Share")
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 6)
             }
             .buttonStyle(.glass)
         }
@@ -441,7 +454,7 @@ struct PlayQuestView: View {
                             .fontWeight(.semibold)
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
+                    .padding(.vertical, 8)
                 }
                 .tint(.red)
                 .buttonStyle(.glass)
