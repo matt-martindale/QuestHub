@@ -44,6 +44,44 @@ struct PlayQuestView: View {
         .alert(item: $viewModel.alertMessage) { msg in
             Alert(title: Text("Unable to join Quest"), message: Text(msg.text), dismissButton: .default(Text("OK")))
         }
+        .sheet(isPresented: $viewModel.showingPasswordSheet) {
+            VStack(spacing: 16) {
+                Text("This quest requires a password")
+                    .font(.headline)
+                
+                
+                    HStack(spacing: 8) {
+                        Text(viewModel.passwordError ?? "")
+                            .font(.footnote)
+                            .foregroundStyle(.red)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+
+                TextField("Password", text: $viewModel.inputPassword)
+                    .textContentType(.password)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+                    .padding(12)
+                    .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12))
+
+                HStack(spacing: 30) {
+                    Button("Cancel") {
+                        viewModel.showingPasswordSheet = false
+                        viewModel.inputPassword = ""
+                        viewModel.passwordError = nil
+                    }
+                    Button("Confirm") {
+                        viewModel.confirmPasswordAndJoin()
+                        viewModel.inputPassword = ""
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(viewModel.inputPassword.isEmpty)
+                }
+            }
+            .padding()
+            .presentationDetents([.fraction(0.35), .medium])
+        }
     }
 
     // MARK: - Subviews
@@ -320,7 +358,7 @@ struct PlayQuestView: View {
         HStack(spacing: 12) {
             if !viewModel.isJoined {
                 Button {
-                    viewModel.joinQuest()
+                    viewModel.beginJoinFlow()
                 } label: {
                     Label("Join Quest", systemImage: "play.fill")
                         .frame(maxWidth: .infinity)

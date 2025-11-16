@@ -16,6 +16,9 @@ final class PlayQuestViewModel: ObservableObject {
     @Published var quest: Quest
     @Published var inputPassword: String = ""
     @Published var alertMessage: AlertMessage?
+    @Published var showingPasswordSheet: Bool = false
+    @Published var passwordError: String? = nil
+    @Published var isJoining: Bool = false
     
     init(auth: QHAuth, quest: Quest) {
         self.auth = auth
@@ -47,25 +50,38 @@ final class PlayQuestViewModel: ObservableObject {
         return !(quest.password ?? "").isEmpty
     }
     
+    // MARK: Join Flow Orchestration
+    /// Call from the View when the user taps Join. This defers to a sheet if a password is required and not yet provided.
+    func beginJoinFlow() {
+        alertMessage = nil
+        if requiresPassword() && inputPassword.isEmpty {
+            showingPasswordSheet = true
+            return
+        }
+        joinQuest()
+    }
+    
+    func confirmPasswordAndJoin() {
+        let requiredPassword = quest.password ?? ""
+        if inputPassword == requiredPassword {
+            passwordError = nil
+            joinQuest()
+            showingPasswordSheet = false
+        } else {
+            passwordError = "Incorrect password. Please try again."
+        }
+    }
+    
     // MARK: Actions
     func joinQuest() {
         guard let questID = quest.id,
         let questCode = quest.questCode else { return }
         alertMessage = nil
+        isJoining = true
         
         if auth.currentUser == nil {
             self.alertMessage = AlertMessage(text: "Please sign in or create an account to join a quest.")
-            return
-        }
-
-        // Password-protected quest
-//        if requiresPassword() && inputPassword.isEmpty {
-//            alertMessage = AlertMessage(text: "This quest requires a password.")
-//            return
-//        }
-        
-        if let password = quest.password, requiresPassword(), !inputPassword.elementsEqual(password) {
-            alertMessage = AlertMessage(text: "Passwords must match")
+            isJoining = false
             return
         }
         
@@ -73,9 +89,11 @@ final class PlayQuestViewModel: ObservableObject {
         QuestService.shared.joinQuest(questId: questID, questCode: questCode, userId: auth.currentUser?.id, userDisplayName: auth.currentUser?.displayName ?? auth.currentUser?.email ?? "anonymous", maxPlayersEnforced: true) { result in
             switch result {
             case .success():
+                self.isJoining = false
                 print("Joined quest \(questCode)")
                 self.isJoined = true
             case .failure(let error):
+                self.isJoining = false
                 self.alertMessage = AlertMessage(text: error.localizedDescription)
             }
         }
