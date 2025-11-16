@@ -281,25 +281,14 @@ final class QuestService {
             }
         }
 
-        // If userId is provided and matches current auth, proceed. Otherwise sign in anonymously first.
+        // Require a signed-in user. No anonymous sign-in fallback.
         if let providedUserId = userId, let currentUid = Auth.auth().currentUser?.uid, currentUid == providedUserId {
             proceedWithJoin(providedUserId)
         } else if let currentUid = Auth.auth().currentUser?.uid {
-            // If already signed in (e.g., anonymous or otherwise), use that uid
+            // If already signed in (e.g., via your app's auth flow), proceed with current user
             proceedWithJoin(currentUid)
         } else {
-            // Sign in anonymously, then proceed
-            Auth.auth().signInAnonymously { authResult, error in
-                if let error = error {
-                    completion(.failure(error))
-                    return
-                }
-                guard let uid = authResult?.user.uid else {
-                    completion(.failure(NSError(domain: "QuestService", code: 500, userInfo: [NSLocalizedDescriptionKey: "Failed to obtain anonymous user ID"])) )
-                    return
-                }
-                proceedWithJoin(uid)
-            }
+            completion(.failure(NSError(domain: "QuestService", code: 401, userInfo: [NSLocalizedDescriptionKey: "User must be signed in to join a quest"])) )
         }
     }
     
@@ -347,39 +336,6 @@ final class QuestService {
             if let updatedTs = data["updatedAt"] as? Timestamp { quest.updatedAt = updatedTs.dateValue() }
 
             completion(.success(quest))
-        }
-    }
-    
-    /// Searches for a quest by code (using document ID equality) and attempts to join it.
-    /// Returns the loaded Quest on success.
-    func searchAndJoin(questCode: String,
-                       userId: String,
-                       userDisplayName: String,
-                       maxPlayersEnforced: Bool = true,
-                       completion: @escaping (Result<Quest, Error>) -> Void) {
-        let trimmed = questCode.trimmingCharacters(in: .whitespacesAndNewlines)
-        searchQuest(byCode: trimmed) { [weak self] searchResult in
-            switch searchResult {
-            case .failure(let error):
-                completion(.failure(error))
-            case .success(let quest):
-                guard let self = self, let questId = quest.id, let code = quest.questCode else {
-                    completion(.failure(NSError(domain: "QuestService", code: 500, userInfo: [NSLocalizedDescriptionKey: "Invalid quest data"])) )
-                    return
-                }
-                self.joinQuest(questId: questId,
-                               questCode: code,
-                               userId: userId,
-                               userDisplayName: userDisplayName,
-                               maxPlayersEnforced: maxPlayersEnforced) { joinResult in
-                    switch joinResult {
-                    case .success:
-                        completion(.success(quest))
-                    case .failure(let err):
-                        completion(.failure(err))
-                    }
-                }
-            }
         }
     }
 
@@ -514,3 +470,4 @@ final class QuestService {
         joinedListener = nil
     }
 }
+
