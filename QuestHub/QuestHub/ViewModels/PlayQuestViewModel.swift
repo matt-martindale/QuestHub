@@ -11,7 +11,7 @@ import Combine
 
 @MainActor
 final class PlayQuestViewModel: ObservableObject {
-    let auth: QHAuth
+    @ObservedObject var auth: QHAuth
     @Published var isJoined: Bool = false
     @Published var quest: Quest
     @Published var inputPassword: String = ""

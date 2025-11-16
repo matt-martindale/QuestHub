@@ -8,10 +8,13 @@
 import SwiftUI
 
 struct PlayQuestView: View {
+    @EnvironmentObject private var auth: QHAuth
     @StateObject private var viewModel: PlayQuestViewModel
     @State private var showSignIn = false
     
     init(auth: QHAuth, quest: Quest) {
+        // Ideally auth should be passed from environment instead of initializer,
+        // but kept for compatibility.
         _viewModel = StateObject(wrappedValue: PlayQuestViewModel(auth: auth, quest: quest))
     }
 
@@ -52,9 +55,9 @@ struct PlayQuestView: View {
         .background(Color(.systemBackground))
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                if let user = viewModel.auth.currentUser {
+                if let user = auth.currentUser {
                     SignedInUserMenu(user: user) {
-                        viewModel.auth.signOut()
+                        auth.signOut()
                     }
                 } else {
                     Button("Sign in") {
@@ -116,6 +119,12 @@ struct PlayQuestView: View {
             }
             .padding()
             .presentationDetents([.fraction(0.35), .medium])
+        }
+        .onChange(of: auth.currentUser) { newUser in
+            print("PlayQuestView onChange auth.currentUser = \(String(describing: newUser)), auth: \(ObjectIdentifier(auth))")
+        }
+        .onAppear {
+            print("PlayQuestView onAppear auth.currentUser = \(String(describing: auth.currentUser)), auth: \(ObjectIdentifier(auth))")
         }
     }
 
@@ -487,4 +496,5 @@ struct PlayQuestView: View {
 #Preview {
     let auth = QHAuth()
     PlayQuestView(auth: auth, quest: Quest(id: "ID", questCode: "ABC", imageURL: "gs://questhubapp2025-db58e.firebasestorage.app/quests/3k4sTKiFi7XK37npGBxPb2FhoKA2/75845EC7-2828-42AA-BC87-50EE561D488C.jpg", title: "Title", subtitle: "Embark on an adventure", description: nil, maxPlayers: 20, playersCount: 5, challenges: nil, createdAt: Date(), updatedAt: Date(), creatorID: "creatorID", creatorDisplayName: "creatorDisplayName", status: .active, password: "Password", requireSignIn: true))
+        .environmentObject(auth)
 }
