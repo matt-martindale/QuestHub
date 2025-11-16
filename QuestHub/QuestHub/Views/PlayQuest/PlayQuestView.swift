@@ -25,8 +25,6 @@ struct PlayQuestView: View {
                     .padding(.horizontal)
                     .padding(.top, 16)
 
-                
-                
                 descriptionCard
                     .padding(.horizontal)
                     .padding(.top, 16)
@@ -144,7 +142,8 @@ struct PlayQuestView: View {
 
                 Spacer(minLength: 12)
                 
-                if let password = viewModel.quest.password, !password.isEmpty {
+                if let password = viewModel.quest.password, !password.isEmpty,
+                   !viewModel.isJoined {
                     HStack(spacing: 6) {
                         Text("Password")
                         Image(systemName: "lock.fill")
@@ -156,6 +155,16 @@ struct PlayQuestView: View {
                     .background(.ultraThinMaterial)
                     .clipShape(Capsule())
                     .glassEffect(in: .capsule)
+                }
+                
+                if viewModel.isJoined {
+                    Text("Joined")
+                        .font(.subheadline)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(.ultraThinMaterial)
+                        .clipShape(Capsule())
+                        .glassEffect(in: .capsule)
                 }
 
                 // Status chip
@@ -309,13 +318,15 @@ struct PlayQuestView: View {
 
     private var actions: some View {
         HStack(spacing: 12) {
-            Button {
-                viewModel.joinQuest()
-            } label: {
-                Label("Join Quest", systemImage: "play.fill")
-                    .frame(maxWidth: .infinity)
+            if !viewModel.isJoined {
+                Button {
+                    viewModel.joinQuest()
+                } label: {
+                    Label("Join Quest", systemImage: "play.fill")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.glass)
             }
-            .buttonStyle(.glass)
 
             Button {
                 // Share action

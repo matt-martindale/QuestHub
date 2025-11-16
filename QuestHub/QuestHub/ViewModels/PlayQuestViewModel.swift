@@ -12,6 +12,7 @@ import Combine
 @MainActor
 final class PlayQuestViewModel: ObservableObject {
     let auth: QHAuth
+    @Published var isJoined: Bool = false
     @Published var quest: Quest
     @Published var inputPassword: String = ""
     @Published var alertMessage: AlertMessage?
@@ -58,10 +59,10 @@ final class PlayQuestViewModel: ObservableObject {
         }
 
         // Password-protected quest
-        if requiresPassword() && inputPassword.isEmpty {
-            alertMessage = AlertMessage(text: "This quest requires a password.")
-            return
-        }
+//        if requiresPassword() && inputPassword.isEmpty {
+//            alertMessage = AlertMessage(text: "This quest requires a password.")
+//            return
+//        }
         
         if let password = quest.password, requiresPassword(), !inputPassword.elementsEqual(password) {
             alertMessage = AlertMessage(text: "Passwords must match")
@@ -73,9 +74,11 @@ final class PlayQuestViewModel: ObservableObject {
             switch result {
             case .success():
                 print("Joined quest \(questCode)")
+                self.isJoined = true
             case .failure(let error):
                 self.alertMessage = AlertMessage(text: error.localizedDescription)
             }
         }
     }
 }
+
