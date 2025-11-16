@@ -451,5 +451,71 @@ final class QuestService {
         joinedListener?.remove()
         joinedListener = nil
     }
-}
+    
+    /// Leaves a quest by removing the player's membership and the corresponding userQuests entry.
+    /// - Parameters:
+    ///   - questId: The Firestore quest document ID to leave
+    ///   - userId: The current user's uid
+    ///   - completion: Result callback
+    func leaveQuest(questId: String,
+                    userId: String,
+                    completion: @escaping (Result<Void, Error>) -> Void) {
+        // Verify current auth matches provided userId
+        guard let currentUid = Auth.auth().currentUser?.uid, currentUid == userId else {
+            completion(.failure(NSError(domain: "QuestService", code: 401, userInfo: [NSLocalizedDescriptionKey: "Not authenticated as provided userId"])) )
+            return
+        }
 
+        let qRef = questRef(questId)
+        let pRef = playerRef(questId: questId, userId: userId)
+        let userQuestsRootRef = db.collection("userQuests").document("\(userId)_\(questId)")
+
+        db.runTransaction({ (transaction, errorPointer) -> Any? in
+            let questSnap: DocumentSnapshot
+            do {
+                questSnap = try transaction.getDocument(qRef)
+            } catch let error as NSError {
+                errorPointer?.pointee = error
+                return nil
+            }
+
+            let playerSnap: DocumentSnapshot
+            do {
+                playerSnap = try transaction.getDocument(pRef)
+            } catch let error as NSError {
+                errorPointer?.pointee = error
+                return nil
+            }
+
+            // If player doc doesn't exist, nothing to do
+            guard playerSnap.exists else {
+                return ["left": false]
+            }
+
+            // Decrement playersCount but not below zero
+            let currentCount = (questSnap.data()? ["playersCount"] as? Int) ?? 0
+            let newCount = max(currentCount - 1, 0)
+            transaction.updateData(["playersCount": newCount], forDocument: qRef)
+
+            // Delete player membership under quest
+            transaction.deleteDocument(pRef)
+
+            return ["left": true]
+        }) { (result, error) in
+            if let error = error {
+                completion(.failure(error))
+                return
+            }
+
+            // Remove userQuests root doc regardless of whether the transaction was a no-op
+            userQuestsRootRef.delete { uqErr in
+                if let uqErr = uqErr {
+                    // We already removed membership; surface the error so caller can decide how to handle orphaned root doc
+                    completion(.failure(uqErr))
+                } else {
+                    completion(.success(()))
+                }
+            }
+        }
+    }
+}

@@ -116,6 +116,17 @@ final class PlayQuestViewModel: ObservableObject {
     
     func leaveQuest() {
         print("Leaving quest")
+        guard let questID = quest.id,
+        let userId = auth.currentUser?.id else { return }
+        QuestService.shared.leaveQuest(questId: questID, userId: userId) { [weak self] result in
+            switch result {
+            case .success():
+                print("Successfully left quest")
+                self?.isJoined = false
+            case .failure(let error):
+                self?.alertMessage = AlertMessage(text: error.localizedDescription)
+            }
+        }
     }
     
 }
