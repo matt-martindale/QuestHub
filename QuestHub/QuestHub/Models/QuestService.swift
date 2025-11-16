@@ -339,24 +339,6 @@ final class QuestService {
         }
     }
 
-    /// Checks if a user has already joined a quest by verifying existence of a document in the
-    /// `userQuests` collection with id formatted as "<userID>_<questID>".
-    /// - Parameters:
-    ///   - userId: The user's uid
-    ///   - questId: The Firestore quest document ID
-    /// - Returns: `true` if the user has already joined the quest, otherwise `false`.
-    func hasJoinedQuest(userId: String, questId: String, completion: @escaping (Result<Bool, Error>) -> Void) {
-        let docId = "\(userId)_\(questId)"
-        let docRef = db.collection("userQuests").document(docId)
-        docRef.getDocument { snapshot, error in
-            if let error = error {
-                completion(.failure(error))
-                return
-            }
-            completion(.success(snapshot?.exists == true))
-        }
-    }
-
     /// Async/await variant of `hasJoinedQuest(userId:questId:completion:)`.
     func hasJoinedQuest(userId: String, questId: String) async throws -> Bool {
         let docId = "\(userId)_\(questId)"
