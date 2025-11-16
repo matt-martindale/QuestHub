@@ -23,6 +23,19 @@ final class PlayQuestViewModel: ObservableObject {
     init(auth: QHAuth, quest: Quest) {
         self.auth = auth
         self.quest = quest
+        // Check if the current user has already joined this quest
+        if let uid = auth.currentUser?.id, let qid = quest.id, !uid.isEmpty, !qid.isEmpty {
+            Task { [weak self] in
+                guard let self = self else { return }
+                do {
+                    let joined = try await QuestService.shared.hasJoinedQuest(userId: uid, questId: qid)
+                    self.isJoined = joined
+                } catch {
+                    // Non-fatal: if this fails, we simply leave isJoined as false
+                    print("hasJoinedQuest check failed: \(error.localizedDescription)")
+                }
+            }
+        }
     }
     
     var headerImageURL: URL? {
@@ -73,6 +86,7 @@ final class PlayQuestViewModel: ObservableObject {
     }
     
     // MARK: Actions
+    
     func joinQuest() {
         guard let questID = quest.id,
         let questCode = quest.questCode else { return }
