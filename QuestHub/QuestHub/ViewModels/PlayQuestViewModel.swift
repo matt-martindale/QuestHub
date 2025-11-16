@@ -11,7 +11,6 @@ import Combine
 
 @MainActor
 final class PlayQuestViewModel: ObservableObject {
-    @ObservedObject var auth: QHAuth
     @Published var isJoined: Bool = false
     @Published var quest: Quest
     @Published var inputPassword: String = ""
@@ -21,20 +20,24 @@ final class PlayQuestViewModel: ObservableObject {
     @Published var isJoining: Bool = false
     @Published var showingLeaveConfirmation: Bool = false
     
-    init(auth: QHAuth, quest: Quest) {
-        self.auth = auth
+    init(quest: Quest) {
         self.quest = quest
-        // Check if the current user has already joined this quest
-        if let uid = auth.currentUser?.id, let qid = quest.id, !uid.isEmpty, !qid.isEmpty {
-            Task { [weak self] in
-                guard let self = self else { return }
-                do {
-                    let joined = try await QuestService.shared.hasJoinedQuest(userId: uid, questId: qid)
-                    self.isJoined = joined
-                } catch {
-                    // Non-fatal: if this fails, we simply leave isJoined as false
-                    print("hasJoinedQuest check failed: \(error.localizedDescription)")
-                }
+        // We no longer determine isJoined state here since we have no user info.
+        // Use refreshJoinedState(for:) with a user ID when available.
+    }
+    
+    func refreshJoinedState(for userId: String?) {
+        guard let uid = userId, let qid = quest.id, !uid.isEmpty, !qid.isEmpty else {
+            self.isJoined = false
+            return
+        }
+        Task { [weak self] in
+            guard let self = self else { return }
+            do {
+                let joined = try await QuestService.shared.hasJoinedQuest(userId: uid, questId: qid)
+                self.isJoined = joined
+            } catch {
+                print("hasJoinedQuest check failed: \(error.localizedDescription)")
             }
         }
     }
@@ -66,9 +69,9 @@ final class PlayQuestViewModel: ObservableObject {
     
     // MARK: Join Flow Orchestration
     /// Call from the View when the user taps Join. This defers to a sheet if a password is required and not yet provided.
-    func beginJoinFlow() {
+    func beginJoinFlow(currentUser: QHUser?) {
         alertMessage = nil
-        if auth.currentUser == nil {
+        if currentUser == nil {
             self.alertMessage = AlertMessage(text: "Please sign in or create an account to join a quest.")
             isJoining = false
             return
@@ -77,14 +80,14 @@ final class PlayQuestViewModel: ObservableObject {
             showingPasswordSheet = true
             return
         }
-        joinQuest()
+        joinQuest(currentUser: currentUser)
     }
     
-    func confirmPasswordAndJoin() {
+    func confirmPasswordAndJoin(currentUser: QHUser?) {
         let requiredPassword = quest.password ?? ""
         if inputPassword == requiredPassword {
             passwordError = nil
-            joinQuest()
+            joinQuest(currentUser: currentUser)
             showingPasswordSheet = false
         } else {
             passwordError = "Incorrect password. Please try again."
@@ -93,20 +96,20 @@ final class PlayQuestViewModel: ObservableObject {
     
     // MARK: Actions
     
-    func joinQuest() {
+    func joinQuest(currentUser: QHUser?) {
         guard let questID = quest.id,
-        let questCode = quest.questCode else { return }
+              let questCode = quest.questCode else { return }
         alertMessage = nil
         isJoining = true
         
-        if auth.currentUser == nil {
+        if currentUser == nil {
             self.alertMessage = AlertMessage(text: "Please sign in or create an account to join a quest.")
             isJoining = false
             return
         }
         
         // Join Quest after passing validations
-        QuestService.shared.joinQuest(questId: questID, questCode: questCode, userId: auth.currentUser?.id, userDisplayName: auth.currentUser?.displayName ?? auth.currentUser?.email ?? "anonymous", maxPlayersEnforced: true) { result in
+        QuestService.shared.joinQuest(questId: questID, questCode: questCode, userId: currentUser?.id, userDisplayName: currentUser?.displayName ?? currentUser?.email ?? "anonymous", maxPlayersEnforced: true) { result in
             switch result {
             case .success():
                 self.isJoining = false
@@ -124,10 +127,10 @@ final class PlayQuestViewModel: ObservableObject {
         }
     }
     
-    func leaveQuest() {
+    func leaveQuest(currentUser: QHUser?) {
         print("Leaving quest")
         guard let questID = quest.id,
-        let userId = auth.currentUser?.id else { return }
+              let userId = currentUser?.id else { return }
         QuestService.shared.leaveQuest(questId: questID, userId: userId) { [weak self] result in
             switch result {
             case .success():

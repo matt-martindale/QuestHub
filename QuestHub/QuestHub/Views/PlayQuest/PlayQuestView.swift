@@ -12,10 +12,8 @@ struct PlayQuestView: View {
     @StateObject private var viewModel: PlayQuestViewModel
     @State private var showSignIn = false
     
-    init(auth: QHAuth, quest: Quest) {
-        // Ideally auth should be passed from environment instead of initializer,
-        // but kept for compatibility.
-        _viewModel = StateObject(wrappedValue: PlayQuestViewModel(auth: auth, quest: quest))
+    init(quest: Quest) {
+        _viewModel = StateObject(wrappedValue: PlayQuestViewModel(quest: quest))
     }
 
     var body: some View {
@@ -53,6 +51,9 @@ struct PlayQuestView: View {
         .navigationTitle("Play Quest")
         .navigationBarTitleDisplayMode(.inline)
         .background(Color(.systemBackground))
+        .task(id: auth.currentUser?.id) {
+            viewModel.refreshJoinedState(for: auth.currentUser?.id)
+        }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 if let user = auth.currentUser {
@@ -71,7 +72,7 @@ struct PlayQuestView: View {
         }
         .alert("Leave this quest?", isPresented: $viewModel.showingLeaveConfirmation) {
             Button("Leave Quest", role: .destructive) {
-                viewModel.leaveQuest()
+                viewModel.leaveQuest(currentUser: auth.currentUser)
             }
             Button("Cancel", role: .cancel) { }
         } message: {
@@ -110,7 +111,7 @@ struct PlayQuestView: View {
                         viewModel.passwordError = nil
                     }
                     Button("Confirm") {
-                        viewModel.confirmPasswordAndJoin()
+                        viewModel.confirmPasswordAndJoin(currentUser: auth.currentUser)
                         viewModel.inputPassword = ""
                     }
                     .buttonStyle(.borderedProminent)
@@ -119,12 +120,6 @@ struct PlayQuestView: View {
             }
             .padding()
             .presentationDetents([.fraction(0.35), .medium])
-        }
-        .onChange(of: auth.currentUser) { newUser in
-            print("PlayQuestView onChange auth.currentUser = \(String(describing: newUser)), auth: \(ObjectIdentifier(auth))")
-        }
-        .onAppear {
-            print("PlayQuestView onAppear auth.currentUser = \(String(describing: auth.currentUser)), auth: \(ObjectIdentifier(auth))")
         }
     }
 
@@ -402,7 +397,7 @@ struct PlayQuestView: View {
         HStack(spacing: 12) {
             if !viewModel.isJoined {
                 Button {
-                    viewModel.beginJoinFlow()
+                    viewModel.beginJoinFlow(currentUser: auth.currentUser)
                 } label: {
                     HStack(spacing: 10) {
                         Image(systemName: "play.fill")
@@ -416,7 +411,7 @@ struct PlayQuestView: View {
             }
             
             Button {
-                viewModel.beginJoinFlow()
+                viewModel.beginJoinFlow(currentUser: auth.currentUser)
             } label: {
                 HStack(spacing: 10) {
                     Image(systemName: "square.and.arrow.up")
@@ -495,6 +490,6 @@ struct PlayQuestView: View {
 
 #Preview {
     let auth = QHAuth()
-    PlayQuestView(auth: auth, quest: Quest(id: "ID", questCode: "ABC", imageURL: "gs://questhubapp2025-db58e.firebasestorage.app/quests/3k4sTKiFi7XK37npGBxPb2FhoKA2/75845EC7-2828-42AA-BC87-50EE561D488C.jpg", title: "Title", subtitle: "Embark on an adventure", description: nil, maxPlayers: 20, playersCount: 5, challenges: nil, createdAt: Date(), updatedAt: Date(), creatorID: "creatorID", creatorDisplayName: "creatorDisplayName", status: .active, password: "Password", requireSignIn: true))
+    PlayQuestView(quest: Quest(id: "ID", questCode: "ABC", imageURL: "gs://questhubapp2025-db58e.firebasestorage.app/quests/3k4sTKiFi7XK37npGBxPb2FhoKA2/75845EC7-2828-42AA-BC87-50EE561D488C.jpg", title: "Title", subtitle: "Embark on an adventure", description: nil, maxPlayers: 20, playersCount: 5, challenges: nil, createdAt: Date(), updatedAt: Date(), creatorID: "creatorID", creatorDisplayName: "creatorDisplayName", status: .active, password: "Password", requireSignIn: true))
         .environmentObject(auth)
 }
