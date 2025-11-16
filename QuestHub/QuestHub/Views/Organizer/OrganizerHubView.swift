@@ -68,6 +68,11 @@ struct OrganizerHubView: View {
                 AccountView()
             }
         }
+        .onChange(of: auth.currentUser) { oldValue, newValue in
+            if newValue != nil {
+                Task { await refreshQuests() }
+            }
+        }
         .onChange(of: isShowingEditQuestSheet) { oldValue, newValue in
             if oldValue == true && newValue == false {
                 initialCoverImageData = nil

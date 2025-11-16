@@ -119,7 +119,7 @@ struct HomeView: View {
             OrganizerHubView()
                 .requiresSignIn {
                     // Pop back if the user cancels sign-in
-//                    dismiss()
+                    dismiss()
                 }
         }
     }
