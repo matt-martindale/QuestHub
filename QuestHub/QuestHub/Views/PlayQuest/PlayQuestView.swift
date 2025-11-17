@@ -129,7 +129,7 @@ struct PlayQuestView: View {
             }
             // Only show a toast when the state meaningfully changes
             if newValue == true && oldValue == false {
-                showToast(with: "Joined quest")
+                showToast(with: "Joined quest!")
             } else if newValue == false && oldValue == true {
                 showToast(with: "Left quest")
             }
