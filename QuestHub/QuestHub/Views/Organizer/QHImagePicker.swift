@@ -7,6 +7,21 @@
 
 import SwiftUI
 import PhotosUI
+import UniformTypeIdentifiers
+
+struct SelectedPhoto: Transferable {
+    let uiImage: UIImage
+    let data: Data
+
+    static var transferRepresentation: some TransferRepresentation {
+        DataRepresentation(importedContentType: .image) { data in
+            guard let image = UIImage(data: data) else {
+                throw NSError(domain: "QHImagePicker", code: -1, userInfo: [NSLocalizedDescriptionKey: "Unable to decode image data."])
+            }
+            return SelectedPhoto(uiImage: image, data: data)
+        }
+    }
+}
 
 struct QHImagePicker: View {
     @Binding var selectedPhotoItem: PhotosPickerItem?
@@ -82,13 +97,31 @@ struct QHImagePicker: View {
         .onChange(of: selectedPhotoItem) { _, newItem in
             guard let newItem else { return }
             Task {
-                if let data = try? await newItem.loadTransferable(type: Data.self) {
-                    await MainActor.run {
-                        if let uiImage = UIImage(data: data) {
-                            self.imageForCropping = uiImage
+                do {
+                    // Try importing via a Transferable that supports any image content type
+                    if let selected = try await newItem.loadTransferable(type: SelectedPhoto.self) {
+                        await MainActor.run {
+                            self.selectedImageData = selected.data
+                            self.imageForCropping = selected.uiImage
                             self.isCroppingImage = true
                         }
+                        return
                     }
+
+                    // Fallback: attempt raw Data and decode
+                    if let data = try await newItem.loadTransferable(type: Data.self) {
+                        await MainActor.run {
+                            self.selectedImageData = data
+                            if let uiImage = UIImage(data: data) {
+                                self.imageForCropping = uiImage
+                                self.isCroppingImage = true
+                            }
+                        }
+                        return
+                    }
+                } catch {
+                    // Log but do not crash UI; you could surface a user-facing alert if desired
+                    print("Failed to load image from PhotosPickerItem: \(error)")
                 }
             }
         }

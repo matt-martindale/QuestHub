@@ -7,6 +7,17 @@
 
 import SwiftUI
 
+extension UIImage {
+    func normalizedOrientation() -> UIImage {
+        if imageOrientation == .up { return self }
+        UIGraphicsBeginImageContextWithOptions(size, false, scale)
+        draw(in: CGRect(origin: .zero, size: size))
+        let normalized = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        return normalized ?? self
+    }
+}
+
 struct CropHoleShape: Shape {
     let rect: CGRect
     let cornerRadius: CGFloat
@@ -21,7 +32,7 @@ struct CropHoleShape: Shape {
 }
 
 struct ImageCropperView: View {
-    let image: UIImage
+    private let sourceImage: UIImage
     let aspectRatio: CGFloat
     let onCropped: (UIImage) -> Void
     let onCancel: () -> Void
@@ -33,6 +44,13 @@ struct ImageCropperView: View {
     @State private var lastOffset: CGSize = .zero
     @State private var minAllowedScale: CGFloat = 1
     @State private var computedMinScale: CGFloat = 1
+
+    init(image: UIImage, aspectRatio: CGFloat, onCropped: @escaping (UIImage) -> Void, onCancel: @escaping () -> Void) {
+        self.sourceImage = image.normalizedOrientation()
+        self.aspectRatio = aspectRatio
+        self.onCropped = onCropped
+        self.onCancel = onCancel
+    }
 
     var body: some View {
         GeometryReader { geo in
@@ -53,7 +71,7 @@ struct ImageCropperView: View {
                     height: cropSize.height
                 )
 
-                let imageAspect = image.size.width / image.size.height
+                let imageAspect = sourceImage.size.width / sourceImage.size.height
                 let canvasAspect = geo.size.width / geo.size.height
 
                 let fittedSize: CGSize = {
@@ -73,7 +91,7 @@ struct ImageCropperView: View {
                 let localComputedMinScale = max(minScaleX, minScaleY)
                 let maxScale: CGFloat = max(localComputedMinScale * 4, 4)
 
-                Image(uiImage: image)
+                Image(uiImage: sourceImage)
                     .resizable()
                     .scaledToFit()
                     .frame(width: geo.size.width, height: geo.size.height)
@@ -177,7 +195,7 @@ struct ImageCropperView: View {
     }
 
     private func renderCroppedImage(canvasSize: CGSize, cropRect: CGRect) -> UIImage? {
-        let imageAspect = image.size.width / image.size.height
+        let imageAspect = sourceImage.size.width / sourceImage.size.height
         let canvasAspect = canvasSize.width / canvasSize.height
 
         let fittedSize: CGSize = {
@@ -196,8 +214,8 @@ struct ImageCropperView: View {
         let transformedSize = CGSize(width: fittedSize.width * scale, height: fittedSize.height * scale)
         let transformedOrigin = CGPoint(x: imageOrigin.x + offset.width - (transformedSize.width - fittedSize.width) / 2, y: imageOrigin.y + offset.height - (transformedSize.height - fittedSize.height) / 2)
 
-        let scaleX = image.size.width / transformedSize.width
-        let scaleY = image.size.height / transformedSize.height
+        let scaleX = sourceImage.size.width / transformedSize.width
+        let scaleY = sourceImage.size.height / transformedSize.height
 
         let xInImage = (cropRect.minX - transformedOrigin.x) * scaleX
         let yInImage = (cropRect.minY - transformedOrigin.y) * scaleY
@@ -205,10 +223,10 @@ struct ImageCropperView: View {
         let heightInImage = cropRect.height * scaleY
 
         let imageCropRect = CGRect(x: xInImage, y: yInImage, width: widthInImage, height: heightInImage).integral
-        guard let cgImage = image.cgImage else { return nil }
-        let boundedRect = imageCropRect.intersection(CGRect(origin: .zero, size: image.size))
+        guard let cgImage = sourceImage.cgImage else { return nil }
+        let boundedRect = imageCropRect.intersection(CGRect(origin: .zero, size: sourceImage.size))
         guard let cropped = cgImage.cropping(to: boundedRect) else { return nil }
-        return UIImage(cgImage: cropped, scale: image.scale, orientation: image.imageOrientation)
+        return UIImage(cgImage: cropped, scale: sourceImage.scale, orientation: .up)
     }
 
     private func clampOffset(_ proposed: CGSize, imageSize: CGSize, cropRect: CGRect, canvasSize: CGSize, scale: CGFloat) -> CGSize {
