@@ -13,7 +13,6 @@ struct PlayQuestView: View {
     @State private var showSignIn = false
     @State private var showToast = false
     @State private var toastMessage = ""
-    @State private var hasObservedInitialJoined = false
     
     init(quest: Quest) {
         _viewModel = StateObject(wrappedValue: PlayQuestViewModel(quest: quest))
@@ -52,7 +51,6 @@ struct PlayQuestView: View {
         .background(Color(.systemBackground))
         .task(id: auth.currentUser?.id) {
             viewModel.refreshJoinedState(for: auth.currentUser?.id)
-            hasObservedInitialJoined = false
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -122,11 +120,6 @@ struct PlayQuestView: View {
             .presentationDetents([.fraction(0.35), .medium])
         }
         .onChange(of: viewModel.isJoined) { oldValue, newValue in
-            // Suppress toast on first load/initial state observation
-            if hasObservedInitialJoined == false {
-                hasObservedInitialJoined = true
-                return
-            }
             // Only show a toast when the state meaningfully changes
             if newValue == true && oldValue == false {
                 showToast(with: "Joined quest!")
