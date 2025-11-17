@@ -130,7 +130,9 @@ final class PlayQuestViewModel: ObservableObject {
     func leaveQuest(currentUser: QHUser?) {
         print("Leaving quest")
         guard let questID = quest.id,
-              let userId = currentUser?.id else { return }
+              let userId = currentUser?.id else {
+            return
+        }
         QuestService.shared.leaveQuest(questId: questID, userId: userId) { [weak self] result in
             switch result {
             case .success():
@@ -148,4 +150,3 @@ final class PlayQuestViewModel: ObservableObject {
     }
     
 }
-

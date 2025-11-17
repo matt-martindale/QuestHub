@@ -11,6 +11,9 @@ struct PlayQuestView: View {
     @EnvironmentObject private var auth: QHAuth
     @StateObject private var viewModel: PlayQuestViewModel
     @State private var showSignIn = false
+    @State private var showToast = false
+    @State private var toastMessage = ""
+    @State private var hasObservedInitialJoined = false
     
     init(quest: Quest) {
         _viewModel = StateObject(wrappedValue: PlayQuestViewModel(quest: quest))
@@ -34,10 +37,6 @@ struct PlayQuestView: View {
                 descriptionCard
                     .padding(.horizontal)
                     .padding(.top, 16)
-                
-//                actions
-//                    .padding(.horizontal)
-//                    .padding(.top, 16)
 
                 challengesSection
                     .padding(.horizontal)
@@ -53,6 +52,7 @@ struct PlayQuestView: View {
         .background(Color(.systemBackground))
         .task(id: auth.currentUser?.id) {
             viewModel.refreshJoinedState(for: auth.currentUser?.id)
+            hasObservedInitialJoined = false
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -120,6 +120,32 @@ struct PlayQuestView: View {
             }
             .padding()
             .presentationDetents([.fraction(0.35), .medium])
+        }
+        .onChange(of: viewModel.isJoined) { oldValue, newValue in
+            // Suppress toast on first load/initial state observation
+            if hasObservedInitialJoined == false {
+                hasObservedInitialJoined = true
+                return
+            }
+            // Only show a toast when the state meaningfully changes
+            if newValue == true && oldValue == false {
+                showToast(with: "Joined quest")
+            } else if newValue == false && oldValue == true {
+                showToast(with: "Left quest")
+            }
+        }
+        .overlay(alignment: .bottom) {
+            if showToast {
+                Text(toastMessage)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 10)
+                    .background(.black.opacity(0.85), in: Capsule())
+                    .padding(.bottom, 24)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .animation(.spring(response: 0.35, dampingFraction: 0.9), value: showToast)
+            }
         }
     }
 
@@ -411,7 +437,8 @@ struct PlayQuestView: View {
             }
             
             Button {
-                viewModel.beginJoinFlow(currentUser: auth.currentUser)
+                // TODO: Implement share sheet for quest
+                showToast(with: "Share coming soon")
             } label: {
                 HStack(spacing: 10) {
                     Image(systemName: "square.and.arrow.up")
@@ -483,6 +510,19 @@ struct PlayQuestView: View {
                 .buttonStyle(.glass)
                 .accessibilityLabel("Leave this quest")
                 .accessibilityHint("Double tap to confirm and leave the quest")
+            }
+        }
+    }
+    
+    private func showToast(with message: String) {
+        toastMessage = message
+        withAnimation {
+            showToast = true
+        }
+        // Auto-dismiss after 2 seconds
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            withAnimation {
+                showToast = false
             }
         }
     }
