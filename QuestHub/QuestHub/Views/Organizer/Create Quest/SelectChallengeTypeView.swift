@@ -81,6 +81,14 @@ struct SelectChallengeTypeView: View {
                 )
                 .opacity(0)
             )
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        completion(.cancel)
+                        dismiss()
+                    }
+                }
+            }
         }
     }
 

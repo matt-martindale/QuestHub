@@ -52,10 +52,12 @@ struct CreateChallengeView: View {
             .navigationTitle(existingChallenge == nil ? "New Challenge" : "Edit Challenge")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        completion(.cancel)
-                        dismiss()
+                if existingChallenge != nil {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Cancel") {
+                            completion(.cancel)
+                            dismiss()
+                        }
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
