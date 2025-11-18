@@ -48,7 +48,10 @@ struct CreateQuestView: View {
         .onChange(of: selectedImageData, handleSelectedImageDataChange)
         .onChange(of: viewModel.didFinishSaving, handleDidFinishSavingChange)
         .onChange(of: viewModel.didFinishDeleting) { _, newValue in if newValue { dismiss() } }
-        .fullScreenCover(isPresented: $viewModel.isPresentingCreateChallenge) { createChallengeSheet }
+        .fullScreenCover(isPresented: $viewModel.isPresentingCreateChallenge) {
+            createChallengeSheet
+                .presentationDetents([.medium, .large])
+        }
         .onChange(of: viewModel.isPasswordProtected) { _, newValue in if newValue == false { viewModel.password = "" } }
         .alert("Delete this quest?", isPresented: $showDeleteConfirmation) {
             Button("Delete", role: .destructive) { viewModel.deleteQuest() }
@@ -107,11 +110,24 @@ struct CreateQuestView: View {
     }
     
     private var createChallengeSheet: some View {
-        let existing = viewModel.editingChallengeIndex.flatMap { viewModel.challenges[$0] }
-        return CreateChallengeView(challengeType: existing?.challengeType, challenge: existing) { result in
-            viewModel.handleChallengeResult(result)
+        Group {
+            let existingChallenge = viewModel.editingChallengeIndex.flatMap { index in
+                viewModel.challenges[index]
+            }
+
+            if let existingChallenge {
+                CreateChallengeView(
+                    challengeType: existingChallenge.challengeType,
+                    challenge: existingChallenge
+                ) { result in
+                    viewModel.handleChallengeResult(result)
+                }
+            } else {
+                SelectChallengeTypeView { createChallengeResult in
+                    viewModel.handleChallengeResult(createChallengeResult)
+                }
+            }
         }
-        .presentationDetents([.medium, .large])
     }
     
     private func imageCropper(for item: CroppingImage) -> some View {

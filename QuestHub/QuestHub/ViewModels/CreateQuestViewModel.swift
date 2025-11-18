@@ -123,7 +123,7 @@ final class CreateQuestViewModel: ObservableObject {
         isPresentingCreateChallenge = true
     }
 
-    func handleChallengeResult(_ result: CreateChallengeView.Result) {
+    func handleChallengeResult(_ result: CreateChallengeResult) {
         switch result {
         case .save(let newChallenge):
             if let idx = editingChallengeIndex, challenges.indices.contains(idx) {

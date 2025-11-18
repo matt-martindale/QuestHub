@@ -1,11 +1,12 @@
 import SwiftUI
 
+enum CreateChallengeResult {
+    case save(Challenge)
+    case cancel
+    case delete
+}
+
 struct CreateChallengeView: View {
-    enum Result {
-        case save(Challenge)
-        case cancel
-        case delete
-    }
 
     @Environment(\.dismiss) private var dismiss
 
@@ -14,9 +15,9 @@ struct CreateChallengeView: View {
 
     let existingChallenge: Challenge?
     let challengeType: ChallengeType?
-    let completion: (Result) -> Void
+    let completion: (CreateChallengeResult) -> Void
 
-    init(challengeType: ChallengeType?, challenge: Challenge?, completion: @escaping (Result) -> Void) {
+    init(challengeType: ChallengeType?, challenge: Challenge?, completion: @escaping (CreateChallengeResult) -> Void) {
         self._title = State(initialValue: challenge?.title ?? "")
         self._details = State(initialValue: challenge?.details ?? "")
         self.challengeType = challengeType

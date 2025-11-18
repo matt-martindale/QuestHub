@@ -8,15 +8,28 @@
 import SwiftUI
 
 // Assumptions:
-// - ChallengeType is an enum that conforms to CaseIterable & Identifiable or Hashable.
-//   If it doesn't conform yet, this view uses Hashable for selection and ForEach id: \.self.
+// - ChallengeType is an enum that conforms to Hashable.
+// - ChallengeType has associated values, so it is not CaseIterable. This view defines its own availableTypes.
 // - CreateChallengeView(challengeType:) is an existing destination view that accepts a ChallengeType.
 
 struct SelectChallengeTypeView: View {
-    let types: [ChallengeType]
+    @Environment(\.dismiss) private var dismiss
+
     // The selected type is managed locally and passed forward on confirm.
     @State private var selectedType: ChallengeType? = nil
     @State private var navigateToCreate: Bool = false
+    let completion: (CreateChallengeResult) -> Void
+    
+    init(completion: @escaping (CreateChallengeResult) -> Void) {
+        self.completion = completion
+    }
+
+    // Since ChallengeType has associated values, it cannot be CaseIterable. Provide explicit options here.
+    private let availableTypes: [ChallengeType] = [
+        .photo(PhotoData(imageURL: nil, caption: nil)),
+        .multipleChoice(MultipleChoiceData(question: nil, answers: nil, correctAnswer: nil)),
+        .question(QuestionData(question: nil, answer: nil))
+    ]
 
     var body: some View {
         NavigationStack {
@@ -28,7 +41,7 @@ struct SelectChallengeTypeView: View {
                 // Grid/List of card options
                 ScrollView {
                     LazyVStack(spacing: 12) {
-                        ForEach(types, id: \.self) { type in
+                        ForEach(availableTypes, id: \.self) { type in
                             ChallengeTypeCard(
                                 type: type,
                                 isSelected: selectedType == type
@@ -74,7 +87,19 @@ struct SelectChallengeTypeView: View {
     @ViewBuilder
     private func destinationView() -> some View {
         if let selectedType {
-            CreateChallengeView(challengeType: selectedType, challenge: nil) {_ in }
+            CreateChallengeView(challengeType: selectedType, challenge: nil) { createChallengeResult in
+                switch createChallengeResult {
+                case .save(let challenge):
+                    completion(.save(challenge))
+                    dismiss()
+                case .cancel:
+                    completion(.cancel)
+                    dismiss()
+                case .delete:
+                    completion(.delete)
+                    dismiss()
+                }
+            }
         } else {
             EmptyView()
         }
@@ -146,5 +171,6 @@ private struct ChallengeTypeCard: View {
 #Preview {
     // Supply a concrete ChallengeType for preview to fix the missing argument error.
     // Replace `.allCases.first!` with a specific case if desired, e.g., `.fitness`.
-    SelectChallengeTypeView(types: [])
+    SelectChallengeTypeView { _ in }
 }
+
