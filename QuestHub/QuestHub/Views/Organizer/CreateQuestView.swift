@@ -250,26 +250,26 @@ struct CreateQuestView: View {
             }
             .padding(.top, 4)
 
-            Toggle(isOn: $viewModel.requireSignIn) {
-                HStack(spacing: 6) {
-                    Text("Require players to sign-in")
-                    Button {
-                        showRequireSignInInfo = true
-                    } label: {
-                        Image(systemName: "questionmark.circle")
-                            .foregroundStyle(.secondary)
-                    }
-                    .buttonStyle(.plain)
-                    .help("When enabled, players must be signed in to join your quest.")
-                }
-            }
-            .padding(.trailing, 12)
-            .toggleStyle(.switch)
-            .sheet(isPresented: $showRequireSignInInfo) {
-                InfoSheetView(viewModel: InfoSheetViewModel(flow: .requireSignIn)) { showRequireSignInInfo = false }
-                    .presentationDetents([.medium])
-                    .presentationDragIndicator(.visible)
-            }
+//            Toggle(isOn: $viewModel.requireSignIn) {
+//                HStack(spacing: 6) {
+//                    Text("Require players to sign-in")
+//                    Button {
+//                        showRequireSignInInfo = true
+//                    } label: {
+//                        Image(systemName: "questionmark.circle")
+//                            .foregroundStyle(.secondary)
+//                    }
+//                    .buttonStyle(.plain)
+//                    .help("When enabled, players must be signed in to join your quest.")
+//                }
+//            }
+//            .padding(.trailing, 12)
+//            .toggleStyle(.switch)
+//            .sheet(isPresented: $showRequireSignInInfo) {
+//                InfoSheetView(viewModel: InfoSheetViewModel(flow: .requireSignIn)) { showRequireSignInInfo = false }
+//                    .presentationDetents([.medium])
+//                    .presentationDragIndicator(.visible)
+//            }
 
             Toggle(isOn: $viewModel.isPasswordProtected) {
                 HStack(spacing: 6) {
