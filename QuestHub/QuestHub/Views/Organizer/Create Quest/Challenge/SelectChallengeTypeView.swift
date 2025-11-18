@@ -49,7 +49,7 @@ struct SelectChallengeTypeView: View {
                             }
                         }
                     }
-                    .padding(.vertical, 4)
+                    .padding(4)
                 }
 
                 // Confirm button

@@ -28,7 +28,9 @@ struct CreateChallengeView: View {
     var body: some View {
         NavigationStack {
             Text(challengeTypeTitle())
-                .font(.title2)
+                .font(.title2.weight(.semibold))
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(16)
             Form {
                 Section(header: Text("Title")) {
                     TextField("Ex: Find the red leaf", text: $title)

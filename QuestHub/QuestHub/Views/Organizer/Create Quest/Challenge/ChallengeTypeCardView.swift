@@ -16,10 +16,10 @@ struct ChallengeTypeCardView: View {
         Button(action: onTap) {
             VStack(spacing: 8) {
                 Image(systemName: iconName(for: type))
-                    .font(.system(size: 28, weight: .semibold))
+                    .font(.system(size: 28, weight: .medium))
                     .foregroundStyle(Color.accentColor)
                 Text(title(for: type))
-                    .font(.headline)
+                    .font(.title3)
                     .foregroundStyle(.primary)
                     .multilineTextAlignment(.center)
                 if let subtitle = subtitle(for: type) {
@@ -38,7 +38,7 @@ struct ChallengeTypeCardView: View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .stroke(isSelected ? Color.accentColor : Color.gray.opacity(0.2), lineWidth: isSelected ? 2 : 1)
+                    .stroke(isSelected ? Color.accentColor : Color.gray.opacity(0.2), lineWidth: isSelected ? 3 : 1)
             )
             .aspectRatio(1, contentMode: .fit)
             .contentShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
@@ -62,7 +62,16 @@ struct ChallengeTypeCardView: View {
     }
 
     private func subtitle(for type: ChallengeType) -> String? {
-        nil
+        switch type {
+        case .photo:
+            return "Submit a photo"
+        case .question:
+            return "Answer question with a specific answer"
+        case .multipleChoice:
+            return "Select answer from multiple options"
+        case .prompt:
+            return "Respond with any answer"
+        }
     }
 
     private func iconName(for type: ChallengeType) -> String {
@@ -80,7 +89,15 @@ struct ChallengeTypeCardView: View {
 }
 
 #Preview {
-    ChallengeTypeCardView(type: .multipleChoice(MultipleChoiceData()), isSelected: true) {}
-    ChallengeTypeCardView(type: .photo(PhotoData()), isSelected: false) {}
-    ChallengeTypeCardView(type: .question(QuestionData()), isSelected: true) {}
+    HStack {
+        VStack {
+            ChallengeTypeCardView(type: .multipleChoice(MultipleChoiceData()), isSelected: true) {}
+            ChallengeTypeCardView(type: .photo(PhotoData()), isSelected: false) {}
+        }
+        VStack {
+            ChallengeTypeCardView(type: .question(QuestionData()), isSelected: true) {}
+            ChallengeTypeCardView(type: .prompt(PromptData()), isSelected: false) {}
+        }
+    }
+    .padding()
 }
