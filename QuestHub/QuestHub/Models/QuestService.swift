@@ -27,6 +27,50 @@ final class QuestService {
     private func playerRef(questId: String, userId: String) -> DocumentReference {
         questRef(questId).collection("players").document(userId)
     }
+    
+    // Encodes an array of Challenge models into Firestore-friendly dictionaries
+    private func encodeChallenges(_ challenges: [Challenge]) -> [[String: Any]] {
+        return challenges.map { ch in
+            let typeDict: [String: Any] = {
+                switch ch.challengeType {
+                case .photo(let payload):
+                    return [
+                        "kind": "photo",
+                        "data": [
+                            "imageURL": payload.imageURL ?? "",
+                            "caption": payload.caption ?? ""
+                        ]
+                    ]
+                case .multipleChoice(let payload):
+                    return [
+                        "kind": "multipleChoice",
+                        "data": [
+                            "question": payload.question ?? "",
+                            "answers": payload.answers ?? [],
+                            "correctAnswer": payload.correctAnswer ?? ""
+                        ]
+                    ]
+                case .question(let payload):
+                    return [
+                        "kind": "question",
+                        "data": [
+                            "question": payload.question ?? "",
+                            "answer": payload.answer ?? ""
+                        ]
+                    ]
+                }
+            }()
+
+            return [
+                "id": ch.id ?? "",
+                "title": ch.title ?? "",
+                "details": ch.details ?? "",
+                "points": ch.points ?? 0,
+                "completed": ch.completed ?? false,
+                "challengeType": typeDict
+            ]
+        }
+    }
 
     // MARK: - Quest methods
     @discardableResult
@@ -34,14 +78,7 @@ final class QuestService {
         let questsCollection = db.collection("quests")
 
         // Helper to encode challenges
-        let encodedChallenges: [[String: Any]] = (quest.challenges ?? []).map { ch in
-            return [
-                "id": ch.id ?? "",
-                "title": ch.title ?? "",
-                "details": ch.details ?? "",
-                "points": ch.points ?? 0
-            ]
-        }
+        let encodedChallenges: [[String: Any]] = self.encodeChallenges(quest.challenges ?? [])
 
         // Determine if this is an update by presence of a Firestore documentID
         let isUpdating = (quest.id?.isEmpty == false)
@@ -519,3 +556,4 @@ final class QuestService {
         }
     }
 }
+

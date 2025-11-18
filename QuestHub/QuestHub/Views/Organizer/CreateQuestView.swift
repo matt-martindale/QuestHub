@@ -198,7 +198,7 @@ struct CreateQuestView: View {
         }) {
             ForEach(viewModel.challenges.indices, id: \.self) { index in
                 let challenge = viewModel.challenges[index]
-                ChallengeRowView(challenge: challenge) {
+                CreateChallengeRowView(challenge: challenge) {
                     viewModel.beginEditChallenge(at: index)
                 }
             }
