@@ -58,6 +58,14 @@ final class QuestService {
                             "answer": payload.answer ?? ""
                         ]
                     ]
+                case .prompt(let payload):
+                    return [
+                        "kind": "prompt",
+                        "data": [
+                            "prompt": payload.prompt ?? "",
+                            "answer": payload.answer ?? ""
+                        ]
+                    ]
                 }
             }()
 

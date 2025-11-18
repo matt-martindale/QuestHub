@@ -10,7 +10,6 @@ import SwiftUI
 struct SelectChallengeTypeView: View {
     @Environment(\.dismiss) private var dismiss
 
-    // The selected type is managed locally and passed forward on confirm.
     @State private var selectedType: ChallengeType? = nil
     @State private var navigateToCreate: Bool = false
     let completion: (CreateChallengeResult) -> Void
@@ -19,11 +18,11 @@ struct SelectChallengeTypeView: View {
         self.completion = completion
     }
 
-    // Since ChallengeType has associated values, it cannot be CaseIterable. Provide explicit options here.
     private let availableTypes: [ChallengeType] = [
         .photo(PhotoData(imageURL: nil, caption: nil)),
         .multipleChoice(MultipleChoiceData(question: nil, answers: nil, correctAnswer: nil)),
-        .question(QuestionData(question: nil, answer: nil))
+        .question(QuestionData(question: nil, answer: nil)),
+        .prompt(PromptData(prompt: nil, answer: nil))
     ]
 
     var body: some View {

@@ -11,6 +11,7 @@ enum ChallengeType: Hashable {
     case photo(PhotoData)
     case multipleChoice(MultipleChoiceData)
     case question(QuestionData)
+    case prompt(PromptData)
 }
 
 struct Challenge: Codable, Identifiable, Hashable {
@@ -71,7 +72,7 @@ struct Challenge: Codable, Identifiable, Hashable {
 
 extension ChallengeType: Codable {
     private enum CodingKeys: String, CodingKey { case kind, data }
-    private enum Kind: String, Codable { case photo, multipleChoice, question }
+    private enum Kind: String, Codable { case photo, multipleChoice, question, prompt }
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
@@ -84,6 +85,9 @@ extension ChallengeType: Codable {
             try container.encode(payload, forKey: .data)
         case .question(let payload):
             try container.encode(Kind.question, forKey: .kind)
+            try container.encode(payload, forKey: .data)
+        case .prompt(let payload):
+            try container.encode(Kind.prompt, forKey: .kind)
             try container.encode(payload, forKey: .data)
         }
     }
@@ -101,6 +105,9 @@ extension ChallengeType: Codable {
         case .question:
             let payload = try container.decode(QuestionData.self, forKey: .data)
             self = .question(payload)
+        case .prompt:
+            let payload = try container.decode(PromptData.self, forKey: .data)
+            self = .prompt(payload)
         }
     }
 }
@@ -121,3 +128,7 @@ struct QuestionData: Codable, Hashable {
     var answer: String?
 }
 
+struct PromptData: Codable, Hashable {
+    var prompt: String?
+    var answer: String?
+}

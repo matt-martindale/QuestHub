@@ -56,6 +56,8 @@ struct ChallengeTypeCardView: View {
             return "Question"
         case .multipleChoice(_):
             return "Multiple Choice"
+        case .prompt(_):
+            return "Prompt"
         }
     }
 
@@ -68,9 +70,11 @@ struct ChallengeTypeCardView: View {
         case .photo:
             return "camera"
         case .question:
-            return "text.bubble"
+            return "bubble.left.and.text.bubble.right"
         case .multipleChoice:
             return "list.bullet.rectangle"
+        case .prompt:
+            return "text.bubble"
         }
     }
 }

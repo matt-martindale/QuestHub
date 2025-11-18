@@ -41,6 +41,7 @@ struct CreateChallengeRowView: View {
         case .photo: return "camera.fill"
         case .multipleChoice: return "list.bullet.rectangle.portrait.fill"
         case .question: return "questionmark.circle.fill"
+        case .prompt: return "text.bubble"
         }
     }
 
@@ -49,6 +50,7 @@ struct CreateChallengeRowView: View {
         case .photo: return "Photo challenge"
         case .multipleChoice: return "Multiple choice"
         case .question: return "Question"
+        case .prompt: return "Prompt"
         }
     }
 }

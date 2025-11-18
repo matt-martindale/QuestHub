@@ -27,6 +27,8 @@ struct CreateChallengeView: View {
 
     var body: some View {
         NavigationStack {
+            Text(challengeTypeTitle())
+                .font(.title2)
             Form {
                 Section(header: Text("Title")) {
                     TextField("Ex: Find the red leaf", text: $title)
@@ -77,6 +79,22 @@ struct CreateChallengeView: View {
             }
         }
     }
+    
+    private func challengeTypeTitle() -> String {
+        switch challengeType {
+        case .photo(_):
+            "Photo"
+        case .multipleChoice(_):
+            "Multiple choice"
+        case .question(_):
+            "Question"
+        case .prompt(_):
+            "Prompt"
+        case nil:
+            "Challenge"
+        }
+    }
+    
 }
 
 #Preview {
