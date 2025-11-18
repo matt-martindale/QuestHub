@@ -35,7 +35,10 @@ struct SelectChallengeTypeView: View {
 
                 // Grid/List of card options
                 ScrollView {
-                    LazyVStack(spacing: 12) {
+                    LazyVGrid(columns: [
+                        GridItem(.flexible(), spacing: 16),
+                        GridItem(.flexible(), spacing: 16)
+                    ], spacing: 16) {
                         ForEach(availableTypes, id: \.self) { type in
                             ChallengeTypeCardView(
                                 type: type,
@@ -112,4 +115,3 @@ struct SelectChallengeTypeView: View {
 #Preview {
     SelectChallengeTypeView { _ in }
 }
-

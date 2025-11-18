@@ -14,34 +14,24 @@ struct ChallengeTypeCardView: View {
 
     var body: some View {
         Button(action: onTap) {
-            HStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(title(for: type))
-                        .font(.headline)
-                        .foregroundStyle(.primary)
-                    if let subtitle = subtitle(for: type) {
-                        Text(subtitle)
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                Spacer()
-                if isSelected {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(.white)
-                        .font(.title3)
-                        .padding(6)
-                        .background(Circle().fill(Color.accentColor))
-                        .accessibilityLabel("Selected")
-                } else {
-                    Image(systemName: "circle")
-                        .foregroundStyle(.tertiary)
-                        .font(.title3)
-                        .accessibilityHidden(true)
+            VStack(spacing: 8) {
+                Image(systemName: iconName(for: type))
+                    .font(.system(size: 28, weight: .semibold))
+                    .foregroundStyle(Color.accentColor)
+                Text(title(for: type))
+                    .font(.headline)
+                    .foregroundStyle(.primary)
+                    .multilineTextAlignment(.center)
+                if let subtitle = subtitle(for: type) {
+                    Text(subtitle)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
                 }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             .padding(16)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity, alignment: .topLeading)
             .background(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .fill(isSelected ? Color.accentColor.opacity(0.12) : Color(.secondarySystemBackground))
@@ -50,6 +40,7 @@ struct ChallengeTypeCardView: View {
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .stroke(isSelected ? Color.accentColor : Color.gray.opacity(0.2), lineWidth: isSelected ? 2 : 1)
             )
+            .aspectRatio(1, contentMode: .fit)
             .contentShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         }
         .buttonStyle(.plain)
@@ -58,11 +49,29 @@ struct ChallengeTypeCardView: View {
     }
 
     private func title(for type: ChallengeType) -> String {
-        String(describing: type).capitalized
+        switch type {
+        case .photo(_):
+            return "Photo"
+        case .question(_):
+            return "Question"
+        case .multipleChoice(_):
+            return "Multiple Choice"
+        }
     }
 
     private func subtitle(for type: ChallengeType) -> String? {
         nil
+    }
+
+    private func iconName(for type: ChallengeType) -> String {
+        switch type {
+        case .photo:
+            return "camera"
+        case .question:
+            return "text.bubble"
+        case .multipleChoice:
+            return "list.bullet.rectangle"
+        }
     }
 }
 
