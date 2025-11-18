@@ -114,6 +114,7 @@ extension ChallengeType: Codable {
 
 struct PhotoData: Codable, Hashable {
     var imageURL: String?
+    var prompt: String?
     var caption: String?
 }
 
