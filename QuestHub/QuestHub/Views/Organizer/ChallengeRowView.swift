@@ -6,7 +6,15 @@ struct ChallengeRowView: View {
 
     var body: some View {
         Button(action: onTap) {
-            HStack(alignment: .firstTextBaseline) {
+            HStack(alignment: .center, spacing: 12) {
+                ZStack {
+                    Circle()
+                        .stroke(Color.qhPrimaryBlue.opacity(0.6), lineWidth: 2)
+                    Text(String(challenge.points ?? 0))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(Color.qhPrimaryBlue)
+                }
+                .frame(width: 32, height: 32)
                 VStack(alignment: .leading, spacing: 4) {
                     Text(challenge.title ?? "Title missing")
                         .font(.body)
@@ -29,6 +37,7 @@ struct ChallengeRowView: View {
     }
 }
 
-//#Preview {
-//    ChallengeRowView(challenge: Challenge(title: "Thanksgiving hunt", details: "Find the turkey", points: 30, challengeType: .question(QuestionData(prompt: "What is your name", answer: "Matt")))) {}
-//}
+#Preview {
+    ChallengeRowView(challenge: Challenge(id: "id", title: "Not completed", details: "", points: 5, completed: false)) {}
+    ChallengeRowView(challenge: Challenge(id: "id", title: "Completed", details: "Details", points: 10, completed: true)) {}
+}

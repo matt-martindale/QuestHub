@@ -46,7 +46,7 @@ struct PhotoData: Codable, Hashable {
 struct MultipleChoiceData: Codable, Hashable {
     var prompt: String?
     var anwers: [String]?
-    var correctAnswer: Int?
+    var correctAnswer: String?
 }
 
 struct QuestionData: Codable, Hashable {
