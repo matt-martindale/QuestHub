@@ -7,6 +7,12 @@
 
 import Foundation
 
+enum ChallengeType: Hashable {
+    case photo(PhotoData)
+    case multipleChoice(MultipleChoiceData)
+    case question(QuestionData)
+}
+
 struct Challenge: Codable, Identifiable, Hashable {
     let id: String?
     var title: String?
@@ -61,15 +67,9 @@ struct Challenge: Codable, Identifiable, Hashable {
         try container.encodeIfPresent(completed, forKey: .completed)
         try container.encode(challengeType, forKey: .challengeType)
     }
-
-    enum ChallengeType: Hashable {
-        case photo(PhotoData)
-        case multipleChoice(MultipleChoiceData)
-        case question(QuestionData)
-    }
 }
 
-extension Challenge.ChallengeType: Codable {
+extension ChallengeType: Codable {
     private enum CodingKeys: String, CodingKey { case kind, data }
     private enum Kind: String, Codable { case photo, multipleChoice, question }
 

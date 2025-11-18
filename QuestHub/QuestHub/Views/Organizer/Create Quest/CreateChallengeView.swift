@@ -13,11 +13,13 @@ struct CreateChallengeView: View {
     @State private var details: String
 
     let existingChallenge: Challenge?
+    let challengeType: ChallengeType?
     let completion: (Result) -> Void
 
-    init(challenge: Challenge?, completion: @escaping (Result) -> Void) {
+    init(challengeType: ChallengeType?, challenge: Challenge?, completion: @escaping (Result) -> Void) {
         self._title = State(initialValue: challenge?.title ?? "")
         self._details = State(initialValue: challenge?.details ?? "")
+        self.challengeType = challengeType
         self.existingChallenge = challenge
         self.completion = completion
     }
@@ -62,7 +64,7 @@ struct CreateChallengeView: View {
                             title: title.trimmingCharacters(in: .whitespacesAndNewlines),
                             details: details.trimmingCharacters(in: .whitespacesAndNewlines),
                             points: 30,
-                            challengeType: .question(QuestionData(prompt: "", answer: ""))
+                            challengeType: .question(QuestionData(question: "", answer: ""))
                         )
                         completion(.save(challenge))
                         dismiss()
@@ -75,5 +77,5 @@ struct CreateChallengeView: View {
 }
 
 #Preview {
-    CreateChallengeView(challenge: nil) { _ in }
+    CreateChallengeView(challengeType: ChallengeType.question(QuestionData()), challenge: nil) { _ in }
 }
