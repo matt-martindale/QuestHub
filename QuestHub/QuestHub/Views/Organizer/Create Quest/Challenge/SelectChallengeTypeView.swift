@@ -7,11 +7,6 @@
 
 import SwiftUI
 
-// Assumptions:
-// - ChallengeType is an enum that conforms to Hashable.
-// - ChallengeType has associated values, so it is not CaseIterable. This view defines its own availableTypes.
-// - CreateChallengeView(challengeType:) is an existing destination view that accepts a ChallengeType.
-
 struct SelectChallengeTypeView: View {
     @Environment(\.dismiss) private var dismiss
 
@@ -42,7 +37,7 @@ struct SelectChallengeTypeView: View {
                 ScrollView {
                     LazyVStack(spacing: 12) {
                         ForEach(availableTypes, id: \.self) { type in
-                            ChallengeTypeCard(
+                            ChallengeTypeCardView(
                                 type: type,
                                 isSelected: selectedType == type
                             ) {
@@ -114,71 +109,7 @@ struct SelectChallengeTypeView: View {
     }
 }
 
-private struct ChallengeTypeCard: View {
-    let type: ChallengeType
-    let isSelected: Bool
-    let onTap: () -> Void
-
-    var body: some View {
-        Button(action: onTap) {
-            HStack(spacing: 12) {
-                // Optional icon/title derived from type; replace with your own mapping as needed
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(title(for: type))
-                        .font(.headline)
-                        .foregroundStyle(.primary)
-                    if let subtitle = subtitle(for: type) {
-                        Text(subtitle)
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                Spacer()
-                if isSelected {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(.white)
-                        .font(.title3)
-                        .padding(6)
-                        .background(Circle().fill(Color.accentColor))
-                        .accessibilityLabel("Selected")
-                } else {
-                    Image(systemName: "circle")
-                        .foregroundStyle(.tertiary)
-                        .font(.title3)
-                        .accessibilityHidden(true)
-                }
-            }
-            .padding(16)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(isSelected ? Color.accentColor.opacity(0.12) : Color(.secondarySystemBackground))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .stroke(isSelected ? Color.accentColor : Color.gray.opacity(0.2), lineWidth: isSelected ? 2 : 1)
-            )
-            .contentShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-        }
-        .buttonStyle(.plain)
-        .accessibilityElement(children: .combine)
-        .accessibilityAddTraits(isSelected ? .isSelected : [])
-    }
-
-    private func title(for type: ChallengeType) -> String {
-        // Provide readable titles per type. Adjust as needed based on your enum.
-        String(describing: type).capitalized
-    }
-
-    private func subtitle(for type: ChallengeType) -> String? {
-        // Optional helper for subtitles per type.
-        nil
-    }
-}
-
 #Preview {
-    // Supply a concrete ChallengeType for preview to fix the missing argument error.
-    // Replace `.allCases.first!` with a specific case if desired, e.g., `.fitness`.
     SelectChallengeTypeView { _ in }
 }
 
