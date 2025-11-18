@@ -35,7 +35,9 @@ struct PlayerHubView: View {
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-
+            }
+            .overlay(alignment: .bottom) {
+                // Search Quest overlay with clear background
                 NavigationLink {
                     SearchQuestView()
                 } label: {
@@ -45,7 +47,8 @@ struct PlayerHubView: View {
                         .background(Color.clear)
                         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
-                .padding()
+                .padding(.horizontal, 30)
+                .padding(.bottom)
                 .buttonStyle(.glass)
                 .shadow(color: Color.qhPrimaryBlue.opacity(0.25), radius: 8, x: 0, y: 0)
             }
@@ -206,3 +209,4 @@ struct PlayerHubView: View {
     PlayerHubView()
         .environmentObject(QHAuth())
 }
+

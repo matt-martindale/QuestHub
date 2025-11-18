@@ -161,7 +161,7 @@ struct OrganizerHubView: View {
                 .shadow(color: Color.qhPrimaryBlue.opacity(0.25), radius: 8, x: 0, y: 0)
             }
         }
-        .padding(.horizontal)
+        .padding(.horizontal, 30)
         .padding(.bottom)
     }
 
