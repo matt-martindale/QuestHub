@@ -71,7 +71,7 @@ struct CreateChallengeView: View {
                             title: title.trimmingCharacters(in: .whitespacesAndNewlines),
                             details: details.trimmingCharacters(in: .whitespacesAndNewlines),
                             points: 30,
-                            challengeType: .question(QuestionData(question: "", answer: ""))
+                            challengeType: challengeType ?? .question(QuestionData(question: "", answer: ""))
                         )
                         completion(.save(challenge))
                         dismiss()
