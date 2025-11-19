@@ -74,6 +74,22 @@ final class CreateChallengeViewModel: ObservableObject {
         }
     }
 
+    // A non-publishing, derived title based on the selected challenge type
+    var derivedTitle: String {
+        switch challengeType {
+        case .photo:
+            return photoPrompt.trimmingCharacters(in: .whitespacesAndNewlines)
+        case .multipleChoice:
+            return mcQuestion.trimmingCharacters(in: .whitespacesAndNewlines)
+        case .question:
+            return qQuestion.trimmingCharacters(in: .whitespacesAndNewlines)
+        case .prompt:
+            return promptText.trimmingCharacters(in: .whitespacesAndNewlines)
+        case .none:
+            return title.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+    }
+
     var navigationTitle: String { existingChallenge == nil ? "New Challenge" : "Edit Challenge" }
     var typeTitle: String {
         switch challengeType {
@@ -119,7 +135,7 @@ final class CreateChallengeViewModel: ObservableObject {
         }()
         return Challenge(
             id: existingChallenge?.id ?? UUID().uuidString,
-            title: title.trimmingCharacters(in: .whitespacesAndNewlines),
+            title: derivedTitle.isEmpty ? title.trimmingCharacters(in: .whitespacesAndNewlines) : derivedTitle,
             details: details.trimmingCharacters(in: .whitespacesAndNewlines),
             points: 30,
             challengeType: builtType
