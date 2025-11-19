@@ -38,7 +38,8 @@ final class QuestService {
                         "kind": "photo",
                         "data": [
                             "imageURL": payload.imageURL ?? "",
-                            "caption": payload.caption ?? ""
+                            "caption": payload.caption ?? "",
+                            "prompt": payload.prompt ?? ""
                         ]
                     ]
                 case .multipleChoice(let payload):
@@ -55,6 +56,14 @@ final class QuestService {
                         "kind": "question",
                         "data": [
                             "question": payload.question ?? "",
+                            "answer": payload.answer ?? ""
+                        ]
+                    ]
+                case .prompt(let payload):
+                    return [
+                        "kind": "prompt",
+                        "data": [
+                            "prompt": payload.prompt ?? "",
                             "answer": payload.answer ?? ""
                         ]
                     ]
