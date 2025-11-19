@@ -17,16 +17,19 @@ struct CreateChallengeRowView: View {
                 .frame(width: 40, height: 40)
                 VStack(alignment: .leading, spacing: 4) {
                     Text(challenge.title ?? "Title missing")
-                        .font(.body)
+                        .font(.subheadline)
                         .foregroundStyle(.primary)
                     if let details = challenge.details, !details.isEmpty {
                         Text(details)
-                            .font(.subheadline)
+                            .font(.footnote)
                             .foregroundStyle(.secondary)
                             .lineLimit(2)
                     }
                 }
                 Spacer()
+                Text(String(challenge.points ?? 0) + " pts")
+                    .font(.footnote)
+                    .foregroundStyle(.primary)
                 Image(systemName: "chevron.right")
                     .foregroundStyle(.tertiary)
             }

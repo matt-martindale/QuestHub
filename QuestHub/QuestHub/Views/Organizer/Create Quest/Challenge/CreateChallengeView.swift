@@ -106,7 +106,7 @@ struct CreateChallengeView: View {
                 TextField("Enter question", text: $viewModel.qQuestion)
                     .textInputAutocapitalization(.sentences)
             }
-            Section(header: Text("Answer")) {
+            Section(header: Text("Answer (case-insensitive)")) {
                 TextField("Enter answer", text: $viewModel.qAnswer)
                     .textInputAutocapitalization(.sentences)
             }
