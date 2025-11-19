@@ -564,5 +564,32 @@ final class QuestService {
             }
         }
     }
-}
+    
+    /// Updates the quest's status using a raw string value.
+    /// - Parameters:
+    ///   - questId: The Firestore quest document ID to update.
+    ///   - statusString: The new status raw value (case-insensitive) that maps to `QuestStatus`.
+    ///   - completion: Completion handler returning the updated `QuestStatus` on success or an `Error` on failure.
+    func updateQuestStatus(questId: String,
+                           statusString: String,
+                           completion: @escaping (Result<QuestStatus, Error>) -> Void) {
+        // Normalize input and map to QuestStatus
+        let normalized = statusString.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        guard let newStatus = QuestStatus(rawValue: normalized) else {
+            completion(.failure(NSError(domain: "QuestService", code: 422, userInfo: [NSLocalizedDescriptionKey: "Invalid quest status: \(statusString)"])) )
+            return
+        }
 
+        let ref = questRef(questId)
+        ref.updateData([
+            "status": newStatus.rawValue,
+            "updatedAt": Date()
+        ]) { error in
+            if let error = error {
+                completion(.failure(error))
+            } else {
+                completion(.success(newStatus))
+            }
+        }
+    }
+}

@@ -13,6 +13,8 @@ struct OrganizerQuestView: View {
     @State private var showSignIn = false
     @State private var showToast = false
     @State private var toastMessage = ""
+    @State private var showStatusPicker = false
+    @State private var selectedStatus: QuestStatus = .active
     
     init(quest: Quest) {
         _viewModel = StateObject(wrappedValue: OrganizerQuestViewModel(quest: quest))
@@ -48,6 +50,20 @@ struct OrganizerQuestView: View {
                     .transition(.move(edge: .bottom).combined(with: .opacity))
                     .animation(.spring(response: 0.35, dampingFraction: 0.9), value: showToast)
             }
+        }
+        .sheet(isPresented: $showStatusPicker) {
+            StatusPickerSheet(
+                current: viewModel.quest.status ?? .active,
+                selection: $selectedStatus,
+                onCancel: { showStatusPicker = false },
+                onConfirm: {
+                    viewModel.status = selectedStatus
+                    viewModel.updateQuestStatus()
+                    showStatusPicker = false
+                }
+            )
+            .presentationDetents([.height(260)])
+            .presentationDragIndicator(.visible)
         }
     }
     
@@ -288,8 +304,8 @@ struct OrganizerQuestView: View {
     private var updateQuestStatus: some View {
         HStack(spacing: 12) {
             Button {
-                // update quest status
-                showToast(with: "Quest status updated")
+                selectedStatus = viewModel.quest.status ?? .active
+                showStatusPicker = true
             } label: {
                 HStack(spacing: 10) {
                     Image(systemName: "wand.and.sparkles")
@@ -315,6 +331,52 @@ struct OrganizerQuestView: View {
         }
     }
     
+}
+
+private struct StatusPickerSheet: View {
+    let current: QuestStatus
+    @Binding var selection: QuestStatus
+    let onCancel: () -> Void
+    let onConfirm: () -> Void
+
+    var body: some View {
+        VStack(spacing: 16) {
+
+            Text("Update Quest Status")
+                .font(.headline)
+
+            Picker("Status", selection: $selection) {
+                ForEach(QuestStatus.allCases, id: \.self) { status in
+                    Text(status.displayTitle)
+                        .fontWeight(status == current ? .semibold : .regular)
+                        .foregroundStyle(status == current ? Color.qhPrimaryBlue : .primary)
+                        .tag(status)
+                }
+            }
+            .pickerStyle(.segmented)
+
+            HStack {
+                Button("Cancel", action: onCancel)
+                    .buttonStyle(.bordered)
+                Spacer()
+                Button("Update") { onConfirm() }
+                    .buttonStyle(.borderedProminent)
+            }
+            .padding(.horizontal)
+            .padding(.bottom)
+        }
+        .padding(.horizontal)
+    }
+}
+
+private extension QuestStatus {
+    var displayTitle: String {
+        switch self {
+        case .active: return "Active"
+        case .paused: return "Paused"
+        case .closed: return "Closed"
+        }
+    }
 }
 
 #Preview {

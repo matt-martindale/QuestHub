@@ -11,6 +11,7 @@ import Combine
 @MainActor
 final class OrganizerQuestViewModel: ObservableObject {
     @Published var quest: Quest
+    @Published var status: QuestStatus?
     
     init(quest: Quest) {
         self.quest = quest
@@ -27,5 +28,17 @@ final class OrganizerQuestViewModel: ObservableObject {
             return url
         }
         return nil
+    }
+    
+    func updateQuestStatus() {
+        guard let questId = quest.id , let status = status?.rawValue else { return }
+        QuestService.shared.updateQuestStatus(questId: questId, statusString: status) { result in
+            switch result {
+            case .success(let status):
+                print("Updated status to:", status)
+            case .failure(let error):
+                print("Failed to update status:", error)
+            }
+        }
     }
 }

@@ -8,7 +8,7 @@
 import Foundation
 import FirebaseFirestore
 
-enum QuestStatus: String, Codable {
+enum QuestStatus: String, Codable, CaseIterable {
     case active
     case paused
     case closed
