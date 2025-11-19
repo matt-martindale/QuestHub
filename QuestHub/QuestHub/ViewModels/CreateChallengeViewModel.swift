@@ -20,6 +20,7 @@ final class CreateChallengeViewModel: ObservableObject {
     @Published var qQuestion: String = ""
     @Published var qAnswer: String = ""
     @Published var promptText: String = ""
+    @Published var points: Int = 10
 
     let existingChallenge: Challenge?
     let challengeType: ChallengeType?
@@ -29,6 +30,7 @@ final class CreateChallengeViewModel: ObservableObject {
         self.details = challenge?.details ?? ""
         self.challengeType = challengeType
         self.existingChallenge = challenge
+        self.points = challenge?.points ?? 10
 
         switch challengeType {
         case .photo(let data):
@@ -152,8 +154,9 @@ final class CreateChallengeViewModel: ObservableObject {
             id: existingChallenge?.id ?? UUID().uuidString,
             title: derivedTitle.isEmpty ? title.trimmingCharacters(in: .whitespacesAndNewlines) : derivedTitle,
             details: derivedDetail,
-            points: 30,
+            points: points,
             challengeType: builtType
         )
     }
 }
+

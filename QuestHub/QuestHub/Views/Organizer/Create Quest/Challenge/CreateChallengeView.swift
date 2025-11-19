@@ -20,7 +20,19 @@ struct CreateChallengeView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(16)
             Form {
-                // Type-specific form content
+                VStack {
+                    Text("Points")
+                        .font(.subheadline.weight(.semibold))
+                    Picker("Points", selection: $viewModel.points) {
+                        Text("5").tag(5)
+                        Text("10").tag(10)
+                        Text("15").tag(15)
+                        Text("30").tag(30)
+                    }
+                    .pickerStyle(.segmented)
+                }
+                .padding(.horizontal, 16)
+                .padding(.bottom, 8)
                 typeSpecificForm()
                 if viewModel.existingChallenge != nil {
                     Section {
@@ -123,6 +135,6 @@ struct CreateChallengeView: View {
 
 #Preview {
     CreateChallengeView(challengeType: ChallengeType.question(QuestionData()), challenge: nil) { _ in }
-    CreateChallengeView(challengeType: ChallengeType.prompt(PromptData()), challenge: nil) { _ in }
+//    CreateChallengeView(challengeType: ChallengeType.prompt(PromptData()), challenge: nil) { _ in }
 }
 
