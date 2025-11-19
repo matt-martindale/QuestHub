@@ -50,7 +50,7 @@ struct CreateChallengeView: View {
                         completion(.save(challenge))
                         dismiss()
                     }
-                    .disabled(false)
+                    .disabled(viewModel.isSaveDisabled)
                 }
             }
         }
