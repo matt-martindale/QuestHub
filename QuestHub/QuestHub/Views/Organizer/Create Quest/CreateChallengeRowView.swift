@@ -60,8 +60,8 @@ struct CreateChallengeRowView: View {
         CreateChallengeRowView(
             challenge: Challenge(
                 id: "id1",
-                title: "Not completed",
-                details: "",
+                title: "Take a photo of a sunset",
+                details: "Photo",
                 points: 5,
                 completed: false,
                 challengeType: .photo(PhotoData(imageURL: nil, caption: "Take a pic"))
@@ -71,8 +71,8 @@ struct CreateChallengeRowView: View {
         CreateChallengeRowView(
             challenge: Challenge(
                 id: "id2",
-                title: "Completed",
-                details: "Details",
+                title: "Capital of Spain",
+                details: "Multiple Choice",
                 points: 10,
                 completed: true,
                 challengeType: .multipleChoice(MultipleChoiceData(question: "Pick one", answers: ["A","B","C"], correctAnswer: "B"))
@@ -82,8 +82,19 @@ struct CreateChallengeRowView: View {
         CreateChallengeRowView(
             challenge: Challenge(
                 id: "id3",
-                title: "Riddle",
-                details: "What walks on four legs in the morning...",
+                title: "What is 2+2",
+                details: "Question",
+                points: 7,
+                completed: false,
+                challengeType: .question(QuestionData(question: "Riddle", answer: "Human"))
+            )
+        ) {}
+        
+        CreateChallengeRowView(
+            challenge: Challenge(
+                id: "id3",
+                title: "Who's your favorite person",
+                details: "Prompt",
                 points: 7,
                 completed: false,
                 challengeType: .question(QuestionData(question: "Riddle", answer: "Human"))
