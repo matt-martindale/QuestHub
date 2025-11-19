@@ -69,17 +69,16 @@ final class CreateQuestViewModel: ObservableObject {
             
             // Map quest challenges to local Challenge model if available
             if let questChallenges = quest.challenges {
+                // Preserve existing challenge types and lightly normalize missing ids
                 self.challenges = questChallenges.map { qc in
-                    let title = qc.title ?? ""
-                    let details = qc.details ?? ""
-                    let points = qc.points ?? 0
-                    let id: String = qc.id ?? IDGenerator.makeShortID()
+                    let ensuredID: String = qc.id ?? IDGenerator.makeShortID()
                     return Challenge(
-                        id: id,
-                        title: title,
-                        details: details,
-                        points: points,
-                        challengeType: .question(QuestionData(question: "prompt", answer: "answer"))
+                        id: ensuredID,
+                        title: qc.title,
+                        details: qc.details,
+                        points: qc.points,
+                        completed: qc.completed ?? false,
+                        challengeType: qc.challengeType
                     )
                 }
             }
