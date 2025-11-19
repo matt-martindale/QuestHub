@@ -170,7 +170,7 @@ struct OrganizerHubView: View {
         ScrollView {
             LazyVStack(spacing: 16) {
                 ForEach(auth.createdQuests) { quest in
-                    NavigationLink(destination: PlayQuestView(quest: quest)) {
+                    NavigationLink(destination: OrganizerQuestView(quest: quest)) {
                         QuestListItemView(quest: quest) {
                             selectedQuest = quest
                             initialCoverImageData = nil
