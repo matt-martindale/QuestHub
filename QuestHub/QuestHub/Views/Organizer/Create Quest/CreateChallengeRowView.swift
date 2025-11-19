@@ -8,13 +8,13 @@ struct CreateChallengeRowView: View {
         Button(action: onTap) {
             HStack(alignment: .center, spacing: 12) {
                 ZStack {
-                    Circle()
-                        .stroke(Color.qhPrimaryBlue.opacity(0.6), lineWidth: 2)
-                    Text(String(challenge.points ?? 0))
-                        .font(.subheadline.weight(.semibold))
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(Color.primary.opacity(0.1))
+                    Image(systemName: challengeTypeIcon)
+                        .font(.title3)
                         .foregroundStyle(Color.qhPrimaryBlue)
                 }
-                .frame(width: 32, height: 32)
+                .frame(width: 40, height: 40)
                 VStack(alignment: .leading, spacing: 4) {
                     Text(challenge.title ?? "Title missing")
                         .font(.body)
@@ -38,10 +38,10 @@ struct CreateChallengeRowView: View {
 
     private var challengeTypeIcon: String {
         switch challenge.challengeType {
-        case .photo: return "camera.fill"
-        case .multipleChoice: return "list.bullet.rectangle.portrait.fill"
-        case .question: return "questionmark.circle.fill"
-        case .prompt: return "text.bubble"
+        case .photo: return "camera"
+        case .multipleChoice: return "list.bullet.rectangle.portrait"
+        case .question: return "questionmark.circle"
+        case .prompt: return "square.and.pencil"
         }
     }
 
@@ -64,7 +64,7 @@ struct CreateChallengeRowView: View {
                 details: "Photo",
                 points: 5,
                 completed: false,
-                challengeType: .photo(PhotoData(imageURL: nil, caption: "Take a pic"))
+                challengeType: .photo(PhotoData())
             )
         ) {}
 
@@ -75,7 +75,7 @@ struct CreateChallengeRowView: View {
                 details: "Multiple Choice",
                 points: 10,
                 completed: true,
-                challengeType: .multipleChoice(MultipleChoiceData(question: "Pick one", answers: ["A","B","C"], correctAnswer: "B"))
+                challengeType: .multipleChoice(MultipleChoiceData())
             )
         ) {}
 
@@ -86,7 +86,7 @@ struct CreateChallengeRowView: View {
                 details: "Question",
                 points: 7,
                 completed: false,
-                challengeType: .question(QuestionData(question: "Riddle", answer: "Human"))
+                challengeType: .question(QuestionData())
             )
         ) {}
         
@@ -97,7 +97,7 @@ struct CreateChallengeRowView: View {
                 details: "Prompt",
                 points: 7,
                 completed: false,
-                challengeType: .question(QuestionData(question: "Riddle", answer: "Human"))
+                challengeType: .prompt(PromptData())
             )
         ) {}
     }

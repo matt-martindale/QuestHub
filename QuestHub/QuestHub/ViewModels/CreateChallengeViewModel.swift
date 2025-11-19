@@ -89,6 +89,21 @@ final class CreateChallengeViewModel: ObservableObject {
             return title.trimmingCharacters(in: .whitespacesAndNewlines)
         }
     }
+    
+    var derivedDetail: String {
+        switch challengeType {
+        case .photo:
+            return "Photo"
+        case .multipleChoice:
+            return "Multiple Choice"
+        case .question:
+            return "Question"
+        case .prompt:
+            return "Prompt"
+        case .none:
+            return details.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+    }
 
     var navigationTitle: String { existingChallenge == nil ? "New Challenge" : "Edit Challenge" }
     var typeTitle: String {
@@ -136,7 +151,7 @@ final class CreateChallengeViewModel: ObservableObject {
         return Challenge(
             id: existingChallenge?.id ?? UUID().uuidString,
             title: derivedTitle.isEmpty ? title.trimmingCharacters(in: .whitespacesAndNewlines) : derivedTitle,
-            details: details.trimmingCharacters(in: .whitespacesAndNewlines),
+            details: derivedDetail,
             points: 30,
             challengeType: builtType
         )
