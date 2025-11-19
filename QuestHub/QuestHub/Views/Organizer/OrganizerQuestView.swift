@@ -58,6 +58,7 @@ struct OrganizerQuestView: View {
                 onCancel: { showStatusPicker = false },
                 onConfirm: {
                     viewModel.status = selectedStatus
+                    viewModel.quest.status = selectedStatus
                     viewModel.updateQuestStatus()
                     showStatusPicker = false
                 }
@@ -347,9 +348,16 @@ private struct StatusPickerSheet: View {
 
             Picker("Status", selection: $selection) {
                 ForEach(QuestStatus.allCases, id: \.self) { status in
-                    Text(status.displayTitle)
+                    let color: Color = {
+                        switch selection {
+                        case .active: return .green
+                        case .paused: return .yellow
+                        case .closed: return Color.qhPrimaryRed
+                        }
+                    }()
+                    return Text(status.displayTitle)
                         .fontWeight(status == current ? .semibold : .regular)
-                        .foregroundStyle(status == current ? Color.qhPrimaryBlue : .primary)
+                        .foregroundStyle(status == selection ? color : .primary)
                         .tag(status)
                 }
             }
@@ -357,10 +365,10 @@ private struct StatusPickerSheet: View {
 
             HStack {
                 Button("Cancel", action: onCancel)
-                    .buttonStyle(.bordered)
                 Spacer()
                 Button("Update") { onConfirm() }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.glassProminent)
+                    .tint(.blue)
             }
             .padding(.horizontal)
             .padding(.bottom)

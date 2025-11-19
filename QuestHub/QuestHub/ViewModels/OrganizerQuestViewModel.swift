@@ -35,7 +35,9 @@ final class OrganizerQuestViewModel: ObservableObject {
         QuestService.shared.updateQuestStatus(questId: questId, statusString: status) { result in
             switch result {
             case .success(let status):
-                print("Updated status to:", status)
+                DispatchQueue.main.async {
+                    self.quest.status = status
+                }
             case .failure(let error):
                 print("Failed to update status:", error)
             }
