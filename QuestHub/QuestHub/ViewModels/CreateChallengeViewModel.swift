@@ -20,7 +20,7 @@ final class CreateChallengeViewModel: ObservableObject {
     @Published var qQuestion: String = ""
     @Published var qAnswer: String = ""
     @Published var promptText: String = ""
-    @Published var points: Int = 10
+    @Published var points: Int = 5
 
     let existingChallenge: Challenge?
     let challengeType: ChallengeType?
@@ -30,7 +30,7 @@ final class CreateChallengeViewModel: ObservableObject {
         self.details = challenge?.details ?? ""
         self.challengeType = challengeType
         self.existingChallenge = challenge
-        self.points = challenge?.points ?? 10
+        self.points = challenge?.points ?? 5
 
         switch challengeType {
         case .photo(let data):

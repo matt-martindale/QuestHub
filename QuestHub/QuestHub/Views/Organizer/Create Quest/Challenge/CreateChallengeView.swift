@@ -15,14 +15,12 @@ struct CreateChallengeView: View {
 
     var body: some View {
         NavigationStack {
-            Text(viewModel.typeTitle)
-                .font(.title2.weight(.semibold))
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(16)
+            
             Form {
                 VStack {
                     Text("Points")
-                        .font(.subheadline.weight(.semibold))
+                        .font(.headline)
+                        .foregroundStyle(.secondary)
                     Picker("Points", selection: $viewModel.points) {
                         Text("5").tag(5)
                         Text("10").tag(10)
@@ -31,8 +29,6 @@ struct CreateChallengeView: View {
                     }
                     .pickerStyle(.segmented)
                 }
-                .padding(.horizontal, 16)
-                .padding(.bottom, 8)
                 typeSpecificForm()
                 if viewModel.existingChallenge != nil {
                     Section {
