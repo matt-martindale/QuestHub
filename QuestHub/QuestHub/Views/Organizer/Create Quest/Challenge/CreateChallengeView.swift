@@ -5,6 +5,7 @@ struct CreateChallengeView: View {
     @Environment(\.dismiss) private var dismiss
 
     @StateObject private var viewModel: CreateChallengeViewModel
+    @State private var showDeleteConfirmation: Bool = false
 
     let completion: (CreateChallengeResult) -> Void
 
@@ -33,8 +34,7 @@ struct CreateChallengeView: View {
                 if viewModel.existingChallenge != nil {
                     Section {
                         Button(role: .destructive) {
-                            completion(.delete)
-                            dismiss()
+                            showDeleteConfirmation = true
                         } label: {
                             Label("Delete Challenge", systemImage: "trash")
                         }
@@ -60,6 +60,15 @@ struct CreateChallengeView: View {
                     }
                     .disabled(viewModel.isSaveDisabled)
                 }
+            }
+            .alert("Delete this challenge?", isPresented: $showDeleteConfirmation) {
+                Button("Delete", role: .destructive) {
+                    completion(.delete)
+                    dismiss()
+                }
+                Button("Cancel", role: .cancel) { }
+            } message: {
+                Text("This action cannot be undone.")
             }
         }
     }
@@ -131,6 +140,5 @@ struct CreateChallengeView: View {
 
 #Preview {
     CreateChallengeView(challengeType: ChallengeType.question(QuestionData()), challenge: nil) { _ in }
-//    CreateChallengeView(challengeType: ChallengeType.prompt(PromptData()), challenge: nil) { _ in }
 }
 
