@@ -46,6 +46,9 @@ struct PlayQuestView: View {
                     .padding(.vertical, 20)
             }
         }
+        .refreshable {
+            viewModel.loadUserChallenges(for: auth.currentUser?.id)
+        }
         .navigationTitle("Play Quest")
         .navigationBarTitleDisplayMode(.inline)
         .background(Color(.systemBackground))
