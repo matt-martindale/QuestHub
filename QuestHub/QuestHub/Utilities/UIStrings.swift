@@ -47,8 +47,8 @@ struct UIStrings {
     
     // Search Quest
     static let searchQuest = "Search Quest"
-    static let enterQuestCode = "Enter Quest Code"
-    static let exampleQuestCode = "Example: 123456"
+    static let enterQuestCode = "Enter 4-digit quest code"
+    static let exampleQuestCode = "Example: AB12"
     static let search = "Search"
     
     // Organizer Hub

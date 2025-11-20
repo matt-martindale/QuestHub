@@ -22,7 +22,7 @@ struct SearchQuestView: View {
         VStack(spacing: 16) {
             Spacer()
             Text(UIStrings.enterQuestCode)
-                .font(.largeTitle).bold()
+                .font(.title).bold()
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             TextField(UIStrings.exampleQuestCode, text: $questCode)
@@ -39,7 +39,7 @@ struct SearchQuestView: View {
                     .padding()
                     .background(questCode.isEmpty ? Color.gray.opacity(0.3) : Color.accentColor)
                     .foregroundColor(questCode.isEmpty ? .secondary : .white)
-                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .clipShape(Capsule())
             }
             .disabled(questCode.isEmpty)
 
@@ -55,7 +55,6 @@ struct SearchQuestView: View {
             if let quest = foundQuest {
                 PlayQuestView(quest: quest)
             } else {
-                // Fallback in case state becomes inconsistent
                 EmptyView()
             }
         }
