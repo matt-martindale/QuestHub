@@ -31,6 +31,7 @@ struct ChallengeRowView: View {
                 if challenge.completed ?? false {
                     Image(systemName: "checkmark.circle")
                         .font(.footnote)
+                        .foregroundStyle(Color.qhPrimaryGreen)
                 }
                 Text("\(challenge.points ?? 0) pts")
                     .font(.footnote)
@@ -43,7 +44,7 @@ struct ChallengeRowView: View {
         .background(
             Group {
                 if challenge.completed ?? false {
-                    Color.green.opacity(0.15)
+                    Color.green.opacity(0.1)
                 } else {
                     Color.clear
                 }
@@ -52,6 +53,17 @@ struct ChallengeRowView: View {
         .background(.ultraThinMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         .glassEffect(in: .rect(cornerRadius: 14))
+        .overlay(
+            Group {
+                if challenge.completed ?? false {
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .stroke(Color.green, lineWidth: 1.5)
+                } else {
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .stroke(Color.clear, lineWidth: 1)
+                }
+            }
+        )
     }
     
     private var challengeTypeIcon: String {
@@ -135,3 +147,4 @@ struct ChallengeRowView: View {
         .background(Color(.systemBackground))
     }
 }
+
