@@ -590,6 +590,40 @@ final class QuestService {
         }
     }
     
+    /// Fetches the per-user challenges for a quest from userQuests and decodes them into `[Challenge]`.
+    /// - Parameters:
+    ///   - userId: The current user's uid
+    ///   - questId: The Firestore quest document ID
+    ///   - completion: Result callback with the decoded challenges array
+    func fetchUserChallenges(userId: String,
+                             questId: String,
+                             completion: @escaping (Result<[Challenge], Error>) -> Void) {
+        let docId = "\(userId)_\(questId)"
+        let ref = db.collection("userQuests").document(docId)
+        ref.getDocument { snapshot, error in
+            if let error = error {
+                completion(.failure(error))
+                return
+            }
+            guard let data = snapshot?.data() else {
+                completion(.success([]))
+                return
+            }
+            do {
+                if let raw = data["challenges"] as? [[String: Any]] {
+                    let json = try JSONSerialization.data(withJSONObject: raw, options: [])
+                    let decoder = JSONDecoder()
+                    let decoded = try decoder.decode([Challenge].self, from: json)
+                    completion(.success(decoded))
+                } else {
+                    completion(.success([]))
+                }
+            } catch {
+                completion(.failure(error))
+            }
+        }
+    }
+    
     // Populates userQuests ROOT document with per-user challenge progress copied from the quest
     private func populateUserQuestsChallenges(qRef: DocumentReference,
                                               userId: String,

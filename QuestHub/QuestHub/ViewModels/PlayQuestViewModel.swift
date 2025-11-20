@@ -19,6 +19,8 @@ final class PlayQuestViewModel: ObservableObject {
     @Published var passwordError: String? = nil
     @Published var isJoining: Bool = false
     @Published var showingLeaveConfirmation: Bool = false
+    @Published var userChallenges: [Challenge] = []
+    @Published var isLoadingChallenges: Bool = false
     
     init(quest: Quest) {
         self.quest = quest
@@ -36,8 +38,30 @@ final class PlayQuestViewModel: ObservableObject {
             do {
                 let joined = try await QuestService.shared.hasJoinedQuest(userId: uid, questId: qid)
                 self.isJoined = joined
+                if joined { self.loadUserChallenges(for: uid) } else { self.userChallenges = [] }
             } catch {
                 print("hasJoinedQuest check failed: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    func loadUserChallenges(for userId: String?) {
+        guard let uid = userId, let qid = quest.id, !uid.isEmpty, !qid.isEmpty else {
+            self.userChallenges = []
+            return
+        }
+        isLoadingChallenges = true
+        QuestService.shared.fetchUserChallenges(userId: uid, questId: qid) { [weak self] result in
+            guard let self = self else { return }
+            DispatchQueue.main.async {
+                self.isLoadingChallenges = false
+                switch result {
+                case .success(let challenges):
+                    self.userChallenges = challenges
+                case .failure(let error):
+                    print("Failed to load user challenges: \(error.localizedDescription)")
+                    self.userChallenges = []
+                }
             }
         }
     }
@@ -121,6 +145,7 @@ final class PlayQuestViewModel: ObservableObject {
                 } else {
                     self.quest.playersCount = 1
                 }
+                self.loadUserChallenges(for: currentUser?.id)
             case .failure(let error):
                 self.isJoining = false
                 self.alertMessage = AlertMessage(text: error.localizedDescription)

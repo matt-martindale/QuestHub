@@ -462,8 +462,28 @@ struct PlayQuestView: View {
             Text("Challenges")
                 .font(.title3).bold()
             VStack(spacing: 12) {
-                ForEach(viewModel.quest.challenges ?? [], id: \.id) { challenge in
-                    ChallengeRowView(challenge: challenge)
+                if viewModel.isLoadingChallenges {
+                    HStack {
+                        ProgressView().padding(.trailing, 8)
+                        Text("Loading challenges…")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                    }
+                } else if !viewModel.userChallenges.isEmpty {
+                    ForEach(viewModel.userChallenges, id: \.id) { challenge in
+                        ChallengeRowView(challenge: challenge)
+                    }
+                } else if viewModel.isJoined {
+                    Text("No challenges yet. Pull to refresh or try again later.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                } else {
+                    Text("Join the quest to see and play challenges.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
         }
