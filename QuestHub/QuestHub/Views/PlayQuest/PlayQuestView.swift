@@ -310,7 +310,7 @@ struct PlayQuestView: View {
                                 }
                             }
                             Spacer()
-                            Text("\(viewModel.points)pts")
+                            Text("\(viewModel.points) pts")
                                 .padding(.horizontal, 10)
                                 .padding(.vertical, 6)
                                 .background(.ultraThinMaterial)
