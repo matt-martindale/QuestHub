@@ -462,8 +462,8 @@ struct PlayQuestView: View {
             Text("Challenges")
                 .font(.title3).bold()
             VStack(spacing: 12) {
-                ForEach(0..<3, id: \.self) { idx in
-                    challengeRow(index: idx)
+                ForEach(viewModel.quest.challenges ?? [], id: \.id) { challenge in
+                    ChallengeRowView(challenge: challenge)
                 }
             }
         }
@@ -472,28 +472,6 @@ struct PlayQuestView: View {
         .background(.thinMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         .glassEffect(in: .rect(cornerRadius: 20))
-    }
-
-    private func challengeRow(index idx: Int) -> some View {
-        HStack(spacing: 12) {
-            Image(systemName: "flag.checkered")
-                .font(.title3)
-                .foregroundStyle(.tint)
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Challenge #\(idx + 1)")
-                    .font(.headline)
-                Text("A brief description of what to do for this challenge.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-            Spacer()
-            Image(systemName: "chevron.right")
-                .foregroundStyle(.tertiary)
-        }
-        .padding(16)
-        .background(.ultraThinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-        .glassEffect(in: .rect(cornerRadius: 14))
     }
     
     private var leaveQuest: some View {
@@ -539,3 +517,4 @@ struct PlayQuestView: View {
     PlayQuestView(quest: Quest(id: "ID", questCode: "ABC", imageURL: "gs://questhubapp2025-db58e.firebasestorage.app/quests/3k4sTKiFi7XK37npGBxPb2FhoKA2/75845EC7-2828-42AA-BC87-50EE561D488C.jpg", title: "Title", subtitle: "Embark on an adventure", description: nil, maxPlayers: 20, playersCount: 5, challenges: nil, createdAt: Date(), updatedAt: Date(), creatorID: "creatorID", creatorDisplayName: "creatorDisplayName", status: .active, password: "Password", requireSignIn: true))
         .environmentObject(auth)
 }
+
