@@ -150,10 +150,28 @@ struct OrganizerQuestView: View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(alignment: .center, spacing: 8) {
                 if let questCode = viewModel.quest.questCode, !questCode.isEmpty {
-                    Text(questCode)
-                        .font(.title3)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
+                    HStack(spacing: 6) {
+
+                        Button {
+                            UIPasteboard.general.string = questCode
+                            showToast(with: "\(questCode) copied!")
+                        } label: {
+                            HStack {
+                                Text(questCode)
+                                    .font(.title3)
+                                
+                                Image(systemName: "hand.rays.fill")
+                                    .font(.footnote)
+                            }
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(.ultraThinMaterial)
+                            .clipShape(Capsule())
+                            .glassEffect(in: .capsule)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Copy quest code")
+                    }
                 }
 
                 Spacer(minLength: 12)
@@ -383,8 +401,7 @@ private struct StatusPickerSheet: View {
                     .buttonStyle(.glassProminent)
                     .tint(.blue)
             }
-            .padding(.horizontal)
-            .padding(.bottom)
+            .padding()
         }
         .padding(.horizontal)
     }
