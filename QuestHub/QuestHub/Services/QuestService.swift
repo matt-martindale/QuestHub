@@ -162,6 +162,7 @@ final class QuestService {
                 "requireSignIn": quest.requireSignIn ?? false,
                 "challenges": encodedChallenges,
                 "createdAt": Date(),
+                "updatedAt": Date(),
                 "questCode": newQuestCode,
                 "imageURL": quest.imageURL ?? ""
             ]
