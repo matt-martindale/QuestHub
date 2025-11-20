@@ -751,7 +751,15 @@ final class QuestService {
                     total += points
                 }
             }
-            completion(.success(total))
+            // Persist the computed total back to Firestore under userQuests.points
+            ref.updateData(["points": total]) { updateError in
+                if let updateError = updateError {
+                    // Still return the computed total even if updating the field fails
+                    completion(.failure(updateError))
+                } else {
+                    completion(.success(total))
+                }
+            }
         }
     }
 }
