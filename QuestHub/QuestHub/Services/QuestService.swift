@@ -694,6 +694,7 @@ final class QuestService {
                 "questId": questId,
                 "questCode": questCode,
                 "joinedAt": Timestamp(date: Date()),
+                "points": 0,
                 "challenges": userChallenges
             ], merge: true) { uqErr in
                 if let uqErr = uqErr {
@@ -704,5 +705,22 @@ final class QuestService {
             }
         }
     }
-}
 
+    /// Fetches the accumulated points for a specific user's quest progress (userQuests document) using a completion handler.
+    /// - Parameters:
+    ///   - userId: The user's uid
+    ///   - questId: The Firestore quest document ID
+    ///   - completion: Completion handler returning the integer points or an error
+    func fetchUserQuestPoints(userId: String, questId: String, completion: @escaping (Result<Int, Error>) -> Void) {
+        let docId = "\(userId)_\(questId)"
+        let ref = db.collection("userQuests").document(docId)
+        ref.getDocument { snapshot, error in
+            if let error = error {
+                completion(.failure(error))
+                return
+            }
+            let points = snapshot?.data()? ["points"] as? Int ?? 0
+            completion(.success(points))
+        }
+    }
+}

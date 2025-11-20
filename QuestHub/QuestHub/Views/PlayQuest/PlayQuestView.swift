@@ -309,6 +309,13 @@ struct PlayQuestView: View {
                                         .lineLimit(1)
                                 }
                             }
+                            Spacer()
+                            Text("\(viewModel.points)pts")
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 6)
+                                .background(.ultraThinMaterial)
+                                .clipShape(Capsule())
+                                .glassEffect(in: .capsule)
                         }
                     }
                     HStack {

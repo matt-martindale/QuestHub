@@ -20,6 +20,7 @@ final class PlayQuestViewModel: ObservableObject {
     @Published var isJoining: Bool = false
     @Published var showingLeaveConfirmation: Bool = false
     @Published var userChallenges: [Challenge] = []
+    @Published var points: Int = 10
     @Published var isLoadingChallenges: Bool = false
     
     init(quest: Quest) {
@@ -181,11 +182,13 @@ extension PlayQuestViewModel {
     // Called by the view on appear/task to initialize state
     func onAppear(userId: String?) {
         refreshJoinedState(for: userId)
+        fetchPoints(userId: userId)
     }
 
     // Called by the view's pull-to-refresh
     func refresh(userId: String?) {
         refreshQuestAndChallenges(userId: userId)
+        fetchPoints(userId: userId)
     }
 
     // Orchestrates refreshing quest metadata and reloading per-user challenges
@@ -210,4 +213,21 @@ extension PlayQuestViewModel {
             }
         }
     }
+    
+    func fetchPoints(userId: String?) {
+        guard let userId = userId,
+              let questId = quest.id else { return }
+        QuestService.shared.fetchUserQuestPoints(userId: userId, questId: questId) { [weak self] result in
+            guard let self else { return }
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let points):
+                    self.points = points
+                case .failure:
+                    break
+                }
+            }
+        }
+    }
+    
 }
