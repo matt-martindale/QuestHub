@@ -306,18 +306,15 @@ final class QuestService {
                             return
                         }
 
-                        // Populate userQuests ROOT collection with QuestID (documentID) and QuestCode (questCode)
-                        let userQuestsRootRef = self.db.collection("userQuests").document("\(resolvedUserId)_\(questIdResult)")
-                        userQuestsRootRef.setData([
-                            "userId": resolvedUserId,
-                            "questID": questIdResult,
-                            "questCode": questCodeResult,
-                            "joinedAt": Timestamp(date: Date())
-                        ], merge: true) { uqErr in
-                            if let uqErr = uqErr {
-                                completion(.failure(uqErr))
-                            } else {
+                        self.populateUserQuestsChallenges(qRef: qRef,
+                                                          userId: resolvedUserId,
+                                                          questId: questIdResult,
+                                                          questCode: questCodeResult) { result in
+                            switch result {
+                            case .success:
                                 completion(.success(()))
+                            case .failure(let error):
+                                completion(.failure(error))
                             }
                         }
                     }
@@ -592,4 +589,87 @@ final class QuestService {
             }
         }
     }
+    
+    // Populates userQuests ROOT document with per-user challenge progress copied from the quest
+    private func populateUserQuestsChallenges(qRef: DocumentReference,
+                                              userId: String,
+                                              questId: String,
+                                              questCode: String,
+                                              completion: @escaping (Result<Void, Error>) -> Void) {
+        let userQuestsRootRef = self.db.collection("userQuests").document("\(userId)_\(questId)")
+        qRef.getDocument { qSnap, qErr in
+            // Build user-specific challenges progress from quest's challenges array
+            var userChallenges: [[String: Any]] = []
+            if qErr == nil, let qSnap = qSnap, let qData = qSnap.data(), let rawChallenges = qData["challenges"] as? [[String: Any]] {
+                userChallenges = rawChallenges.map { item in
+                    let id = item["id"] as? String ?? ""
+                    let title = item["title"] as? String ?? ""
+                    let details = item["details"] as? String ?? ""
+                    let points = item["points"] as? Int ?? 0
+
+                    var kind = "question"
+                    var dataPayload: [String: Any] = [:]
+                    if let typeDict = item["challengeType"] as? [String: Any], let k = typeDict["kind"] as? String {
+                        kind = k
+                        let originalData = typeDict["data"] as? [String: Any] ?? [:]
+                        switch k {
+                        case "photo":
+                            dataPayload = [
+                                "imageURL": "",
+                                "caption": originalData["caption"] as? String ?? "",
+                                "prompt": originalData["prompt"] as? String ?? ""
+                            ]
+                        case "multipleChoice":
+                            dataPayload = [
+                                "question": originalData["question"] as? String ?? "",
+                                "answers": originalData["answers"] as? [String] ?? [],
+                                "correctAnswer": originalData["correctAnswer"] as? String ?? ""
+                            ]
+                        case "question":
+                            dataPayload = [
+                                "question": originalData["question"] as? String ?? "",
+                                "answer": originalData["answer"] as? String ?? ""
+                            ]
+                        case "prompt":
+                            dataPayload = [
+                                "prompt": originalData["prompt"] as? String ?? "",
+                                "answer": originalData["answer"] as? String ?? ""
+                            ]
+                        default:
+                            dataPayload = originalData
+                        }
+                    }
+
+                    let challengeTypeDict: [String: Any] = [
+                        "kind": kind,
+                        "data": dataPayload
+                    ]
+
+                    return [
+                        "id": id,
+                        "title": title,
+                        "details": details,
+                        "points": points,
+                        "completed": false,
+                        "challengeType": challengeTypeDict
+                    ]
+                }
+            }
+
+            userQuestsRootRef.setData([
+                "userId": userId,
+                "questID": questId,
+                "questCode": questCode,
+                "joinedAt": Timestamp(date: Date()),
+                "challenges": userChallenges
+            ], merge: true) { uqErr in
+                if let uqErr = uqErr {
+                    completion(.failure(uqErr))
+                } else {
+                    completion(.success(()))
+                }
+            }
+        }
+    }
 }
+
