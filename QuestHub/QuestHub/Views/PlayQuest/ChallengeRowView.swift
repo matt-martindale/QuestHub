@@ -27,26 +27,28 @@ struct ChallengeRowView: View {
                     .foregroundStyle(.secondary)
             }
             Spacer()
-            Text("\(challenge.points ?? 0) pts")
-                .font(.footnote.weight(.semibold))
-                .monospacedDigit()
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(
-                    Group {
-                        if challenge.completed ?? false {
-                            Color.green.opacity(0.2)
-                        } else {
-                            Color.clear
-                        }
-                    }
-                )
-                .clipShape(Capsule())
-                .foregroundStyle((challenge.completed ?? false) ? .green : .secondary)
+            HStack(spacing: 4) {
+                if challenge.completed ?? false {
+                    Image(systemName: "checkmark.circle")
+                        .font(.footnote)
+                }
+                Text("\(challenge.points ?? 0) pts")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
             Image(systemName: "chevron.right")
                 .foregroundStyle(.tertiary)
         }
         .padding(16)
+        .background(
+            Group {
+                if challenge.completed ?? false {
+                    Color.green.opacity(0.15)
+                } else {
+                    Color.clear
+                }
+            }
+        )
         .background(.ultraThinMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         .glassEffect(in: .rect(cornerRadius: 14))
@@ -71,7 +73,7 @@ struct ChallengeRowView: View {
     }
 }
 
-#Preview("Challenge row examples") {
+#Preview {
     // Sample data for each challenge type
     let photo = Challenge(
         id: "c1",
