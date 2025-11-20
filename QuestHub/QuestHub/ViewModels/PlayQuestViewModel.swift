@@ -176,3 +176,38 @@ final class PlayQuestViewModel: ObservableObject {
     }
     
 }
+
+extension PlayQuestViewModel {
+    // Called by the view on appear/task to initialize state
+    func onAppear(userId: String?) {
+        refreshJoinedState(for: userId)
+    }
+
+    // Called by the view's pull-to-refresh
+    func refresh(userId: String?) {
+        refreshQuestAndChallenges(userId: userId)
+    }
+
+    // Orchestrates refreshing quest metadata and reloading per-user challenges
+    func refreshQuestAndChallenges(userId: String?) {
+        guard let code = quest.questCode, !code.isEmpty else {
+            // If there's no quest code, just reload challenges
+            loadUserChallenges(for: userId)
+            return
+        }
+        QuestService.shared.searchQuest(byCode: code) { [weak self] result in
+            guard let self = self else { return }
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let refreshed):
+                    if let currentId = self.quest.id, let newId = refreshed.id, currentId == newId {
+                        self.quest = refreshed
+                    }
+                case .failure:
+                    break
+                }
+                self.loadUserChallenges(for: userId)
+            }
+        }
+    }
+}

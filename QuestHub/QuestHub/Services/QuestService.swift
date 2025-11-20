@@ -423,8 +423,7 @@ final class QuestService {
                 // Extract quest IDs (support both "questID" and "QuestID")
                 let questIds: [String] = documents.compactMap { doc in
                     let data = doc.data()
-                    if let qid = data["questID"] as? String { return qid }
-                    if let qid = data["QuestID"] as? String { return qid }
+                    if let qid = data["questId"] as? String { return qid }
                     return nil
                 }
 
@@ -692,7 +691,7 @@ final class QuestService {
 
             userQuestsRootRef.setData([
                 "userId": userId,
-                "questID": questId,
+                "questId": questId,
                 "questCode": questCode,
                 "joinedAt": Timestamp(date: Date()),
                 "challenges": userChallenges
