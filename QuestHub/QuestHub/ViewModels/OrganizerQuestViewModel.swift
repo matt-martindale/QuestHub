@@ -30,6 +30,19 @@ final class OrganizerQuestViewModel: ObservableObject {
         return nil
     }
     
+    var statusDetails: String {
+        switch self.quest.status {
+        case .active:
+            "Players can join Quests. View and complete challenges."
+        case .paused:
+            "Players can join Quests, but cannot view or complete challenges."
+        case .closed:
+            "New players cannot join, and cannot view or complete challenges."
+        default:
+            "Unknown"
+        }
+    }
+    
     func updateQuestStatus() {
         guard let questId = quest.id , let status = status?.rawValue else { return }
         QuestService.shared.updateQuestStatus(questId: questId, statusString: status) { result in

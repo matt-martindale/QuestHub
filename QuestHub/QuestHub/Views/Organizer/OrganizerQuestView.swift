@@ -61,6 +61,7 @@ struct OrganizerQuestView: View {
                     viewModel.quest.status = selectedStatus
                     viewModel.updateQuestStatus()
                     showStatusPicker = false
+                    showToast(with: "Status updated!")
                 }
             )
             .presentationDetents([.height(260)])
@@ -134,12 +135,12 @@ struct OrganizerQuestView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(viewModel.quest.title ?? "")
                 .font(.largeTitle).bold()
-                .foregroundStyle(.white)
+                .foregroundStyle(.primary)
                 .shadow(radius: 6)
             if let subtitle = viewModel.quest.subtitle {
                 Text(subtitle)
                     .font(.headline)
-                    .foregroundStyle(.white.opacity(0.9))
+                    .foregroundStyle(.primary.opacity(0.9))
                     .shadow(radius: 4)
             }
         }
@@ -159,7 +160,7 @@ struct OrganizerQuestView: View {
                 
                 if let password = viewModel.quest.password, !password.isEmpty {
                     HStack(spacing: 6) {
-                        Text("Password")
+                        Text(password)
                         Image(systemName: "lock.fill")
                             .foregroundStyle(.secondary)
                     }
@@ -170,7 +171,12 @@ struct OrganizerQuestView: View {
                     .clipShape(Capsule())
                     .glassEffect(in: .capsule)
                 }
+            }
+            .padding(.vertical, -6)
 
+            Divider().opacity(0.75)
+            
+            HStack(spacing: 12) {
                 // Status chip
                 questStatus
                     .padding(.horizontal, 10)
@@ -178,9 +184,12 @@ struct OrganizerQuestView: View {
                     .background(.ultraThinMaterial)
                     .clipShape(Capsule())
                     .glassEffect(in: .capsule)
+                
+                Text(viewModel.statusDetails)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
             }
-            .padding(.vertical, -6)
-
+            
             Divider().opacity(0.75)
             
             HStack(alignment: .top) {
@@ -389,6 +398,6 @@ private extension QuestStatus {
 
 #Preview {
     let auth = QHAuth()
-    OrganizerQuestView(quest: Quest(id: "ID", questCode: "ABC", imageURL: "gs://questhubapp2025-db58e.firebasestorage.app/quests/3k4sTKiFi7XK37npGBxPb2FhoKA2/75845EC7-2828-42AA-BC87-50EE561D488C.jpg", title: "Title", subtitle: "Embark on an adventure", description: nil, maxPlayers: 20, playersCount: 5, challenges: nil, createdAt: Date(), updatedAt: Date(), creatorID: "creatorID", creatorDisplayName: "creatorDisplayName", status: .active, password: "Password", requireSignIn: true))
+    OrganizerQuestView(quest: Quest(id: "ID", questCode: "ABC", imageURL: "gs://questhubapp2025-db58e.firebasestorage.app/quests/3k4sTKiFi7XK37npGBxPb2FhoKA2/75845EC7-2828-42AA-BC87-50EE561D488C.jpg", title: "Title", subtitle: "Embark on an adventure", description: nil, maxPlayers: 20, playersCount: 5, challenges: nil, createdAt: Date(), updatedAt: Date(), creatorID: "creatorID", creatorDisplayName: "creatorDisplayName", status: .active, password: "Password123", requireSignIn: true))
         .environmentObject(auth)
 }
