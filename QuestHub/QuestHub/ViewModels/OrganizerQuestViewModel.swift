@@ -33,13 +33,13 @@ final class OrganizerQuestViewModel: ObservableObject {
     var statusDetails: String {
         switch self.quest.status {
         case .active:
-            "Players can join Quests. View and complete challenges."
+            "Live and ready phase! Players can join Quests. View and complete challenges."
         case .paused:
-            "Players can join Quests, but cannot view or complete challenges."
+            "Preparation phase: Players can join Quests, but cannot view or complete challenges."
         case .closed:
-            "New players cannot join, and cannot view or complete challenges."
+            "Finished phase: New players cannot join, and cannot view or complete challenges."
         default:
-            "Unknown"
+            "Status unavailable. Please check back shortly."
         }
     }
     
