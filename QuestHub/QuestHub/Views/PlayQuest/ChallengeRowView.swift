@@ -22,11 +22,25 @@ struct ChallengeRowView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(challenge.title ?? "")
                     .font(.headline)
-                Text(challengeTypeLabel)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                HStack {
+                    Text(challengeTypeLabel)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    if challenge.completed ?? false {
+                        HStack {
+                            Image(systemName: "checkmark.circle")
+                            Text("Completed")
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
             }
             Spacer()
+            Text("\(challenge.points ?? 0) pts")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
             Image(systemName: "chevron.right")
                 .foregroundStyle(.tertiary)
         }
@@ -61,7 +75,7 @@ struct ChallengeRowView: View {
         id: "c1",
         title: "Snap the Campus Mascot",
         details: "Take a photo with the mascot statue.",
-        points: 25,
+        points: 5,
         completed: false,
         challengeType: .photo(PhotoData(imageURL: "imageURL", prompt: "Take a photo of a sunset", caption: "caption"))
     )
@@ -99,7 +113,7 @@ struct ChallengeRowView: View {
         id: "c4",
         title: "Daily Prompt",
         details: "Write a one-sentence app idea you wish existed.",
-        points: 5,
+        points: 30,
         completed: true,
         challengeType: .prompt(
             PromptData(prompt: "Describe an app idea in one sentence.")
