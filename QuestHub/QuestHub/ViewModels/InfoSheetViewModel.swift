@@ -38,7 +38,7 @@ final class InfoSheetViewModel: ObservableObject {
     var infoText: String {
         switch flow {
         case .password:
-            return "When enabled, players must enter this password to join your quest. Share the password only with the people you wish to participate."
+            return "When enabled, players must enter this password to join your quest. Share the password only with the people you wish to participate. Not case-sensitive."
         case .maxPlayers:
             return "Set the maximum number of players who can join your quest. Once the limit is reached, no additional players will be able to join. You can adjust this later."
         case .requireSignIn:
