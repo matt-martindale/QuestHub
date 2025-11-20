@@ -11,6 +11,7 @@ struct PlayQuestView: View {
     @EnvironmentObject private var auth: QHAuth
     @StateObject private var viewModel: PlayQuestViewModel
     @State private var showSignIn = false
+    @State private var showAccount = false
     @State private var showToast = false
     @State private var toastMessage = ""
     
@@ -57,9 +58,18 @@ struct PlayQuestView: View {
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                if let user = auth.currentUser {
-                    SignedInUserMenu(user: user) {
-                        auth.signOut()
+                if auth.currentUser != nil {
+                    Menu {
+                        Button("Account", systemImage: "person.fill") {
+                            showAccount = true
+                        }
+                        Button(role: .destructive) {
+                            auth.signOut()
+                        } label: {
+                            Label(UIStrings.signOut, systemImage: "rectangle.portrait.and.arrow.right")
+                        }
+                    } label: {
+                        Image(systemName: "person.crop.circle")
                     }
                 } else {
                     Button("Sign in") {
@@ -82,6 +92,11 @@ struct PlayQuestView: View {
         .sheet(isPresented: $showSignIn) {
             NavigationStack {
                 SignInView()
+            }
+        }
+        .sheet(isPresented: $showAccount) {
+            NavigationStack {
+                AccountView()
             }
         }
         .sheet(isPresented: $viewModel.showingPasswordSheet) {
