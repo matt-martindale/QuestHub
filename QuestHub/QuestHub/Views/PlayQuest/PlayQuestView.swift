@@ -523,7 +523,7 @@ struct PlayQuestView: View {
             // Paused overlay
             if viewModel.quest.status == .paused {
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(.ultraThinMaterial)
+                    .glassEffect(in: .rect(cornerRadius: 20))
                     .overlay(
                         HStack(spacing: 8) {
                             Image(systemName: "pause.circle.fill")
