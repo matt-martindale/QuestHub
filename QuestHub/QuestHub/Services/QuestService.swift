@@ -712,6 +712,22 @@ final class QuestService {
     ///   - questId: The Firestore quest document ID
     ///   - completion: Completion handler returning the integer points or an error
     func fetchUserQuestPoints(userId: String, questId: String, completion: @escaping (Result<Int, Error>) -> Void) {
+        self.computeCompletedChallengePoints(userId: userId, questId: questId) { result in
+            switch result {
+            case .success(let total):
+                completion(.success(total))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+
+    /// Computes the total points for completed challenges in a user's quest progress (from userQuests document).
+    /// - Parameters:
+    ///   - userId: The user's uid
+    ///   - questId: The Firestore quest document ID
+    ///   - completion: Completion handler returning the computed integer points or an error
+    private func computeCompletedChallengePoints(userId: String, questId: String, completion: @escaping (Result<Int, Error>) -> Void) {
         let docId = "\(userId)_\(questId)"
         let ref = db.collection("userQuests").document(docId)
         ref.getDocument { snapshot, error in
@@ -719,8 +735,23 @@ final class QuestService {
                 completion(.failure(error))
                 return
             }
-            let points = snapshot?.data()? ["points"] as? Int ?? 0
-            completion(.success(points))
+
+            guard let data = snapshot?.data() else {
+                completion(.success(0))
+                return
+            }
+
+            // challenges: [[String: Any]] with keys: id, title, details, points, completed, challengeType
+            let challenges = data["challenges"] as? [[String: Any]] ?? []
+            var total = 0
+            for item in challenges {
+                let completed = item["completed"] as? Bool ?? false
+                if completed {
+                    let points = item["points"] as? Int ?? 0
+                    total += points
+                }
+            }
+            completion(.success(total))
         }
     }
 }
