@@ -85,7 +85,7 @@ final class PlayQuestViewModel: ObservableObject {
     
     func confirmPasswordAndJoin(currentUser: QHUser?) {
         let requiredPassword = quest.password ?? ""
-        if inputPassword == requiredPassword {
+        if inputPassword.lowercased() == requiredPassword.lowercased() {
             passwordError = nil
             joinQuest(currentUser: currentUser)
             showingPasswordSheet = false

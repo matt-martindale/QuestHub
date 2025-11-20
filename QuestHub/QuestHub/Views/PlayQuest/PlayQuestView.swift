@@ -94,6 +94,14 @@ struct PlayQuestView: View {
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .transition(.opacity.combined(with: .move(edge: .top)))
+                
+                HStack {
+                    Text("Not case-sensitive.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                }
+                .padding(.horizontal, 12)
 
                 TextField("Password", text: $viewModel.inputPassword)
                     .textContentType(.password)
@@ -102,16 +110,21 @@ struct PlayQuestView: View {
                     .padding(12)
                     .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12))
 
-                HStack(spacing: 30) {
+                HStack() {
                     Button("Cancel") {
                         viewModel.showingPasswordSheet = false
                         viewModel.inputPassword = ""
                         viewModel.passwordError = nil
                     }
+                    .padding(.horizontal)
+                    
+                    Spacer()
+                    
                     Button("Confirm") {
                         viewModel.confirmPasswordAndJoin(currentUser: auth.currentUser)
                         viewModel.inputPassword = ""
                     }
+                    .padding(.horizontal)
                     .buttonStyle(.borderedProminent)
                     .disabled(viewModel.inputPassword.isEmpty)
                 }
