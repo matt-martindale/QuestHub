@@ -22,25 +22,27 @@ struct ChallengeRowView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(challenge.title ?? "")
                     .font(.headline)
-                HStack {
-                    Text(challengeTypeLabel)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    Spacer()
-                    if challenge.completed ?? false {
-                        HStack {
-                            Image(systemName: "checkmark.circle")
-                            Text("Completed")
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                }
+                Text(challengeTypeLabel)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
             }
             Spacer()
             Text("\(challenge.points ?? 0) pts")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
+                .font(.footnote.weight(.semibold))
+                .monospacedDigit()
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(
+                    Group {
+                        if challenge.completed ?? false {
+                            Color.green.opacity(0.2)
+                        } else {
+                            Color.clear
+                        }
+                    }
+                )
+                .clipShape(Capsule())
+                .foregroundStyle((challenge.completed ?? false) ? .green : .secondary)
             Image(systemName: "chevron.right")
                 .foregroundStyle(.tertiary)
         }
