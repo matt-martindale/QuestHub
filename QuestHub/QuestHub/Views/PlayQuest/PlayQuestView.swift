@@ -483,40 +483,63 @@ struct PlayQuestView: View {
     }
 
     private var challengesSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Challenges")
-                .font(.title3).bold()
-            VStack(spacing: 12) {
-                if viewModel.isLoadingChallenges {
-                    HStack {
-                        ProgressView().padding(.trailing, 8)
-                        Text("Loading challenges…")
-                            .font(.subheadline)
+        ZStack {
+            // Existing Challenges card content
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Challenges")
+                    .font(.title3).bold()
+                VStack(spacing: 12) {
+                    if viewModel.isLoadingChallenges {
+                        HStack {
+                            ProgressView().padding(.trailing, 8)
+                            Text("Loading challenges…")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                        }
+                    } else if !viewModel.userChallenges.isEmpty {
+                        ForEach(viewModel.userChallenges, id: \.id) { challenge in
+                            ChallengeRowView(challenge: challenge)
+                        }
+                    } else if viewModel.isJoined {
+                        Text("No challenges yet. Pull to refresh or try again later.")
+                            .font(.footnote)
                             .foregroundStyle(.secondary)
-                        Spacer()
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    } else {
+                        Text("Join the quest to see and play challenges.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                } else if !viewModel.userChallenges.isEmpty {
-                    ForEach(viewModel.userChallenges, id: \.id) { challenge in
-                        ChallengeRowView(challenge: challenge)
-                    }
-                } else if viewModel.isJoined {
-                    Text("No challenges yet. Pull to refresh or try again later.")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                } else {
-                    Text("Join the quest to see and play challenges.")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
+            .padding(20)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(.thinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+            .glassEffect(in: .rect(cornerRadius: 20))
+
+            // Paused overlay
+            if viewModel.quest.status == .paused {
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(.ultraThinMaterial)
+                    .overlay(
+                        HStack(spacing: 8) {
+                            Image(systemName: "pause.circle.fill")
+                                .foregroundStyle(.yellow)
+                            Text("Quest is paused")
+                                .font(.subheadline.weight(.semibold))
+                        }
+                        .padding(12)
+                        .background(
+                            Capsule().fill(Color.black.opacity(0.35))
+                        )
+                        .foregroundStyle(.white)
+                    )
+                    .allowsHitTesting(false)
+            }
         }
-        .padding(20)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.thinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-        .glassEffect(in: .rect(cornerRadius: 20))
     }
     
     private var leaveQuest: some View {
@@ -559,7 +582,7 @@ struct PlayQuestView: View {
 
 #Preview {
     let auth = QHAuth()
-    PlayQuestView(quest: Quest(id: "ID", questCode: "ABC", imageURL: "gs://questhubapp2025-db58e.firebasestorage.app/quests/3k4sTKiFi7XK37npGBxPb2FhoKA2/75845EC7-2828-42AA-BC87-50EE561D488C.jpg", title: "Title", subtitle: "Embark on an adventure", description: nil, maxPlayers: 20, playersCount: 5, challenges: nil, createdAt: Date(), updatedAt: Date(), creatorID: "creatorID", creatorDisplayName: "creatorDisplayName", status: .active, password: "Password", requireSignIn: true))
+    PlayQuestView(quest: Quest(id: "ID", questCode: "ABC", imageURL: "gs://questhubapp2025-db58e.firebasestorage.app/quests/3k4sTKiFi7XK37npGBxPb2FhoKA2/75845EC7-2828-42AA-BC87-50EE561D488C.jpg", title: "Title", subtitle: "Embark on an adventure", description: nil, maxPlayers: 20, playersCount: 5, challenges: nil, createdAt: Date(), updatedAt: Date(), creatorID: "creatorID", creatorDisplayName: "creatorDisplayName", status: .paused, password: "Password", requireSignIn: true))
         .environmentObject(auth)
 }
 
