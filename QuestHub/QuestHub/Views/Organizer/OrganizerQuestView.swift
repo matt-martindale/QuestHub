@@ -31,9 +31,9 @@ struct OrganizerQuestView: View {
                     .padding(.horizontal)
                     .padding(.top)
                 
-                updateQuestStatus
-                    .padding(.horizontal)
-                    .padding(.top)
+//                updateQuestStatus
+//                    .padding(.horizontal)
+//                    .padding(.top)
             }
         }
         .navigationTitle("Quest Details")
@@ -176,18 +176,22 @@ struct OrganizerQuestView: View {
 
             Divider().opacity(0.75)
             
-            HStack(spacing: 12) {
-                // Status chip
-                questStatus
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
-                    .background(.ultraThinMaterial)
-                    .clipShape(Capsule())
-                    .glassEffect(in: .capsule)
-                
-                Text(viewModel.statusDetails)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+            VStack {
+                HStack(spacing: 12) {
+                    // Status chip
+                    questStatus
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(.ultraThinMaterial)
+                        .clipShape(Capsule())
+                        .glassEffect(in: .capsule)
+                    
+                    Text(viewModel.statusDetails)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                updateQuestStatus
+                    .padding(.top)
             }
             
             Divider().opacity(0.75)

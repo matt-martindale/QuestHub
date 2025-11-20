@@ -33,7 +33,7 @@ final class OrganizerQuestViewModel: ObservableObject {
     var statusDetails: String {
         switch self.quest.status {
         case .active:
-            "Live and ready phase! Players can join Quests. View and complete challenges."
+            "Live and ready! Players can join Quests. View and complete challenges."
         case .paused:
             "Preparation phase: Players can join Quests, but cannot view or complete challenges."
         case .closed:
