@@ -47,7 +47,26 @@ struct PlayQuestView: View {
             }
         }
         .refreshable {
-            viewModel.loadUserChallenges(for: auth.currentUser?.id)
+            // Refresh quest metadata by code, then reload per-user challenges
+            if let code = viewModel.quest.questCode, !code.isEmpty {
+                QuestService.shared.searchQuest(byCode: code) { result in
+                    DispatchQueue.main.async {
+                        switch result {
+                        case .success(let refreshed):
+                            // Only update if this is the same quest id
+                            if let currentId = viewModel.quest.id, let newId = refreshed.id, currentId == newId {
+                                viewModel.quest = refreshed
+                            }
+                        case .failure:
+                            break
+                        }
+                        // Always try to reload user challenges after attempting quest refresh
+                        viewModel.loadUserChallenges(for: auth.currentUser?.id)
+                    }
+                }
+            } else {
+                viewModel.loadUserChallenges(for: auth.currentUser?.id)
+            }
         }
         .navigationTitle("Play Quest")
         .navigationBarTitleDisplayMode(.inline)
