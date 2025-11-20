@@ -377,22 +377,40 @@ private struct StatusPickerSheet: View {
             Text("Update Quest Status")
                 .font(.headline)
 
-            Picker("Status", selection: $selection) {
+            HStack(spacing: 8) {
                 ForEach(QuestStatus.allCases, id: \.self) { status in
-                    let color: Color = {
-                        switch selection {
+                    let isSelected = status == selection
+                    let baseColor: Color = {
+                        switch status {
                         case .active: return .green
                         case .paused: return .yellow
                         case .closed: return Color.qhPrimaryRed
                         }
                     }()
-                    return Text(status.displayTitle)
-                        .fontWeight(status == current ? .semibold : .regular)
-                        .foregroundStyle(status == selection ? color : .primary)
-                        .tag(status)
+
+                    Button {
+                        selection = status
+                    } label: {
+                        Text(status.displayTitle)
+                            .font(.subheadline)
+                            .fontWeight(status == current ? .semibold : .regular)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 8)
+                            .frame(maxWidth: .infinity)
+                            .background(
+                                isSelected ? baseColor.opacity(0.25) : Color.clear
+                            )
+                            .overlay(
+                                Capsule().stroke(baseColor, lineWidth: isSelected ? 2 : 1)
+                            )
+                            .clipShape(Capsule())
+                            .foregroundStyle(isSelected ? baseColor : .primary)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Select \(status.displayTitle)")
                 }
             }
-            .pickerStyle(.segmented)
+            .accessibilityElement(children: .contain)
 
             HStack {
                 Button("Cancel", action: onCancel)
