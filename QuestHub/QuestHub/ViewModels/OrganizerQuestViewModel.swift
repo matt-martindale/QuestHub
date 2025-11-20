@@ -37,7 +37,7 @@ final class OrganizerQuestViewModel: ObservableObject {
         case .paused:
             "Preparation phase: Players can join Quests, but cannot view or complete challenges."
         case .closed:
-            "Finished phase: New players cannot join, and cannot view or complete challenges."
+            "Finished phase: New players cannot join, or complete challenges."
         default:
             "Status unavailable. Please check back shortly."
         }

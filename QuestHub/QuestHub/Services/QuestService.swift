@@ -107,7 +107,7 @@ final class QuestService {
                 }
             }
 
-            var updateData: [String: Any] = [
+            let updateData: [String: Any] = [
                 "title": quest.title ?? "",
                 "subtitle": quest.subtitle ?? "",
                 "description": quest.description ?? "",
@@ -122,7 +122,7 @@ final class QuestService {
                 "questCode": resolvedQuestCode,
                 "imageURL": quest.imageURL ?? ""
             ]
-            if let createdAt = quest.createdAt { updateData["createdAt"] = createdAt }
+//            if let createdAt = quest.createdAt { updateData["createdAt"] = createdAt }
 
             try await docRef.setData(updateData, merge: true)
             return resolvedQuestCode

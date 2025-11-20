@@ -11,6 +11,7 @@ final class CreateQuestViewModel: ObservableObject {
     @Published var subtitle: String = ""
     @Published var descriptionText: String = ""
     @Published var maxPlayersSelection: Int = 0
+    @Published var status: QuestStatus?
     @Published var requireSignIn: Bool = false
     @Published var isPasswordProtected: Bool = false
     @Published var password: String = ""
@@ -51,6 +52,7 @@ final class CreateQuestViewModel: ObservableObject {
             self.title = quest.title ?? ""
             self.subtitle = quest.subtitle ?? ""
             self.descriptionText = quest.description ?? ""
+            self.status = quest.status
             self.isPasswordProtected = !(quest.password ?? "").isEmpty ? true : false
             self.password = quest.password ?? ""
             self.requireSignIn = quest.requireSignIn ?? false
@@ -107,7 +109,6 @@ final class CreateQuestViewModel: ObservableObject {
     /// Call this if you ever want to trigger an upload outside of save; currently we defer until save.
     func uploadQuestImage(data: Data) async {
         await MainActor.run { self.pendingCoverImageData = data }
-        // Intentionally no immediate upload; will upload during saveQuest().
     }
 
     // MARK: - Challenge actions
@@ -173,7 +174,7 @@ final class CreateQuestViewModel: ObservableObject {
             questToSave.maxPlayers = self.maxPlayers
             questToSave.creatorID = user.id
             questToSave.creatorDisplayName = creatorDisplayName
-            questToSave.status = .paused
+            questToSave.status = status ?? .paused
             questToSave.password = self.password
             questToSave.requireSignIn = self.requireSignIn
             questToSave.challenges = self.challenges
