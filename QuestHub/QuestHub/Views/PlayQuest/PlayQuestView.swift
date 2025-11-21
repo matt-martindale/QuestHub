@@ -176,7 +176,6 @@ struct PlayQuestView: View {
             NavigationStack {
                 ChallengeDetailView(challenge: challenge) { completedChallenge in
                     selectedChallenge = nil
-                    print("Completed \(completedChallenge.title ?? "")")
                 }
             }
         }

@@ -21,23 +21,92 @@ struct ChallengeDetailView: View {
     @State private var selectedChoice: String = ""
     @State private var imageURLText: String = ""
     @State private var captionText: String = ""
+    @State private var attemptedSubmit: Bool = false
+
+    // MARK: - Validation
+    private enum ValidationState {
+        case valid
+        case invalid(message: String)
+
+        var isValid: Bool {
+            if case .valid = self { return true }
+            return false
+        }
+    }
+
+    private var validation: ValidationState {
+        switch challenge.challengeType {
+        case .question(let data):
+            let expected = (data.answer ?? "")
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+                .lowercased()
+            let provided = inputAnswer
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+                .lowercased()
+            if provided.isEmpty {
+                return .invalid(message: "Please provide an answer.")
+            }
+            return provided == expected ? .valid : .invalid(message: "That doesn’t look right.")
+
+        case .multipleChoice(let data):
+            if selectedChoice.isEmpty {
+                return .invalid(message: "Select an option.")
+            }
+            if let correct = data.correctAnswer, selectedChoice == correct {
+                return .valid
+            } else if data.correctAnswer != nil {
+                return .invalid(message: "Try another choice.")
+            } else {
+                // If no correct answer is provided, treat any selection as valid input
+                return .valid
+            }
+
+        case .prompt:
+            let text = inputPrompt.trimmingCharacters(in: .whitespacesAndNewlines)
+            return text.isEmpty ? .invalid(message: "Please enter a response.") : .valid
+
+        case .photo:
+            let urlText = imageURLText.trimmingCharacters(in: .whitespacesAndNewlines)
+            let caption = captionText.trimmingCharacters(in: .whitespacesAndNewlines)
+            if urlText.isEmpty { return .invalid(message: "Add an image URL.") }
+            if caption.isEmpty { return .invalid(message: "Add a caption.") }
+            return .valid
+        }
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text(challenge.title ?? "")
-                .font(.title3)
-                .bold()
+            Spacer()
 
             contentView()
                 .onAppear { populateStateFromChallenge() }
+                .onChange(of: inputAnswer) { _ in resetAttemptedSubmit() }
+                .onChange(of: selectedChoice) { _ in resetAttemptedSubmit() }
+                .onChange(of: inputPrompt) { _ in resetAttemptedSubmit() }
+                .onChange(of: imageURLText) { _ in resetAttemptedSubmit() }
+                .onChange(of: captionText) { _ in resetAttemptedSubmit() }
+
+            if attemptedSubmit, case .invalid(let message) = validation {
+                Text(message)
+                    .font(.footnote)
+                    .foregroundStyle(.red)
+            }
 
             Button {
-                onComplete(challenge)
+                attemptedSubmit = true
+                if validation.isValid {
+                print("Answer is correct")
+                    onComplete(challenge)
+                }
             } label: {
-                Text("Complete Challenge")
+                Text("Submit")
                     .frame(maxWidth: .infinity)
             }
+            .padding()
             .buttonStyle(.borderedProminent)
+            
+            Spacer()
+            Spacer()
         }
         .padding()
         .toolbar {
@@ -88,21 +157,30 @@ struct ChallengeDetailView: View {
             photoPrompt = p.prompt ?? ""
         }
     }
-}
+    
+    private func resetAttemptedSubmit() {
+        if attemptedSubmit {
+            attemptedSubmit = false
+        }
+    }
+    
+    private struct QuestionView: View {
+        let question: String
+        let answer: String
+        @Binding var inputAnswer: String
 
-private struct QuestionView: View {
-    let question: String
-    let answer: String
-    @Binding var inputAnswer: String
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(question)
-                .font(.headline)
-            Text("Your Answer")
-                .font(.headline)
-            TextField("Type your answer…", text: $inputAnswer)
-                .textFieldStyle(.roundedBorder)
+        var body: some View {
+            VStack(alignment: .leading, spacing: 12) {
+                Text(question)
+                    .font(.title3)
+                Text("*Not case-sensitive")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                Spacer()
+                    .frame(height: 12)
+                TextField("Type your answer…", text: $inputAnswer)
+                    .textFieldStyle(.roundedBorder)
+            }
         }
     }
 }
@@ -188,3 +266,4 @@ private struct PhotoView: View {
     )
     ChallengeDetailView(challenge: challenge) { _ in }
 }
+
