@@ -173,7 +173,7 @@ struct ChallengeDetailView: View {
             VStack(alignment: .leading, spacing: 12) {
                 Text(question)
                     .font(.title3)
-                Text("*Not case-sensitive")
+                Text("*not case-sensitive")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                 Spacer()
