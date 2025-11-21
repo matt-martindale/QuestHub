@@ -8,10 +8,26 @@
 import SwiftUI
 
 struct ChallengeDetailView: View {
+    @Environment(\.dismiss) private var dismiss
     let challenge: Challenge
+    let onComplete: (Challenge) -> Void
     
     var body: some View {
-        Text(challenge.title ?? "")
+        VStack {
+            Text(challenge.title ?? "")
+            Button {
+                onComplete(challenge)
+            } label: {
+                Text("Complete Challenge")
+            }
+        }
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button("Close") {
+                    dismiss()
+                }
+            }
+        }
     }
 }
 
@@ -24,5 +40,5 @@ struct ChallengeDetailView: View {
         completed: true,
         challengeType: .question(QuestionData())
     )
-    ChallengeDetailView(challenge: challenge)
+    ChallengeDetailView(challenge: challenge) { _ in }
 }

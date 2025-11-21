@@ -174,14 +174,10 @@ struct PlayQuestView: View {
         }
         .fullScreenCover(item: $selectedChallenge) { challenge in
             NavigationStack {
-                ChallengeDetailView(challenge: challenge)
-                    .toolbar {
-                        ToolbarItem(placement: .topBarLeading) {
-                            Button("Close") {
-                                selectedChallenge = nil
-                            }
-                        }
-                    }
+                ChallengeDetailView(challenge: challenge) { completedChallenge in
+                    selectedChallenge = nil
+                    print("Completed \(completedChallenge.title ?? "")")
+                }
             }
         }
     }
