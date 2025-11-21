@@ -9,10 +9,11 @@ import SwiftUI
 
 struct ChallengeRowView: View {
     let challenge: Challenge
-    let onTap: () -> Void = { }
-    
-    init(challenge: Challenge) {
+    let onTap: () -> Void
+
+    init(challenge: Challenge, onTap: @escaping () -> Void) {
         self.challenge = challenge
+        self.onTap = onTap
     }
     
     var body: some View {
@@ -131,10 +132,10 @@ struct ChallengeRowView: View {
 
     ScrollView {
         VStack(spacing: 12) {
-            ChallengeRowView(challenge: photo)
-            ChallengeRowView(challenge: multipleChoice)
-            ChallengeRowView(challenge: question)
-            ChallengeRowView(challenge: prompt)
+            ChallengeRowView(challenge: photo) {}
+            ChallengeRowView(challenge: multipleChoice) {}
+            ChallengeRowView(challenge: question) {}
+            ChallengeRowView(challenge: prompt) {}
         }
         .padding()
         .background(Color(.systemBackground))

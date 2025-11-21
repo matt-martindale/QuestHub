@@ -14,6 +14,7 @@ struct PlayQuestView: View {
     @State private var showAccount = false
     @State private var showToast = false
     @State private var toastMessage = ""
+    @State private var selectedChallenge: Challenge?
     
     init(quest: Quest) {
         _viewModel = StateObject(wrappedValue: PlayQuestViewModel(quest: quest))
@@ -170,6 +171,9 @@ struct PlayQuestView: View {
                     .transition(.move(edge: .bottom).combined(with: .opacity))
                     .animation(.spring(response: 0.35, dampingFraction: 0.9), value: showToast)
             }
+        }
+        .navigationDestination(item: $selectedChallenge) { challenge in
+            ChallengeDetailView(challenge: challenge)
         }
     }
 
@@ -499,7 +503,10 @@ struct PlayQuestView: View {
                         }
                     } else if !viewModel.userChallenges.isEmpty {
                         ForEach(viewModel.userChallenges, id: \.id) { challenge in
-                            ChallengeRowView(challenge: challenge)
+                            ChallengeRowView(challenge: challenge) {
+                                // navigate to challenge detail
+                                selectedChallenge = challenge
+                            }
                         }
                     } else if viewModel.isJoined {
                         Text("No challenges yet. Pull to refresh or try again later.")
