@@ -9,37 +9,43 @@ import SwiftUI
 
 struct ChallengeRowView: View {
     let challenge: Challenge
+    let onTap: () -> Void = { }
     
     init(challenge: Challenge) {
         self.challenge = challenge
     }
     
     var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: challengeTypeIcon)
-                .font(.title3)
-                .foregroundStyle(.tint)
-            VStack(alignment: .leading, spacing: 4) {
-                Text(challenge.title ?? "")
-                    .font(.headline)
-                Text(challengeTypeLabel)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-            Spacer()
-            HStack(spacing: 4) {
-                if challenge.completed ?? false {
-                    Image(systemName: "checkmark.circle")
-                        .font(.footnote)
-                        .foregroundStyle(Color.qhPrimaryGreen)
+        Button(action: onTap) {
+            HStack(alignment: .center, spacing: 12) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(Color.primary.opacity(0.1))
+                    Image(systemName: challengeTypeIcon)
+                        .font(.title3)
+                        .foregroundStyle(Color.qhPrimaryBlue)
                 }
-                Text("\(challenge.points ?? 0) pts")
+                .frame(width: 40, height: 40)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(challenge.title ?? "Title missing")
+                        .font(.subheadline)
+                        .foregroundStyle(.primary)
+                    Text(challengeTypeLabel)
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                }
+                Spacer()
+                Text(String(challenge.points ?? 0) + " pts")
                     .font(.footnote)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.primary)
+                Image(systemName: "chevron.right")
+                    .foregroundStyle(.tertiary)
             }
-            Image(systemName: "chevron.right")
-                .foregroundStyle(.tertiary)
+            .contentShape(Rectangle())
+            .padding(.vertical, 6)
         }
+        .buttonStyle(.plain)
         .padding(16)
         .background(
             Group {
@@ -90,50 +96,37 @@ struct ChallengeRowView: View {
     let photo = Challenge(
         id: "c1",
         title: "Snap the Campus Mascot",
-        details: "Take a photo with the mascot statue.",
+        details: "",
         points: 5,
         completed: false,
-        challengeType: .photo(PhotoData(imageURL: "imageURL", prompt: "Take a photo of a sunset", caption: "caption"))
+        challengeType: .photo(PhotoData())
     )
 
     let multipleChoice = Challenge(
         id: "c2",
-        title: "Swift Basics",
-        details: "Which keyword creates a constant?",
+        title: "Multiple choice question",
+        details: "",
         points: 10,
         completed: false,
-        challengeType: .multipleChoice(
-            MultipleChoiceData(
-                question: "Which keyword creates a constant?",
-                answers: ["var", "let", "const", "static"],
-                correctAnswer: "let"
-            )
-        )
+        challengeType: .multipleChoice(MultipleChoiceData())
     )
 
     let question = Challenge(
         id: "c3",
-        title: "Short Answer",
-        details: "Name the protocol used for list diffing in SwiftUI.",
+        title: "Name the protocol used for list diffing in SwiftUI.",
+        details: "",
         points: 15,
         completed: true,
-        challengeType: .question(
-            QuestionData(
-                question: "What protocol enables identity in SwiftUI lists?",
-                answer: "Identifiable"
-            )
-        )
+        challengeType: .question(QuestionData())
     )
 
     let prompt = Challenge(
         id: "c4",
-        title: "Daily Prompt",
-        details: "Write a one-sentence app idea you wish existed.",
+        title: "Write a one-sentence app idea you wish existed.",
+        details: "",
         points: 30,
         completed: true,
-        challengeType: .prompt(
-            PromptData(prompt: "Describe an app idea in one sentence.")
-        )
+        challengeType: .prompt(PromptData())
     )
 
     ScrollView {
