@@ -172,8 +172,17 @@ struct PlayQuestView: View {
                     .animation(.spring(response: 0.35, dampingFraction: 0.9), value: showToast)
             }
         }
-        .navigationDestination(item: $selectedChallenge) { challenge in
-            ChallengeDetailView(challenge: challenge)
+        .fullScreenCover(item: $selectedChallenge) { challenge in
+            NavigationStack {
+                ChallengeDetailView(challenge: challenge)
+                    .toolbar {
+                        ToolbarItem(placement: .topBarLeading) {
+                            Button("Close") {
+                                selectedChallenge = nil
+                            }
+                        }
+                    }
+            }
         }
     }
 
