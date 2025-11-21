@@ -12,8 +12,12 @@ struct ChallengeDetailView: View {
     let challenge: Challenge
     let onComplete: (Challenge) -> Void
 
-    @State private var detailsText: String = ""
-    @State private var answerText: String = ""
+    @State private var questionAnswer: String = ""
+    @State private var prompt: String = ""
+    @State private var photoPrompt: String = ""
+    
+    @State private var inputAnswer: String = ""
+    @State private var inputPrompt: String = ""
     @State private var selectedChoice: String = ""
     @State private var imageURLText: String = ""
     @State private var captionText: String = ""
@@ -49,8 +53,8 @@ struct ChallengeDetailView: View {
         case .question(let data):
             QuestionView(
                 question: data.question ?? "Question",
-                detailsText: $detailsText,
-                answerText: $answerText
+                answer: data.answer ?? "Answer",
+                inputAnswer: $inputAnswer
             )
         case .multipleChoice(let data):
             MultipleChoiceView(
@@ -61,8 +65,7 @@ struct ChallengeDetailView: View {
         case .prompt(let data):
             PromptView(
                 prompt: data.prompt ?? "Prompt",
-                detailsText: $detailsText,
-                answerText: $answerText
+                inputPrompt: $inputPrompt
             )
         case .photo(let data):
             PhotoView(
@@ -74,39 +77,31 @@ struct ChallengeDetailView: View {
     }
 
     private func populateStateFromChallenge() {
-        detailsText = challenge.details ?? ""
         switch challenge.challengeType {
         case .question(let q):
-            answerText = q.answer ?? ""
+            questionAnswer = q.answer ?? ""
         case .multipleChoice(let mc):
             selectedChoice = mc.correctAnswer ?? ""
         case .prompt(let p):
-            answerText = p.answer ?? ""
+            prompt = p.prompt ?? ""
         case .photo(let p):
-            imageURLText = p.imageURL ?? ""
-            captionText = p.caption ?? ""
+            photoPrompt = p.prompt ?? ""
         }
     }
 }
 
 private struct QuestionView: View {
     let question: String
-    @Binding var detailsText: String
-    @Binding var answerText: String
+    let answer: String
+    @Binding var inputAnswer: String
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(question)
                 .font(.headline)
-            TextEditor(text: $detailsText)
-                .frame(minHeight: 100)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.secondary.opacity(0.3))
-                )
             Text("Your Answer")
                 .font(.headline)
-            TextField("Type your answer…", text: $answerText)
+            TextField("Type your answer…", text: $inputAnswer)
                 .textFieldStyle(.roundedBorder)
         }
     }
@@ -149,22 +144,15 @@ private struct MultipleChoiceView: View {
 
 private struct PromptView: View {
     let prompt: String
-    @Binding var detailsText: String
-    @Binding var answerText: String
+    @Binding var inputPrompt: String
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(prompt)
                 .font(.headline)
-            TextEditor(text: $detailsText)
-                .frame(minHeight: 100)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.secondary.opacity(0.3))
-                )
             Text("Your Response")
                 .font(.headline)
-            TextField("Type your response…", text: $answerText)
+            TextField("Type your response…", text: $inputPrompt)
                 .textFieldStyle(.roundedBorder)
         }
     }
@@ -196,7 +184,7 @@ private struct PhotoView: View {
         details: "",
         points: 15,
         completed: true,
-        challengeType: .question(QuestionData())
+        challengeType: .question(QuestionData(question: "Who is Seinfelds best friend", answer: "George"))
     )
     ChallengeDetailView(challenge: challenge) { _ in }
 }
