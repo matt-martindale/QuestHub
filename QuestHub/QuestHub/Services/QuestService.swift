@@ -658,16 +658,46 @@ final class QuestService {
                         mergedProgress.removeValue(forKey: key)
                     }
 
-                    // Persist merged progress back to userQuests
-                    userQuestRef.setData([
-                        "userId": userId,
-                        "questId": questId,
-                        "challengeProgress": mergedProgress
-                    ], merge: true) { updateErr in
-                        if let updateErr = updateErr {
-                            completion(.failure(updateErr))
-                        } else {
-                            completion(.success(decodedChallenges))
+                    // Persist merged progress back to userQuests without affecting other fields.
+                    // We perform a two-step write:
+                    // Step 1: delete stale keys explicitly
+                    // Step 2: upsert merged map and base fields
+
+                    if staleKeys.isEmpty {
+                        // No deletes needed; just upsert the merged map
+                        userQuestRef.setData([
+                            "userId": userId,
+                            "questId": questId,
+                            "challengeProgress": mergedProgress
+                        ], merge: true) { upsertErr in
+                            if let upsertErr = upsertErr {
+                                completion(.failure(upsertErr))
+                            } else {
+                                completion(.success(decodedChallenges))
+                            }
+                        }
+                    } else {
+                        var deletes: [String: Any] = [:]
+                        for key in staleKeys {
+                            deletes["challengeProgress.\(key)"] = FieldValue.delete()
+                        }
+                        userQuestRef.updateData(deletes) { deleteErr in
+                            if let deleteErr = deleteErr {
+                                completion(.failure(deleteErr))
+                                return
+                            }
+                            // Step 2: upsert merged map and base fields
+                            userQuestRef.setData([
+                                "userId": userId,
+                                "questId": questId,
+                                "challengeProgress": mergedProgress
+                            ], merge: true) { upsertErr in
+                                if let upsertErr = upsertErr {
+                                    completion(.failure(upsertErr))
+                                } else {
+                                    completion(.success(decodedChallenges))
+                                }
+                            }
                         }
                     }
                 } catch {
