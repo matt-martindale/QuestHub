@@ -632,61 +632,17 @@ final class QuestService {
                                               completion: @escaping (Result<Void, Error>) -> Void) {
         let userQuestsRootRef = self.db.collection("userQuests").document("\(userId)_\(questId)")
         qRef.getDocument { qSnap, qErr in
-            // Build user-specific challenges progress from quest's challenges array
-            var userChallenges: [[String: Any]] = []
+            // Build challengeProgress dictionary keyed by challenge id
+            var challengeProgress: [String: Any] = [:]
             if qErr == nil, let qSnap = qSnap, let qData = qSnap.data(), let rawChallenges = qData["challenges"] as? [[String: Any]] {
-                userChallenges = rawChallenges.map { item in
-                    let id = item["id"] as? String ?? ""
-                    let title = item["title"] as? String ?? ""
-                    let details = item["details"] as? String ?? ""
-                    let points = item["points"] as? Int ?? 0
-
-                    var kind = "question"
-                    var dataPayload: [String: Any] = [:]
-                    if let typeDict = item["challengeType"] as? [String: Any], let k = typeDict["kind"] as? String {
-                        kind = k
-                        let originalData = typeDict["data"] as? [String: Any] ?? [:]
-                        switch k {
-                        case "photo":
-                            dataPayload = [
-                                "imageURL": "",
-                                "caption": originalData["caption"] as? String ?? "",
-                                "prompt": originalData["prompt"] as? String ?? ""
-                            ]
-                        case "multipleChoice":
-                            dataPayload = [
-                                "question": originalData["question"] as? String ?? "",
-                                "answers": originalData["answers"] as? [String] ?? [],
-                                "correctAnswer": originalData["correctAnswer"] as? String ?? ""
-                            ]
-                        case "question":
-                            dataPayload = [
-                                "question": originalData["question"] as? String ?? "",
-                                "answer": originalData["answer"] as? String ?? ""
-                            ]
-                        case "prompt":
-                            dataPayload = [
-                                "prompt": originalData["prompt"] as? String ?? "",
-                                "answer": originalData["answer"] as? String ?? ""
-                            ]
-                        default:
-                            dataPayload = originalData
-                        }
+                for item in rawChallenges {
+                    if let id = item["id"] as? String, !id.isEmpty {
+                        challengeProgress[id] = [
+                            "completed": false,
+                            "completedAt": NSNull(),
+                            "challengeResponse": ""
+                        ]
                     }
-
-                    let challengeTypeDict: [String: Any] = [
-                        "kind": kind,
-                        "data": dataPayload
-                    ]
-
-                    return [
-                        "id": id,
-                        "title": title,
-                        "details": details,
-                        "points": points,
-                        "completed": false,
-                        "challengeType": challengeTypeDict
-                    ]
                 }
             }
 
@@ -695,8 +651,8 @@ final class QuestService {
                 "questId": questId,
                 "questCode": questCode,
                 "joinedAt": Timestamp(date: Date()),
-                "points": 0,
-                "challenges": userChallenges
+                "questPointsEarned": 0,
+                "challengeProgress": challengeProgress
             ], merge: true) { uqErr in
                 if let uqErr = uqErr {
                     completion(.failure(uqErr))
@@ -729,38 +685,54 @@ final class QuestService {
     ///   - questId: The Firestore quest document ID
     ///   - completion: Completion handler returning the computed integer points or an error
     private func computeCompletedChallengePoints(userId: String, questId: String, completion: @escaping (Result<Int, Error>) -> Void) {
-        let docId = "\(userId)_\(questId)"
-        let ref = db.collection("userQuests").document(docId)
-        ref.getDocument { snapshot, error in
-            if let error = error {
-                completion(.failure(error))
+        let userQuestDocId = "\(userId)_\(questId)"
+        let userQuestRef = db.collection("userQuests").document(userQuestDocId)
+        userQuestRef.getDocument { userQuestSnap, userQuestErr in
+            if let userQuestErr = userQuestErr {
+                completion(.failure(userQuestErr))
                 return
             }
-
-            guard let data = snapshot?.data() else {
+            guard let userQuestData = userQuestSnap?.data() else {
                 completion(.success(0))
                 return
             }
-
-            // challenges: [[String: Any]] with keys: id, title, details, points, completed, challengeType
-            let challenges = data["challenges"] as? [[String: Any]] ?? []
-            var total = 0
-            for item in challenges {
-                let completed = item["completed"] as? Bool ?? false
-                if completed {
-                    let points = item["points"] as? Int ?? 0
-                    total += points
+            // challengeProgress: [String: [String: Any]]
+            let challengeProgress = userQuestData["challengeProgress"] as? [String: [String: Any]] ?? [:]
+            // Build set of completed challenge IDs
+            let completedChallengeIDs = Set<String>(challengeProgress.compactMap { (key, value) in
+                if let completed = value["completed"] as? Bool, completed {
+                    return key
                 }
-            }
-            // Persist the computed total back to Firestore under userQuests.points
-            ref.updateData(["points": total]) { updateError in
-                if let updateError = updateError {
-                    // Still return the computed total even if updating the field fails
-                    completion(.failure(updateError))
-                } else {
-                    completion(.success(total))
+                return nil
+            })
+
+            let questRef = self.db.collection("quests").document(questId)
+            questRef.getDocument { questSnap, questErr in
+                if let questErr = questErr {
+                    completion(.failure(questErr))
+                    return
+                }
+                guard let questData = questSnap?.data(),
+                      let challenges = questData["challenges"] as? [[String: Any]] else {
+                    completion(.success(0))
+                    return
+                }
+                var totalPoints = 0
+                for challenge in challenges {
+                    if let id = challenge["id"] as? String, completedChallengeIDs.contains(id) {
+                        let points = challenge["points"] as? Int ?? 0
+                        totalPoints += points
+                    }
+                }
+                userQuestRef.updateData(["questPointsEarned": totalPoints]) { updateErr in
+                    if let updateErr = updateErr {
+                        completion(.failure(updateErr))
+                    } else {
+                        completion(.success(totalPoints))
+                    }
                 }
             }
         }
     }
 }
+
