@@ -598,28 +598,71 @@ final class QuestService {
     func fetchUserChallenges(userId: String,
                              questId: String,
                              completion: @escaping (Result<[Challenge], Error>) -> Void) {
-        let docId = "\(userId)_\(questId)"
-        let ref = db.collection("userQuests").document(docId)
-        ref.getDocument { snapshot, error in
-            if let error = error {
-                completion(.failure(error))
+        let userQuestDocId = "\(userId)_\(questId)"
+        let userQuestRef = db.collection("userQuests").document(userQuestDocId)
+        let questRef = db.collection("quests").document(questId)
+
+        // Load existing userQuests to get current challengeProgress
+        userQuestRef.getDocument { userSnap, userErr in
+            if let userErr = userErr {
+                completion(.failure(userErr))
                 return
             }
-            guard let data = snapshot?.data() else {
-                completion(.success([]))
-                return
-            }
-            do {
-                if let raw = data["challenges"] as? [[String: Any]] {
-                    let json = try JSONSerialization.data(withJSONObject: raw, options: [])
-                    let decoder = JSONDecoder()
-                    let decoded = try decoder.decode([Challenge].self, from: json)
-                    completion(.success(decoded))
-                } else {
-                    completion(.success([]))
+
+            let existingProgress = (userSnap?.data()? ["challengeProgress"] as? [String: [String: Any]]) ?? [:]
+
+            // Load latest quest challenges
+            questRef.getDocument { questSnap, questErr in
+                if let questErr = questErr {
+                    completion(.failure(questErr))
+                    return
                 }
-            } catch {
-                completion(.failure(error))
+                guard let questData = questSnap?.data(), let rawChallenges = questData["challenges"] as? [[String: Any]] else {
+                    // No challenges on quest; ensure base fields exist and return empty
+                    userQuestRef.setData([
+                        "userId": userId,
+                        "questId": questId,
+                        "challengeProgress": existingProgress
+                    ], merge: true) { _ in
+                        completion(.success([]))
+                    }
+                    return
+                }
+
+                do {
+                    // Decode quest challenges for return
+                    let json = try JSONSerialization.data(withJSONObject: rawChallenges, options: [])
+                    let decoder = JSONDecoder()
+                    let decodedChallenges = try decoder.decode([Challenge].self, from: json)
+
+                    // Merge latest challenge ids into challengeProgress (additive only)
+                    var mergedProgress = existingProgress
+                    for item in rawChallenges {
+                        guard let cid = item["id"] as? String, !cid.isEmpty else { continue }
+                        if mergedProgress[cid] == nil {
+                            mergedProgress[cid] = [
+                                "completed": false,
+                                "completedAt": NSNull(),
+                                "challengeResponse": ""
+                            ]
+                        }
+                    }
+
+                    // Persist merged progress back to userQuests
+                    userQuestRef.setData([
+                        "userId": userId,
+                        "questId": questId,
+                        "challengeProgress": mergedProgress
+                    ], merge: true) { updateErr in
+                        if let updateErr = updateErr {
+                            completion(.failure(updateErr))
+                        } else {
+                            completion(.success(decodedChallenges))
+                        }
+                    }
+                } catch {
+                    completion(.failure(error))
+                }
             }
         }
     }
