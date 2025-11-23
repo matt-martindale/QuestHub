@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 extension UIImage {
     func normalizedOrientation() -> UIImage {
@@ -34,6 +35,8 @@ struct CropHoleShape: Shape {
 struct ImageCropperView: View {
     private let sourceImage: UIImage
     let aspectRatio: CGFloat
+    let compressionMaxDimension: CGFloat?
+    let compressionQuality: CGFloat
     let onCropped: (UIImage) -> Void
     let onCancel: () -> Void
 
@@ -45,9 +48,11 @@ struct ImageCropperView: View {
     @State private var minAllowedScale: CGFloat = 1
     @State private var computedMinScale: CGFloat = 1
 
-    init(image: UIImage, aspectRatio: CGFloat, onCropped: @escaping (UIImage) -> Void, onCancel: @escaping () -> Void) {
+    init(image: UIImage, aspectRatio: CGFloat, compressionMaxDimension: CGFloat? = nil, compressionQuality: CGFloat = 0.8, onCropped: @escaping (UIImage) -> Void, onCancel: @escaping () -> Void) {
         self.sourceImage = image.normalizedOrientation()
         self.aspectRatio = aspectRatio
+        self.compressionMaxDimension = compressionMaxDimension
+        self.compressionQuality = compressionQuality
         self.onCropped = onCropped
         self.onCancel = onCancel
     }
@@ -160,9 +165,17 @@ struct ImageCropperView: View {
                         Spacer()
                         Button("Crop") {
                             if let result = renderCroppedImage(canvasSize: geo.size, cropRect: cropRect) {
-                                onCropped(result)
+                                Task {
+                                    let compressed = await ImageCompressor.compressAsync(image: result, maxDimension: compressionMaxDimension, jpegQuality: compressionQuality)
+                                    let finalImage = compressed ?? result
+                                    await MainActor.run {
+                                        onCropped(finalImage)
+                                        dismiss()
+                                    }
+                                }
+                            } else {
+                                dismiss()
                             }
-                            dismiss()
                         }
                     }
                     .padding()

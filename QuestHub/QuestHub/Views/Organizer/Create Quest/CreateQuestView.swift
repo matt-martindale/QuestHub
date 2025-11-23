@@ -131,7 +131,7 @@ struct CreateQuestView: View {
     }
     
     private func imageCropper(for item: CroppingImage) -> some View {
-        ImageCropperView(image: item.image, aspectRatio: 16.0/9.0) { cropped in
+        ImageCropperView(image: item.image, aspectRatio: 16.0/9.0, compressionMaxDimension: 800) { cropped in
             if let data = cropped.jpegData(compressionQuality: 0.9) {
                 self.selectedImageData = data
                 self.viewModel.pendingCoverImageData = data
