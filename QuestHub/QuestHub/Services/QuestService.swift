@@ -635,10 +635,14 @@ final class QuestService {
                     let decoder = JSONDecoder()
                     let decodedChallenges = try decoder.decode([Challenge].self, from: json)
 
-                    // Merge latest challenge ids into challengeProgress (additive only)
+                    // Merge latest challenge ids into challengeProgress and prune stale ones
                     var mergedProgress = existingProgress
-                    for item in rawChallenges {
-                        guard let cid = item["id"] as? String, !cid.isEmpty else { continue }
+
+                    // Build a set of current challenge IDs from the quest
+                    let currentIDs: Set<String> = Set(rawChallenges.compactMap { $0["id"] as? String }.filter { !$0.isEmpty })
+
+                    // Add any new IDs with default progress
+                    for cid in currentIDs {
                         if mergedProgress[cid] == nil {
                             mergedProgress[cid] = [
                                 "completed": false,
@@ -646,6 +650,12 @@ final class QuestService {
                                 "challengeResponse": ""
                             ]
                         }
+                    }
+
+                    // Remove any progress entries that no longer exist in the quest
+                    let staleKeys = Set(mergedProgress.keys).subtracting(currentIDs)
+                    for key in staleKeys {
+                        mergedProgress.removeValue(forKey: key)
                     }
 
                     // Persist merged progress back to userQuests
